@@ -7,8 +7,6 @@ import com.google.common.reflect.TypeToken;
 import net.devtech.jerraria.util.TypeHelper;
 
 public class ClassAccessHelper<T, F> extends AbstractClassAccessHelper<T, Class<? extends T>, F> {
-
-
 	public ClassAccessHelper(HelperContext<Class<? extends T>, F> context) {
 		super(context);
 	}
