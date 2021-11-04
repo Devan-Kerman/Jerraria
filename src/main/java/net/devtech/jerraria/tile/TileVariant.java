@@ -2,13 +2,18 @@ package net.devtech.jerraria.tile;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
-public class TileVariant {
+public class TileVariant implements VariantConvertable {
 	final Tile owner;
 	final Object2IntMap<Property<?, ?>> values;
+	int linkFromX, linkToX, linkFromY, linkToY;
 
 	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values) {
 		this.owner = owner;
 		this.values = values;
+		this.linkFromX = owner.linkFromX;
+		this.linkToX = owner.linkToX;
+		this.linkFromY = owner.linkFromY;
+		this.linkToY = owner.linkToY;
 	}
 
 	public Tile getOwner() {
@@ -37,5 +42,10 @@ public class TileVariant {
 
 	public <T> T getOrDefault(Property<T, ?> property) {
 		return this.getOrDefault(property, property.defaultValue());
+	}
+
+	@Override
+	public TileVariant getVariant() {
+		return this;
 	}
 }

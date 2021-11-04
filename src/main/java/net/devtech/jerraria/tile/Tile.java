@@ -4,12 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.access.Access;
+import net.devtech.jerraria.access.internal.AccessImpl;
+import net.devtech.jerraria.util.func.TileLinker;
 
 public class Tile {
+	public static final Access<TileLinker<TileVariant>> ON_BUILD = new AccessImpl<>(arr -> (linking, convertable, posX, posY) -> {
+		for(TileLinker<TileVariant> linker : arr) {
+			linker.link(linking, convertable, posX, posY);
+		}
+	});
+
+	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
-
-	final List<Property<?, ?>> properties = new ArrayList<>();
+	List<Property<?, ?>> properties = new ArrayList<>();
 	int cacheSize = 1;
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(Class<E> type, E defaultValue) {
@@ -20,7 +29,25 @@ public class Tile {
 		return this.addProperty(new IntRangeProperty(from, to, defaultValue));
 	}
 
+	public IntRangeProperty rangeProperty(int from, int to) {
+		return this.rangeProperty(from, to, from);
+	}
+
+	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
+		this.linkFromX = linkFromX;
+		this.linkToX = linkToX;
+		this.linkFromY = linkFromY;
+		this.linkToY = linkToY;
+	}
+
 	public <P extends Property<?, ?>> P addProperty(P property) {
+		if(this.cache != null) {
+			throw new IllegalStateException("""
+					Cannot add property after blockstate cache has been initialized,\s
+					\tdo not call getDefaultState in your constructor\s
+					\tand only call addProperty in your constructor (or field init)""");
+		}
+
 		int size = property.values().size();
 		if(size == 0) {
 			throw new IllegalStateException("Cannot have property with no values!");
@@ -28,6 +55,10 @@ public class Tile {
 		this.cacheSize *= size;
 		this.properties.add(property);
 		return property;
+	}
+
+	public List<Property<?, ?>> getProperties() {
+		return this.properties;
 	}
 
 	public TileVariant getDefaultState() {
@@ -72,6 +103,11 @@ public class Tile {
 	TileVariant[] initializeCache() {
 		TileVariant[] cache = new TileVariant[this.cacheSize];
 		this.withSub(null, null, null, true);
+		this.properties = List.copyOf(this.properties);
 		return this.cache = cache;
+	}
+
+	static {
+
 	}
 }
