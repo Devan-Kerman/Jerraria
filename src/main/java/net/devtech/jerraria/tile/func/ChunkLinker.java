@@ -1,8 +1,8 @@
-package net.devtech.jerraria.util.func;
+package net.devtech.jerraria.tile.func;
 
 import net.devtech.jerraria.tile.VariantConvertable;
 import net.devtech.jerraria.world.chunk.ChunkLinkingAccess;
 
-public interface TileLinker<T extends VariantConvertable> {
+public interface ChunkLinker<T extends VariantConvertable> {
 	void link(ChunkLinkingAccess linking, T convertable, int posX, int posY);
 }

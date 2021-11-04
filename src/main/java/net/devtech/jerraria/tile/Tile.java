@@ -6,11 +6,11 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.access.Access;
 import net.devtech.jerraria.access.internal.AccessImpl;
-import net.devtech.jerraria.util.func.TileLinker;
+import net.devtech.jerraria.tile.func.ChunkLinker;
 
 public class Tile {
-	public static final Access<TileLinker<TileVariant>> ON_BUILD = new AccessImpl<>(arr -> (linking, convertable, posX, posY) -> {
-		for(TileLinker<TileVariant> linker : arr) {
+	public static final Access<ChunkLinker<TileVariant>> LINK_ON_CHANGE = new AccessImpl<>(arr -> (linking, convertable, posX, posY) -> {
+		for(ChunkLinker<TileVariant> linker : arr) {
 			linker.link(linking, convertable, posX, posY);
 		}
 	});
@@ -33,6 +33,9 @@ public class Tile {
 		return this.rangeProperty(from, to, from);
 	}
 
+	/**
+	 * The range relative to the tile in which the tile can modify blocks, when more granular control is needed {@link #LINK_ON_CHANGE}
+	 */
 	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
 		this.linkFromX = linkFromX;
 		this.linkToX = linkToX;

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.util.func;
+package net.devtech.jerraria.tile.func;
 
 import net.devtech.jerraria.access.func.ArrayFunc;
 import net.devtech.jerraria.tile.TileVariant;

@@ -1,8 +1,12 @@
 package net.devtech.jerraria.tile;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 public class TileVariant implements VariantConvertable {
+	private static final AtomicInteger ID = new AtomicInteger();
+
 	final Tile owner;
 	final Object2IntMap<Property<?, ?>> values;
 	int linkFromX, linkToX, linkFromY, linkToY;
