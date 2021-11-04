@@ -8,12 +8,12 @@ import java.util.function.IntPredicate;
 import java.util.function.LongPredicate;
 import java.util.function.Predicate;
 
-import io.github.astrarre.util.v0.api.func.predicate.BoolPredicate;
-import io.github.astrarre.util.v0.api.func.predicate.BytePredicate;
-import io.github.astrarre.util.v0.api.func.predicate.CharPredicate;
-import io.github.astrarre.util.v0.api.func.predicate.FloatPredicate;
-import io.github.astrarre.util.v0.api.func.predicate.ShortPredicate;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.devtech.jerraria.util.func.BoolPredicate;
+import net.devtech.jerraria.util.func.BytePredicate;
+import net.devtech.jerraria.util.func.CharPredicate;
+import net.devtech.jerraria.util.func.FloatPredicate;
+import net.devtech.jerraria.util.func.ShortPredicate;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
