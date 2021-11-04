@@ -1,7 +1,7 @@
 package net.devtech.jerraria.world.chunk;
 
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import org.jetbrains.annotations.Nullable;

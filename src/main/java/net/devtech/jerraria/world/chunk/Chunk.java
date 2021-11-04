@@ -5,8 +5,8 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 
