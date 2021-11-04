@@ -15,6 +15,8 @@ import net.devtech.jerraria.util.access.ViewOnlyAccess;
 @SuppressWarnings("unchecked")
 public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 	final ArrayFunc<F> func;
+	final F empty;
+
 	private record Dependency(ViewOnlyAccess<?> access, Function<Object, ?> converter) {}
 	final List<Object> functions = new ArrayList<>();
 	final List<AccessInternal<?>> dependents = new ArrayList<>();
@@ -23,7 +25,8 @@ public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 
 	public AccessImpl(ArrayFunc<F> func) {
 		this.func = func;
-		this.recompile();
+		this.empty = func.empty();
+		this.combined = this.empty;
 	}
 
 	@Override
@@ -91,5 +94,20 @@ public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 	@Override
 	public RegisterOnlyAccess<F> registerOnly() {
 		return this;
+	}
+
+	@Override
+	public ArrayFunc<F> combiner() {
+		return this.func;
+	}
+
+	@Override
+	public RegisterOnlyAccess<F> access() {
+		return this;
+	}
+
+	@Override
+	public F emptyFunction() {
+		return this.empty;
 	}
 }

@@ -52,6 +52,10 @@ public interface ArrayFunc<A> extends Function<A[], A>, Serializable {
 
 	A combine(A[] array);
 
+	default A combineList(List<A> list) {
+		return this.combine(list.toArray(i -> (A[])Array.newInstance(this.getType(), i)));
+	}
+
 	default Class<A> getType() {
 		// egregious type hacks
 		TypeToken<?> token = new TypeToken<A>(this.getClass()) {};
