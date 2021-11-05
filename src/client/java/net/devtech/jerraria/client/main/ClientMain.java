@@ -28,11 +28,12 @@ public class ClientMain {
 			GL11.glViewport(0, 0, width, height);
 		});
 
+
+
 		while (!GLFW.glfwWindowShouldClose(window)) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
 			render();
-			BufferBuilder builder = new BufferBuilder();
 
 			GLFW.glfwSwapBuffers(window);
 			GLFW.glfwPollEvents();

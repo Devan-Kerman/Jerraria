@@ -26,6 +26,7 @@ dependencies {
 	implementation 'com.google.guava:guava:31.0.1-jre'
 	implementation 'it.unimi.dsi:fastutil:8.5.6'
 	implementation 'org.jetbrains:annotations:22.0.0'
+	clientImplementation 'org.jetbrains:annotations:22.0.0'
 
 	implementation 'io.netty:netty-handler:4.1.69.Final'
 	implementation 'io.netty:netty-transport-native-epoll:4.1.69.Final'
@@ -37,11 +38,16 @@ dependencies {
 	clientImplementation "org.lwjgl:lwjgl-openal"
 	clientImplementation "org.lwjgl:lwjgl-opengl"
 	clientImplementation "org.lwjgl:lwjgl-stb"
+
 	clientRuntimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
 }
 
 test {

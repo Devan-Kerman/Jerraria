@@ -1,10 +1,16 @@
 package net.devtech.jerraria.client.render;
 
+import static org.lwjgl.opengl.GL20.*;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryUtil;
+
 public final class BufferBuilder {
-	private ByteBuffer buffer;
+	ByteBuffer buffer;
+	int glId;
 
 	public BufferBuilder() {
 		this.buffer = allocateBuffer(1024);
@@ -21,6 +27,27 @@ public final class BufferBuilder {
 		v |= v >> 16;
 		v++;
 		this.buffer = allocateBuffer((int) v);
+	}
+
+	public void bind(boolean reset) {
+		if(this.glId == MemoryUtil.NULL) {
+			int glId = this.glId = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, glId);
+		}
+		ByteBuffer buffer = this.buffer;
+		if(reset) {
+			buffer.rewind();
+			glBufferData(GL_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
+		} else {
+			int pos = buffer.position();
+			buffer.rewind();
+			glBufferData(GL_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
+			buffer.position(pos);
+		}
+	}
+
+	public void reset() {
+		this.buffer.rewind();
 	}
 
 	public BufferBuilder bool(boolean bool) {
