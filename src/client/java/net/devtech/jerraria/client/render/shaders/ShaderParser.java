@@ -28,21 +28,22 @@ public class ShaderParser {
 	public static void main(String[] args) {
 		ShaderParser parser = new ShaderParser("""
             struct st_ructure {
-                vec4 fieldA;
+                ushort fieldA;
                 vec3 fieldB;
                 int i;
             };
             uniform st_ructure val;
             uniform vec3 hello[4];
-            layout(location = 0) in int i;
+            layout(location = 0) in int i[4];
 			""".stripIndent());
-		System.out.println(parser.getAttributeNames(ExternalFieldDeclarationAstNode.ExternalFieldType.ATTRIBUTE));
-		System.out.println(parser.getAttributeNames(ExternalFieldDeclarationAstNode.ExternalFieldType.UNIFORM));
+		System.out.println(parser.getFields(ExternalFieldDeclarationAstNode.ExternalFieldType.ATTRIBUTE));
+		System.out.println(parser.getFields(ExternalFieldDeclarationAstNode.ExternalFieldType.UNIFORM));
 	}
 
+	public record Field(String name, String glslType) {}
 
-	public List<String> getAttributeNames(ExternalFieldDeclarationAstNode.ExternalFieldType type) {
-		List<String> list = new ArrayList<>();
+	public List<Field> getFields(ExternalFieldDeclarationAstNode.ExternalFieldType type) {
+		List<Field> list = new ArrayList<>();
 		Map<String, List<FieldDeclarationAstNode>> structures = new HashMap<>();
 		for(AstNode child : node.getChildren()) {
 			if(child instanceof ExternalFieldDeclarationAstNode a && a.getFieldType() == type) {
@@ -60,21 +61,21 @@ public class ShaderParser {
 		return list;
 	}
 
-	private static void applyField(List<String> list,
+	private static void applyField(List<Field> list,
 		Map<String, List<FieldDeclarationAstNode>> structures,
 		String prefix,
 		FieldDeclarationAstNode field) {
 		String name = field.getName().getName();
 		String typeName = field.getType().getName();
 		if(GlslLang.GLSL_TYPES.contains(typeName)) {
-			list.add(prefix + name);
+			list.add(new Field(prefix + name, typeName));
 		} else {
 			getAttributeNames(structures, list, name + ".", typeName);
 		}
 	}
 
 	private static void getAttributeNames(Map<String, List<FieldDeclarationAstNode>> structures,
-		List<String> list,
+		List<Field> list,
 		String prefix,
 		String structureName) {
 		for(FieldDeclarationAstNode node : structures.get(structureName)) {

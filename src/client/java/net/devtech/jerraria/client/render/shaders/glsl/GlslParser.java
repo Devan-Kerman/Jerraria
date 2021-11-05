@@ -1091,7 +1091,6 @@ public class GlslParser {
      * @return the local variable declaration AST node.
      */
     private <T extends VarDeclarationAstNode> T parseVarDeclaration(final Token typeToken, final char[] content, Supplier<T> ctor) {
-
         final Token nameToken = findToken(content, TOKEN_WORD);
         final Token semicolonOrAssignToken = findToken(content, TOKEN_SEMICOLON, TOKEN_ASSIGN);
 
