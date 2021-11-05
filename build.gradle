@@ -13,12 +13,12 @@ repositories {
 	mavenCentral()
 
 	maven {
-		url "https://oss.sonatype.org/content/repositories/snapshots/"
+		url 'https://oss.sonatype.org/content/repositories/snapshots/'
 	}
 }
 
-def lwjglVersion = "3.3.0-SNAPSHOT"
-def lwjglNatives = "natives-windows"
+def lwjglVersion = '3.3.0-SNAPSHOT'
+def lwjglNatives = 'natives-windows'
 
 dependencies {
 	implementation 'org.ow2.asm:asm:9.2'
@@ -27,7 +27,9 @@ dependencies {
 	implementation 'it.unimi.dsi:fastutil:8.5.6'
 	implementation 'org.jetbrains:annotations:22.0.0'
 
-	implementation 'io.netty:netty-all:4.1.69.Final'
+	implementation 'io.netty:netty-handler:4.1.69.Final'
+	implementation 'io.netty:netty-transport-native-epoll:4.1.69.Final'
+	implementation 'io.netty:netty-transport-native-kqueue:4.1.69.Final'
 
 	clientImplementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 	clientImplementation "org.lwjgl:lwjgl"
@@ -44,4 +46,20 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+task startClient(type: JavaExec) {
+	group = 'run'
+	description = 'Starts a client'
+
+	classpath = sourceSets.client.output + sourceSets.client.runtimeClasspath
+	mainClass.set('net.devtech.jerraria.client.main.ClientMain')
+}
+
+task startServer(type: JavaExec) {
+	group = 'run'
+	description = 'Starts a dedicated server'
+
+	classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+	mainClass.set('net.devtech.jerraria.server.dedicated.ServerMain')
 }

@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import net.devtech.jerraria.server.network.Nettyworking;
 import net.devtech.jerraria.server.network.NetworkSide;
+import net.devtech.jerraria.server.network.SplitterCodec;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.SocketAddress;
@@ -58,6 +59,7 @@ public abstract class JServer {
 				@Override
 				protected void initChannel(@NotNull SocketChannel channel) {
 					channel.pipeline()
+						.addLast("splitter", new SplitterCodec())
 						.addLast("timeout", new ReadTimeoutHandler(30))
 						.addLast("connection", createClientConnection());
 				}

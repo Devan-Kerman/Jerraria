@@ -28,7 +28,7 @@ public interface AccessContext<F> {
 	}
 
 	default <I> HelperContext<I, F> filter(FilteredFunc<I, F> filter) {
-		return new HelperContext.With<>(filter, this.combiner(), this.access(), this.emptyFunction());
+		return new HelperContext.With<>(filter, this.combiner(), this.access(), this.emptyFunction(), null);
 	}
 
 	record With<F>(ArrayFunc<F> combiner, RegisterOnlyAccess<F> access, F emptyFunction) implements AccessContext<F> {}
