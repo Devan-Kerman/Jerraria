@@ -24,7 +24,7 @@ public abstract class TemporaryTileData {
 	public abstract void onInvalidated(TileVariant variant, @Nullable TileData data, World world, int x, int y);
 
 	/**
-	 * When a block is replaced in a chunk, this method is called to determine whether the scheduled action should still be run at the alloted time
+	 * When a block is replaced in a chunk, this method is called to determine whether the scheduled action should still be run at the allotted time
 	 */
 	public abstract boolean isIncompatible(TileVariant old, TileVariant new_);
 
@@ -52,5 +52,4 @@ public abstract class TemporaryTileData {
 			return false;
 		}
 	}
-
 }

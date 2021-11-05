@@ -1,48 +1,80 @@
 package net.devtech.jerraria.util.data;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 
-import net.devtech.jerraria.util.data.codec.ArrayCodec;
+import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.bytes.ByteList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.util.data.bin.BinCodec;
 import net.devtech.jerraria.util.data.bin.BinDecode;
 import net.devtech.jerraria.util.data.bin.BinEncode;
+import net.devtech.jerraria.util.data.codec.ArrayCodec;
 
 /**
  * Natively supported Jercode types
  */
 public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) implements JCType<T, T> {
-	public static final NativeJCType<Integer> INT = new NativeJCType<>(DataInput::readInt, DataOutput::writeInt);
-	public static final NativeJCType<int[]> INT_ARRAY = new NativeJCType<>(ArrayCodec.INT);
-	public static final NativeJCType<byte[]> BYTE_ARRAY = new NativeJCType<>(ArrayCodec.BYTE);
-	public static final NativeJCType<String> STRING = new NativeJCType<>(DataInput::readUTF, DataOutput::writeUTF);
+	static final NativeJCType<?>[] BY_ID = new NativeJCType[256];
 
-	public static final NativeJCType<JCTagView> TAG = new NativeJCType<>(input -> {
+	public static final NativeJCType<Integer> INT = new NativeJCType<>(
+		(p, i) -> i.readInt(),
+		(p, o, v) -> o.writeInt(v));
+	public static final NativeJCType<IntList> INT_ARRAY = new NativeJCType<>(ArrayCodec.INT);
+	public static final NativeJCType<ByteList> BYTE_ARRAY = new NativeJCType<>(ArrayCodec.BYTE);
+	public static final NativeJCType<LongList> LONG_ARRAY = new NativeJCType<>(ArrayCodec.LONG);
+	public static final NativeJCType<String> STRING = new NativeJCType<>(
+		(p, i) -> i.readUTF(),
+		(p, o, v) -> o.writeUTF(v));
+	public static final NativeJCType<List<String>> STRING_LIST = listType(STRING);
+	public static final NativeJCType<JCElement<?>> ANY = new NativeJCType<>((p, i) -> JCIO.getElement(p, i, JCIO.readType(i)), (p, o, v) -> v.write(p, o));
+	public static final NativeJCType<List<JCElement<?>>> ANY_LIST = listType(ANY);
+	public static final NativeJCType<JCTagView> TAG = new NativeJCType<>((p, input) -> {
 		JCTagView.Builder builder = JCTagView.builder();
 		for(int i = 0; i < input.readInt(); i++) {
-			var type = NativeJCType.readType(input);
-			readEntry(input, builder, type);
+			var type = JCIO.readType(input);
+			JCIO.readEntry(input, p, builder, type);
 		}
 		return builder.build();
-	}, (output, value) -> {
+	}, (o, output, value) -> {
 		output.writeInt(value.getKeys().size());
 		value.forEach(new JCTagView.ValuesConsumer() {
 			@Override
 			public <L, N> void accept(String key, JCType<L, N> type, L value) throws IOException {
 				var nat = type.convertToNative(value);
 				output.writeUTF(key);
-				write(type.nativeType(), output, nat);
+				JCIO.write(type.nativeType(), o, output, nat);
 			}
 		});
 	});
 
-	private static <T> void readEntry(DataInput input, JCTagView.Builder builder, NativeJCType<T> type) throws IOException {
-		builder.put(input.readUTF(), type, NativeJCType.read(type, input));
+
+	static int idCounter;
+	/*static <T> NativeJCType<T> pooled(NativeJCType<T> type) {
+		return new NativeJCType<>((pool, input) -> {
+
+		}, (pool, output, value) -> {
+
+		});
+	}*/
+
+	static <T> NativeJCType<List<T>> listType(NativeJCType<T> type) {
+		return new NativeJCType<>((pool, input) -> {
+			int size = input.readInt();
+			ImmutableList.Builder<T> list = ImmutableList.builderWithExpectedSize(size);
+			for(int i = 0; i < size; i++) {
+				list.add(type.decode.read(pool, input));
+			}
+			return list.build();
+		}, (pool, output, value) -> {
+			output.writeInt(value.size());
+			for(T t : value) {
+				type.encode.write(pool, output, t);
+			}
+		});
 	}
 
-	static final NativeJCType<?>[] BY_ID = new NativeJCType[256];
-	static int idCounter;
 	public NativeJCType(BinDecode<T> decode, BinEncode<T> encode) {
 		this(decode, encode, idCounter++);
 		BY_ID[this.id] = this;
@@ -50,20 +82,6 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 
 	public NativeJCType(BinCodec<T> codec) {
 		this(codec, codec);
-	}
-
-	public static <T> void write(NativeJCType<T> type, DataOutput output, T value) throws IOException {
-		output.writeByte(type.id);
-		type.encode.write(output, value);
-	}
-
-	public static NativeJCType<?> readType(DataInput input) throws IOException {
-		int id = input.readUnsignedByte();
-		return BY_ID[id];
-	}
-
-	public static <T> T read(NativeJCType<T> type, DataInput input) throws IOException {
-		return type.decode.read(input);
 	}
 
 	@Override
@@ -80,4 +98,5 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 	public T convertFromNative(T value) {
 		return value;
 	}
+
 }
