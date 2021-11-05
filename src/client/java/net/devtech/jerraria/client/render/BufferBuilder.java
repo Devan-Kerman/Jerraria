@@ -1,6 +1,7 @@
 package net.devtech.jerraria.client.render;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,9 @@ public final class BufferBuilder {
 
 	public BufferBuilder(ByteBuffer buffer) {
 		this.buffer = buffer;
+		if(buffer.order() != ByteOrder.nativeOrder()) {
+			throw new IllegalArgumentException("Order of buffer is incorrect");
+		}
 	}
 
 	public BufferBuilder bool(boolean bool) {
@@ -36,325 +40,127 @@ public final class BufferBuilder {
 		return this;
 	}
 
-	public BufferBuilder bvec2(boolean a, boolean b) {
-		this.bool(a);
-		this.bool(b);
+	public BufferBuilder bvec2(boolean x, boolean y) {
+		this.bool(x);
+		this.bool(y);
 		return this;
 	}
 
-	public BufferBuilder bvec3(boolean a, boolean b, boolean c) {
-		this.bool(a);
-		this.bool(b);
-		this.bool(c);
+	public BufferBuilder bvec3(boolean x, boolean y, boolean z) {
+		this.bool(x);
+		this.bool(y);
+		this.bool(z);
 		return this;
 	}
 
-	public BufferBuilder bvec4(boolean a, boolean b, boolean c, boolean d) {
-		this.bool(a);
-		this.bool(b);
-		this.bool(c);
-		this.bool(d);
+	public BufferBuilder bvec4(boolean x, boolean y, boolean z, boolean w) {
+		this.bool(x);
+		this.bool(y);
+		this.bool(z);
+		this.bool(w);
 		return this;
 	}
 
-	public BufferBuilder uvec2(int a, int b) {
-		this.u32(a);
-		this.u32(b);
+	public BufferBuilder uvec2(int x, int y) {
+		this.u32(x);
+		this.u32(y);
 		return this;
 	}
 
-	public BufferBuilder uvec3(int a, int b, int c) {
-		this.u32(a);
-		this.u32(b);
-		this.u32(c);
+	public BufferBuilder uvec3(int x, int y, int z) {
+		this.u32(x);
+		this.u32(y);
+		this.u32(z);
 		return this;
 	}
 
-	public BufferBuilder uvec4(int a, int b, int c, int d) {
-		this.u32(a);
-		this.u32(b);
-		this.u32(c);
-		this.u32(d);
+	public BufferBuilder uvec4(int x, int y, int z, int w) {
+		this.u32(x);
+		this.u32(y);
+		this.u32(z);
+		this.u32(w);
 		return this;
 	}
 
-	public BufferBuilder ivec2(int a, int b) {
-		this.i32(a);
-		this.i32(b);
+	public BufferBuilder ivec2(int x, int y) {
+		this.i32(x);
+		this.i32(y);
 		return this;
 	}
 
-	public BufferBuilder ivec3(int a, int b, int c) {
-		this.i32(a);
-		this.i32(b);
-		this.i32(c);
+	public BufferBuilder ivec3(int x, int y, int z) {
+		this.i32(x);
+		this.i32(y);
+		this.i32(z);
 		return this;
 	}
 
-	public BufferBuilder ivec4(int a, int b, int c, int d) {
-		this.i32(a);
-		this.i32(b);
-		this.i32(c);
-		this.i32(d);
+	public BufferBuilder ivec4(int x, int y, int z, int w) {
+		this.i32(x);
+		this.i32(y);
+		this.i32(z);
+		this.i32(w);
 		return this;
 	}
 
-	public BufferBuilder vec2(float a, float b) {
-		this.f32(a);
-		this.f32(b);
+	public BufferBuilder vec2(float x, float y) {
+		this.f32(x);
+		this.f32(y);
 		return this;
 	}
 
-	public BufferBuilder vec3(float a, float b, float c) {
-		this.f32(a);
-		this.f32(b);
-		this.f32(c);
+	public BufferBuilder vec3(float x, float y, float z) {
+		this.f32(x);
+		this.f32(y);
+		this.f32(z);
 		return this;
 	}
 
-	public BufferBuilder vec4(float a, float b, float c, float d) {
-		this.put4(a, b, c, d);
+	public BufferBuilder vec4(float x, float y, float z, float w) {
+		fput4(x, y, z, w);
 		return this;
 	}
 
-	public BufferBuilder dvec2(double a, double b) {
-		this.f64(a);
-		this.f64(b);
+	public BufferBuilder dvec2(double x, double y) {
+		this.f64(x);
+		this.f64(y);
 		return this;
 	}
 
-	public BufferBuilder dvec3(double a, double b, double c) {
-		this.f64(a);
-		this.f64(b);
-		this.f64(c);
+	public BufferBuilder dvec3(double x, double y, double z) {
+		this.f64(x);
+		this.f64(y);
+		this.f64(z);
 		return this;
 	}
 
-	public BufferBuilder dvec4(double a, double b, double c, double d) {
-		this.put4(a, b, c, d);
+	public BufferBuilder dvec4(double x, double y, double z, double w) {
+		dput4(x, y, z, w);
 		return this;
 	}
 
-
-	public BufferBuilder mat2(float a, float b, float c, float d) {
-		this.put4(a, b, c, d);
-		return this;
-	}
-
-	public BufferBuilder mat2x3(float a, float b, float c, float d, float e, float f) {
-		this.put4(a, b, c, d);
-		this.f32(e);
-		this.f32(f);
-		return this;
-	}
-
-	public BufferBuilder mat2x4(float a, float b, float c, float d, float e, float f, float g, float h) {
-		return this.put8(a, b, c, d, e, f, g, h);
-	}
-
-	public BufferBuilder mat3x2(float a, float b, float c, float d, float e, float f) {
-		this.put4(a, b, c, d);
-		this.f32(e);
-		this.f32(f);
-		return this;
-	}
-
-	public BufferBuilder mat3(float a, float b, float c, float d, float e, float f, float g, float h, float i) {
-		this.f32(a);
-		return this.put8(b, c, d, e, f, g, h, i);
-	}
-
-	public BufferBuilder mat3x4(float a,
-		float b,
-		float c,
-		float d,
-		float e,
-		float f,
-		float g,
-		float h,
-		float i,
-		float j,
-		float k,
-		float l) {
-		this.put4(a, b, c, d);
-		return this.put8(e, f, g, h, i, j, k, l);
-	}
-
-	public BufferBuilder mat4x2(float a, float b, float c, float d, float e, float f, float g, float h) {
-		return this.put8(a, b, c, d, e, f, g, h);
-	}
-
-	public BufferBuilder mat4x3(float a,
-		float b,
-		float c,
-		float d,
-		float e,
-		float f,
-		float g,
-		float h,
-		float i,
-		float j,
-		float k,
-		float l) {
-		this.put4(a, b, c, d);
-		return this.put8(e, f, g, h, i, j, k, l);
-	}
-
-	public BufferBuilder mat4(float a,
-		float b,
-		float c,
-		float d,
-		float e,
-		float f,
-		float g,
-		float h,
-		float i,
-		float j,
-		float k,
-		float l,
-		float m,
-		float n,
-		float o,
-		float p) {
-		this.put8(a, b, c, d, e, f, g, h);
-		return this.put8(i, j, k, l, m, n, o, p);
-	}
-
-	public BufferBuilder dmat2(double a, double b, double c, double d) {
-		this.put4(a, b, c, d);
-		return this;
-	}
-
-	public BufferBuilder dmat2x3(double a, double b, double c, double d, double e, double f) {
-		this.put4(a, b, c, d);
-		this.f64(e);
-		this.f64(f);
-		return this;
-	}
-
-	public BufferBuilder dmat2x4(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h) {
-		this.put8(a, b, c, d, e, f, g, h);
-		return this;
-	}
-
-	public BufferBuilder dmat3x2(double a, double b, double c, double d, double e, double f) {
-		this.put4(a, b, c, d);
-		this.f64(e);
-		this.f64(f);
-		return this;
-	}
-
-	public BufferBuilder dmat3(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h,
-		double i) {
-		this.put8(a, b, c, d, e, f, g, h);
-		this.f64(i);
-		return this;
-	}
-
-	public BufferBuilder dmat3x4(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h,
-		double i,
-		double j,
-		double k,
-		double l) {
-		this.put8(a, b, c, d, e, f, g, h);
-		this.put4(i, j, k, l);
-		return this;
-	}
-
-	public BufferBuilder dmat4x2(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h) {
-		this.put8(a, b, c, d, e, f, g, h);
-		return this;
-	}
-
-	public BufferBuilder dmat4x3(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h,
-		double i,
-		double j,
-		double k,
-		double l) {
-		this.put8(a, b, c, d, e, f, g, h);
-		this.put4(i, j, k, l);
-		return this;
-	}
-
-	public BufferBuilder dmat4(double a,
-		double b,
-		double c,
-		double d,
-		double e,
-		double f,
-		double g,
-		double h,
-		double i,
-		double j,
-		double k,
-		double l,
-		double m,
-		double n,
-		double o,
-		double p) {
-		this.put8(a, b, c, d, e, f, g, h);
-		this.put8(i, j, k, l, m, n, o, p);
-		return this;
-	}
-
-	private void put8(double i, double j, double k, double l, double m, double n, double o, double p) {
-		this.put4(i, j, k, l);
-		this.put4(m, n, o, p);
-	}
-
-	private void put4(double m, double n, double o, double p) {
-		this.f64(m);
-		this.f64(n);
-		this.f64(o);
-		this.f64(p);
-	}
-
-
-	private void put4(float a, float b, float c, float d) {
-		this.f32(a);
-		this.f32(b);
-		this.f32(c);
-		this.f32(d);
-	}
-
-	private BufferBuilder put8(float a, float b, float c, float d, float e, float f, float g, float h) {
-		this.put4(a, b, c, d);
-		this.put4(e, f, g, h);
-		return this;
-	}
+	// autogenerated
+	// @formatter:off
+	private void dput4(double a00, double a01, double a10, double a11) {this.f64(a00);this.f64(a01);this.f64(a10);this.f64(a11);}
+	private void dput8(double a00, double a01, double a10, double a11, double a20, double a21, double a30, double a31) {dput4(a00, a01, a10, a11);dput4(a20, a21, a30, a31);}
+	private void fput4(float a00, float a01, float a10, float a11) {this.f32(a00);this.f32(a01);this.f32(a10);this.f32(a11);}
+	private void fput8(float a00, float a01, float a02, float a03, float a10, float a11, float a12, float a13) {fput4(a00, a01, a02, a03);fput4(a10, a11, a12, a13);}
+	public BufferBuilder mat2(float a00, float a01, float a10, float a11) {fput4(a00, a01, a10, a11);return this;}
+	public BufferBuilder mat2x3(float a00, float a01, float a02, float a10, float a11, float a12) {fput4(a00, a01, a02, a10);this.f32(a11);this.f32(a12);return this;}
+	public BufferBuilder mat2x4(float a00, float a01, float a02, float a03, float a10, float a11, float a12, float a13) {fput8(a00, a01, a02, a03, a10, a11, a12, a13);return this;}
+	public BufferBuilder mat3x2(float a00, float a01, float a10, float a11, float a20, float a21) {fput4(a00, a01, a10, a11);this.f32(a20);this.f32(a21);return this;}
+	public BufferBuilder mat3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22) {fput8(a00, a01, a02, a10, a11, a12, a20, a21);this.f32(a22);return this;}
+	public BufferBuilder mat3x4(float a00, float a01, float a02, float a03, float a10, float a11, float a12, float a13, float a20, float a21, float a22, float a23) {fput8(a00, a01, a02, a03, a10, a11, a12, a13);fput4(a20, a21, a22, a23);return this;}
+	public BufferBuilder mat4x2(float a00, float a01, float a10, float a11, float a20, float a21, float a30, float a31) {fput8(a00, a01, a10, a11, a20, a21, a30, a31);return this;}
+	public BufferBuilder mat4x3(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22, float a30, float a31, float a32) {fput8(a00, a01, a02, a10, a11, a12, a20, a21);fput4(a22, a30, a31, a32);return this;}
+	public BufferBuilder mat4(float a00, float a01, float a02, float a03, float a10, float a11, float a12, float a13, float a20, float a21, float a22, float a23, float a30, float a31, float a32, float a33) {fput8(a00, a01, a02, a03, a10, a11, a12, a13);fput8(a20, a21, a22, a23, a30, a31, a32, a33);return this;}
+	public BufferBuilder dmat2(double a00, double a01, double a10, double a11) {dput4(a00, a01, a10, a11);return this;}
+	public BufferBuilder dmat2x3(double a00, double a01, double a02, double a10, double a11, double a12) {dput4(a00, a01, a02, a10);this.f64(a11);this.f64(a12);return this;}
+	public BufferBuilder dmat2x4(double a00, double a01, double a02, double a03, double a10, double a11, double a12, double a13) {dput8(a00, a01, a02, a03, a10, a11, a12, a13);return this;}
+	public BufferBuilder dmat3x2(double a00, double a01, double a10, double a11, double a20, double a21) {dput4(a00, a01, a10, a11);this.f64(a20);this.f64(a21);return this;}
+	public BufferBuilder dmat3(double a00, double a01, double a02, double a10, double a11, double a12, double a20, double a21, double a22) {dput8(a00, a01, a02, a10, a11, a12, a20, a21);this.f64(a22);return this;}
+	public BufferBuilder dmat3x4(double a00, double a01, double a02, double a03, double a10, double a11, double a12, double a13, double a20, double a21, double a22, double a23) {dput8(a00, a01, a02, a03, a10, a11, a12, a13);dput4(a20, a21, a22, a23);return this;}
+	public BufferBuilder dmat4x2(double a00, double a01, double a10, double a11, double a20, double a21, double a30, double a31) {dput8(a00, a01, a10, a11, a20, a21, a30, a31);return this;}
+	public BufferBuilder dmat4x3(double a00, double a01, double a02, double a10, double a11, double a12, double a20, double a21, double a22, double a30, double a31, double a32) {dput8(a00, a01, a02, a10, a11, a12, a20, a21);dput4(a22, a30, a31, a32);return this;}
+	public BufferBuilder dmat4(double a00, double a01, double a02, double a03, double a10, double a11, double a12, double a13, double a20, double a21, double a22, double a23, double a30, double a31, double a32, double a33) {dput8(a00, a01, a02, a03, a10, a11, a12, a13);dput8(a20, a21, a22, a23, a30, a31, a32, a33);return this;}
 }
