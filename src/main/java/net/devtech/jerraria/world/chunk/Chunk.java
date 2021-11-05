@@ -1,40 +1,68 @@
 package net.devtech.jerraria.world.chunk;
 
+import static net.devtech.jerraria.world.tile.InternalTileDataAccess.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 
 public class Chunk {
+	final TickingWorld world;
 	final int chunkX, chunkY;
 	/**
 	 * A flattened 3 dimensional array of each tile layer
 	 */
 	final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
 	final Int2ObjectMap<TileData> data = new Int2ObjectOpenHashMap<>();
-	final ArrayList<ScheduledTileAction> actions = new ArrayList<>();
+	final ArrayList<TemporaryTileData> actions = new ArrayList<>();
+	final Object2IntMap<Chunk> links = new Object2IntOpenHashMap<>();
+	ChunkGroup group;
 
-	public Chunk(int chunkX, int chunkY) {
+	public Chunk(TickingWorld world, int chunkX, int chunkY) {
+		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 	}
 
-	public void tick(World world) {
-		for(TileData value : data.values()) {
-			value.tick();
+	public void removeLink(Chunk chunk) {
+		if(this.links.computeIntIfPresent(chunk, (c, i) -> i - 1) <= 0) {
+			this.world.requiresRelinking(chunk);
+		}
+	}
+
+	public void appendToGroup(ChunkGroup group) {
+		if(!group.contains(this)) {
+			group.add(this);
+			for(Chunk chunk : this.links.keySet()) {
+				chunk.appendToGroup(group);
+			}
+			if(this.group != null) {
+				this.group.remove(this);
+			}
+			this.group = group;
+		}
+	}
+
+	public void tick() {
+		for(TileData value : this.data.values()) {
+			value.tick(this.world, getLayer(value), getAbsX(value), getAbsY(value));
 		}
 
 		int originals = this.actions.size();
-		List<ScheduledTileAction> tileActions = this.actions;
+		List<TemporaryTileData> tileActions = this.actions;
 		for(int i = tileActions.size() - 1; i >= 0; i--) {
-			ScheduledTileAction action = tileActions.get(i);
+			TemporaryTileData action = tileActions.get(i);
 			if(action.counter == action.delay) {
-				this.runAction(world, action);
+				this.runAction(this.world, action);
 				action.counter = 0;
 				tileActions.remove(i);
 				originals--;
@@ -43,9 +71,9 @@ public class Chunk {
 
 		while(this.actions.size() > originals) {
 			for(int i = tileActions.size() - 1; i >= originals; i--) {
-				ScheduledTileAction action = tileActions.get(i);
+				TemporaryTileData action = tileActions.get(i);
 				if(action.delay == 0) {
-					this.runAction(world, action);
+					this.runAction(this.world, action);
 					action.counter = 0;
 					tileActions.remove(i);
 					originals--;
@@ -55,10 +83,18 @@ public class Chunk {
 		}
 	}
 
-	private void runAction(World world, ScheduledTileAction action) {
+	public long getId() {
+		return combineInts(this.chunkX, this.chunkY);
+	}
+
+	public static long combineInts(int a, int b) {
+		return (long)a << 32| b & 0xFFFFFFFFL;
+	}
+
+	private void runAction(World world, TemporaryTileData action) {
 		TileVariant variant = this.get(action.layer, action.localX, action.localY);
 		TileData data = this.getData(action.layer, action.localX, action.localY);
-		action.run(variant, data, world, this.chunkX * World.CHUNK_SIZE + action.localX, this.chunkY * World.CHUNK_SIZE + action.localY);
+		action.onInvalidated(variant, data, world, this.chunkX * World.CHUNK_SIZE + action.localX, this.chunkY * World.CHUNK_SIZE + action.localY);
 	}
 
 	public TileVariant get(TileLayers layer, int x, int y) {
@@ -72,7 +108,7 @@ public class Chunk {
 
 		// discard outdated actions
 		for(int i = this.actions.size() - 1; i >= 0; i--) {
-			ScheduledTileAction action = this.actions.get(i);
+			TemporaryTileData action = this.actions.get(i);
 			if(action.isIncompatible(old, value)) {
 				this.actions.remove(i);
 			}

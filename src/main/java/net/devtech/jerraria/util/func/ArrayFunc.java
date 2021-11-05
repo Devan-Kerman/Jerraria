@@ -80,6 +80,10 @@ public interface ArrayFunc<A> extends Function<A[], A>, Serializable {
 		return new HandledBuilder<>(new Builder(), type, empty);
 	}
 
+	static <F> HandledBuilder<F> builderInfer(F empty, F... generics) {
+		return builder((Class<F>) generics.getClass().componentType(), empty);
+	}
+
 	class Builder {
 		final Map<String, Object> defaultValues = new HashMap<>();
 		final List<Function<Class<?>, AbstractLoopArrayMethodFactory>> factories = new ArrayList<>();
@@ -156,7 +160,8 @@ public interface ArrayFunc<A> extends Function<A[], A>, Serializable {
 			};
 		}
 
-		public <F> ArrayFunc<F> buildInfer(F... infer) {
+		@SafeVarargs
+		public final <F> ArrayFunc<F> buildInfer(F... infer) {
 			return this.build((Class<F>) infer.getClass().componentType());
 		}
 
@@ -164,7 +169,8 @@ public interface ArrayFunc<A> extends Function<A[], A>, Serializable {
 			return new HandledBuilder<>(this, type, empty);
 		}
 
-		public <F> HandledBuilder<F> inferEmpty(F empty, F... infer) {
+		@SafeVarargs
+		public final <F> HandledBuilder<F> inferEmpty(F empty, F... infer) {
 			return new HandledBuilder<>(this, (Class<F>)infer.getClass().componentType(), empty);
 		}
 

@@ -17,5 +17,5 @@ public abstract class TileData implements VariantConvertable {
 		return this.currentState;
 	}
 
-	public abstract void tick();
+	public abstract void tick(World world, TileLayers layer, int x, int y);
 }

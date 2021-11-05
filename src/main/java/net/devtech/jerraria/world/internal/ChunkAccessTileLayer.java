@@ -1,0 +1,62 @@
+package net.devtech.jerraria.world.internal;
+
+import net.devtech.jerraria.world.TileLayer;
+import net.devtech.jerraria.world.TileLayers;
+import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.chunk.Chunk;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.world.tile.VariantConvertable;
+import org.jetbrains.annotations.Nullable;
+
+public class ChunkAccessTileLayer implements TileLayer {
+	final TileLayers layers;
+	final ChunkGetter getter;
+
+	public ChunkAccessTileLayer(TileLayers layers, ChunkGetter getter) {
+		this.layers = layers;
+		this.getter = getter;
+	}
+
+	@Override
+	public VariantConvertable getBlockAndData(int x, int y) {
+		return this.get((layer, chunk, localX, localY) -> {
+			TileData data = chunk.getData(layer, localX, localY);
+			if(data != null) {
+				return data;
+			} else {
+				return chunk.get(layer, localX, localY);
+			}
+		}, x, y);
+	}
+
+	@Override
+	public TileVariant getBlock(int x, int y) {
+		return this.get((layer, chunk, localX, localY) -> chunk.get(layer, localX, localY), x, y);
+	}
+
+	@Override
+	public TileData getBlockData(int x, int y) {
+		return this.get((layer, chunk, localX, localY) -> chunk.getData(layer, localX, localY), x, y);
+	}
+
+	@Override
+	public @Nullable TileData putBlock(TileVariant variant, int x, int y, int flags) {
+		// todo
+		return null;
+	}
+
+	<T> T get(BlockGetter<T> getter, int x, int y) {
+		Chunk chunk = this.getter.getChunk(x >> World.LOG2_CHUNK_SIZE, y >> World.LOG2_CHUNK_SIZE);
+		int localX = x & World.CHUNK_MASK;
+		int localY = y & World.CHUNK_MASK;
+		return getter.getValue(this.layers, chunk, localX, localY);
+	}
+
+	public interface BlockGetter<T> {
+		T getValue(TileLayers layers, Chunk chunk, int localX, int localY);
+	}
+	public interface ChunkGetter {
+		Chunk getChunk(int chunkX, int chunkY);
+	}
+}

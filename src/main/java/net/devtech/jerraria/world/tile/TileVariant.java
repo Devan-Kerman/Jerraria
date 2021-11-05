@@ -1,15 +1,12 @@
 package net.devtech.jerraria.world.tile;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
-public class TileVariant implements VariantConvertable {
-	private static final AtomicInteger ID = new AtomicInteger();
-
+public final class TileVariant implements VariantConvertable {
 	final Tile owner;
 	final Object2IntMap<Property<?, ?>> values;
 	int linkFromX, linkToX, linkFromY, linkToY;
+	boolean hasBlockData;
 
 	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values) {
 		this.owner = owner;
@@ -22,6 +19,14 @@ public class TileVariant implements VariantConvertable {
 
 	public Tile getOwner() {
 		return this.owner;
+	}
+
+	public boolean hasBlockData() {
+		return this.owner.hasBlockEntity || this.hasBlockData;
+	}
+
+	public TileData createData() {
+		return null; // todo
 	}
 
 	/**

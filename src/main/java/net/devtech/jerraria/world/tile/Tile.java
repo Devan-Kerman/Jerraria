@@ -5,21 +5,36 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.util.access.Access;
+import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
+import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.world.tile.func.ChunkLinker;
+import net.devtech.jerraria.world.tile.func.TileProperty;
 
 public class Tile {
-	public static final Access<ChunkLinker<TileVariant>> LINK_ON_CHANGE = new AccessImpl<>(arr -> (linking, convertable, posX, posY) -> {
-		for(ChunkLinker<TileVariant> linker : arr) {
-			linker.link(linking, convertable, posX, posY);
-		}
-	});
+	public static final Access<ChunkLinker<TileVariant>> LINK_ON_CHANGE = new AccessImpl<>(ArrayFunc.builder()
+			.voidMethod(FuncFinder.onlyAbstract())
+			.buildInfer());
+
+	// todo helpers
+	public static final Access<TileProperty<Boolean>> HAS_BLOCK_ENTITY = new AccessImpl<>(ArrayFunc.builder()
+			.retIfNN(FuncFinder.onlyAbstract())
+			.buildInfer());
+
+	static {
+		HAS_BLOCK_ENTITY.andThen(TileVariant::hasBlockData);
+	}
 
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
 	List<Property<?, ?>> properties = new ArrayList<>();
 	int cacheSize = 1;
+	boolean hasBlockEntity;
+
+	public final void enableBlockData() {
+		this.hasBlockEntity = true;
+	}
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(Class<E> type, E defaultValue) {
 		return this.addProperty(new EnumProperty<>(type, defaultValue));
@@ -108,9 +123,5 @@ public class Tile {
 		this.withSub(null, null, null, true);
 		this.properties = List.copyOf(this.properties);
 		return this.cache = cache;
-	}
-
-	static {
-
 	}
 }

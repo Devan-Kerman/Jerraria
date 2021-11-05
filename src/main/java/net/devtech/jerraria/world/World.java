@@ -5,11 +5,23 @@ public interface World {
 	int CHUNK_SIZE = 1 << LOG2_CHUNK_SIZE;
 	int CHUNK_MASK = CHUNK_SIZE - 1;
 
-	TileLayer blockLayer();
+	TileLayer layerFor(TileLayers layers);
 
-	TileLayer wallLayer();
+	default TileLayer fluidLayer() {
+		return this.layerFor(TileLayers.FLUID);
+	}
 
-	TileLayer wireLayer();
+	default TileLayer blockLayer() {
+		return this.layerFor(TileLayers.BLOCK);
+	}
+
+	default TileLayer wallLayer() {
+		return this.layerFor(TileLayers.WALL);
+	}
+
+	default TileLayer wireLayer() {
+		return this.layerFor(TileLayers.WIRE);
+	}
 
 	EntityLayer entityLayer();
 }
