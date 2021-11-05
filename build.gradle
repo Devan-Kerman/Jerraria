@@ -17,6 +17,9 @@ repositories {
 	}
 }
 
+def lwjglVersion = "3.3.0-SNAPSHOT"
+def lwjglNatives = "natives-windows"
+
 dependencies {
 	implementation 'org.ow2.asm:asm:9.2'
 	implementation 'org.ow2.asm:asm-commons:9.2'
@@ -25,6 +28,18 @@ dependencies {
 	implementation 'org.jetbrains:annotations:22.0.0'
 
 	implementation 'io.netty:netty-all:4.1.69.Final'
+
+	clientImplementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+	clientImplementation "org.lwjgl:lwjgl"
+	clientImplementation "org.lwjgl:lwjgl-glfw"
+	clientImplementation "org.lwjgl:lwjgl-openal"
+	clientImplementation "org.lwjgl:lwjgl-opengl"
+	clientImplementation "org.lwjgl:lwjgl-stb"
+	clientRuntimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+	clientRuntimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+	clientRuntimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+	clientRuntimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+	clientRuntimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 }
 
 test {
