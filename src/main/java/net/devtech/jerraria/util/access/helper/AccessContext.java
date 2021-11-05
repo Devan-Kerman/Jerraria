@@ -2,6 +2,7 @@ package net.devtech.jerraria.util.access.helper;
 
 import net.devtech.jerraria.util.access.RegisterOnlyAccess;
 import net.devtech.jerraria.util.access.ViewOnlyAccess;
+import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.util.func.FilteredFunc;
 
@@ -28,7 +29,7 @@ public interface AccessContext<F> {
 	}
 
 	default <I> HelperContext<I, F> filter(FilteredFunc<I, F> filter) {
-		return new HelperContext.With<>(filter, this.combiner(), this.access(), this.emptyFunction(), null);
+		return new HelperContext.With<>(filter, this.combiner(), this.access(), this.emptyFunction(), PriorityKey.STANDARD);
 	}
 
 	record With<F>(ArrayFunc<F> combiner, RegisterOnlyAccess<F> access, F emptyFunction) implements AccessContext<F> {}

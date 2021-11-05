@@ -1,13 +1,24 @@
 package net.devtech.jerraria.util.data.pool;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.io.DataInput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.JCIO;
 
 public class JCDecodePool {
-	final Int2ObjectMap<JCElement<?>> element = new Int2ObjectOpenHashMap<>();
+	final List<JCElement<?>> elements = new ArrayList<>();
 
 	public JCElement<?> getElement(int poolId) {
-		return this.element.get(poolId);
+		return this.elements.get(poolId);
+	}
+
+	public void read(DataInput input) throws IOException {
+		int elements = input.readInt();
+		for(int i = 0; i < elements; i++) {
+			this.elements.add(JCIO.read((JCDecodePool)null, input));
+		}
 	}
 }

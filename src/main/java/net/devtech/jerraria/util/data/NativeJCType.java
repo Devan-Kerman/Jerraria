@@ -27,6 +27,7 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 	public static final NativeJCType<String> STRING = new NativeJCType<>(
 		(p, i) -> i.readUTF(),
 		(p, o, v) -> o.writeUTF(v));
+	public static final NativeJCType<String> POOLED_STRING = pooled(STRING);
 	public static final NativeJCType<List<String>> STRING_LIST = listType(STRING);
 	public static final NativeJCType<JCElement<?>> ANY = new NativeJCType<>((p, i) -> JCIO.getElement(p, i, JCIO.readType(i)), (p, o, v) -> v.write(p, o));
 	public static final NativeJCType<List<JCElement<?>>> ANY_LIST = listType(ANY);
@@ -43,21 +44,24 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 			@Override
 			public <L, N> void accept(String key, JCType<L, N> type, L value) throws IOException {
 				var nat = type.convertToNative(value);
-				output.writeUTF(key);
+				POOLED_STRING.encode.write(o, output, key);
 				JCIO.write(type.nativeType(), o, output, nat);
 			}
 		});
 	});
 
 
+
 	static int idCounter;
-	/*static <T> NativeJCType<T> pooled(NativeJCType<T> type) {
+	@SuppressWarnings("unchecked")
+	static <T> NativeJCType<T> pooled(NativeJCType<T> type) {
 		return new NativeJCType<>((pool, input) -> {
-
+			return (T) pool.getElement(input.readInt()).value();
 		}, (pool, output, value) -> {
-
+			int index = pool.getIndex(new JCElement<>(type, value));
+			output.writeInt(index);
 		});
-	}*/
+	}
 
 	static <T> NativeJCType<List<T>> listType(NativeJCType<T> type) {
 		return new NativeJCType<>((pool, input) -> {
