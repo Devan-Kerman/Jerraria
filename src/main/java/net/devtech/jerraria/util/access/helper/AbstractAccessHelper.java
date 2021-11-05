@@ -1,6 +1,7 @@
 package net.devtech.jerraria.util.access.helper;
 
 import net.devtech.jerraria.util.access.RegisterOnlyAccess;
+import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.util.func.FilteredFunc;
 
@@ -30,8 +31,12 @@ public abstract class AbstractAccessHelper<I, F> implements HelperContext<I, F> 
 	}
 
 	@Override
-	public FilteredFunc<I, F> filtered() {
-		return this.helper.filtered();
+	public FilteredFunc<I, F> filter() {
+		return this.helper.filter();
 	}
 
+	@Override
+	public PriorityKey priority() {
+		return this.helper.priority();
+	}
 }

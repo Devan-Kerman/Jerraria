@@ -28,6 +28,8 @@ public abstract class TemporaryTileData {
 	 */
 	public abstract boolean isIncompatible(TileVariant old, TileVariant new_);
 
+	// todo serialize n stuff, pain pain pain
+
 	public static class TempLink extends TemporaryTileData {
 		final Chunk chunk;
 		final List<Chunk> links;

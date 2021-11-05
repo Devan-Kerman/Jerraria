@@ -6,7 +6,6 @@ public final class TileVariant implements VariantConvertable {
 	final Tile owner;
 	final Object2IntMap<Property<?, ?>> values;
 	int linkFromX, linkToX, linkFromY, linkToY;
-	boolean hasBlockData;
 
 	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values) {
 		this.owner = owner;
@@ -17,16 +16,21 @@ public final class TileVariant implements VariantConvertable {
 		this.linkToY = owner.linkToY;
 	}
 
+	public boolean isCompatible(TileData data) {
+		return this.owner.isCompatible(this, data);
+	}
+
 	public Tile getOwner() {
 		return this.owner;
 	}
 
 	public boolean hasBlockData() {
-		return this.owner.hasBlockEntity || this.hasBlockData;
+		// todo add access api support
+		return this.owner.hasBlockData(this);
 	}
 
 	public TileData createData() {
-		return null; // todo
+		return this.owner.create(this);
 	}
 
 	/**

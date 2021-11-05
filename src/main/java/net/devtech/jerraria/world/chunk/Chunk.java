@@ -101,9 +101,25 @@ public class Chunk {
 		return this.variants[this.getIndex(layer, x, y)];
 	}
 
-	public TileVariant set(TileLayers layer, int x, int y, TileVariant value) {
+	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
 		int index = this.getIndex(layer, x, y);
 		TileVariant old = this.variants[index];
+		TileData data = this.data.get(index);
+		TileData replacement;
+		// todo when attach api is added, add a 'onReplace' with TileData so mods can choose on an individual basis whether or not
+		//  their data is compatible with the new block
+		if(value.isCompatible(data)) {
+			if(value.hasBlockData()) {
+				replacement = value.createData();
+				this.data.put(index, replacement);
+			} else {
+				replacement = null;
+				this.data.remove(index);
+			}
+		} else {
+			replacement = data;
+		}
+
 		this.variants[index] = value;
 
 		// discard outdated actions
@@ -114,7 +130,7 @@ public class Chunk {
 			}
 		}
 
-		return old;
+		return replacement;
 	}
 
 	public TileData getData(TileLayers layers, int x, int y) {

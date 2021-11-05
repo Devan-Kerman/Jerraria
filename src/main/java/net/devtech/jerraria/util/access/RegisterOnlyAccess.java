@@ -2,10 +2,24 @@ package net.devtech.jerraria.util.access;
 
 import java.util.function.Function;
 
+import net.devtech.jerraria.util.access.priority.PriorityKey;
+
 public interface RegisterOnlyAccess<F> extends AbstractAccess<F> {
-	void andThen(F function);
+	default void andThen(F function) {
+		this.andThen(PriorityKey.STANDARD, function);
+	}
 
-	void dependOn(AbstractAccess<F> access);
+	void andThen(PriorityKey key, F function);
 
-	<M> void dependOn(AbstractAccess<M> access, Function<M, F> converter);
+	default void dependOn(AbstractAccess<F> access) {
+		this.dependOn(PriorityKey.STANDARD, access);
+	}
+
+	default <M> void dependOn(AbstractAccess<M> access, Function<M, F> converter) {
+		this.dependOn(PriorityKey.STANDARD, access, converter);
+	}
+
+	void dependOn(PriorityKey key, AbstractAccess<F> access);
+
+	<M> void dependOn(PriorityKey key, AbstractAccess<M> access, Function<M, F> converter);
 }

@@ -2,10 +2,15 @@ package net.devtech.jerraria.util.access.internal;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.AbstractAccess;
@@ -18,7 +23,7 @@ public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 	final F empty;
 
 	private record Dependency(ViewOnlyAccess<?> access, Function<Object, ?> converter) {}
-	final List<Object> functions = new ArrayList<>();
+	final Multimap<PriorityKey, Object> functions = ArrayListMultimap.create();
 	final List<AccessInternal<?>> dependents = new ArrayList<>();
 
 	F combined;
@@ -43,16 +48,19 @@ public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 	@Override
 	public F getExcept(List<AbstractAccess<?>> dependency) {
 		List<F> raw = new ArrayList<>();
-		for(Object function : this.functions) {
-			if(function instanceof Dependency d) {
-				var accesses = ImmutableList.<AbstractAccess<?>>builder()
-						                           .addAll(dependency)
-						                           .add(this)
-						                           .build();
-				F combined = (F) d.converter.apply(d.access.getExcept(accesses));
-				raw.add(combined);
-			} else {
-				raw.add((F) function);
+		List<PriorityKey> keys = PriorityKey.sort(this.functions.keySet());
+		for(PriorityKey key : keys) {
+			for(Object function : this.functions.get(key)) {
+				if(function instanceof Dependency d) {
+					var accesses = ImmutableList.<AbstractAccess<?>>builder()
+						.addAll(dependency)
+						.add(this)
+						.build();
+					F combined = (F) d.converter.apply(d.access.getExcept(accesses));
+					raw.add(combined);
+				} else {
+					raw.add((F) function);
+				}
 			}
 		}
 
@@ -61,20 +69,20 @@ public final class AccessImpl<F> implements Access<F>, AccessInternal<F> {
 	}
 
 	@Override
-	public void andThen(F function) {
-		this.functions.add(function);
+	public void andThen(PriorityKey key, F function) {
+		this.functions.put(key, function);
 		this.recompile();
 	}
 
 	@Override
-	public void dependOn(AbstractAccess<F> access) {
-		this.functions.add(new Dependency((ViewOnlyAccess<?>) access, Function.identity()));
+	public void dependOn(PriorityKey key, AbstractAccess<F> access) {
+		this.functions.put(key, new Dependency((ViewOnlyAccess<?>) access, Function.identity()));
 		((AccessInternal<?>)access).notifyRecompile(this);
 	}
 
 	@Override
-	public <M> void dependOn(AbstractAccess<M> access, Function<M, F> converter) {
-		this.functions.add(new Dependency((ViewOnlyAccess<?>) access, (Function<Object, ?>) converter));
+	public <M> void dependOn(PriorityKey key, AbstractAccess<M> access, Function<M, F> converter) {
+		this.functions.put(key, new Dependency((ViewOnlyAccess<?>) access, (Function<Object, ?>) converter));
 		((AccessInternal<?>)access).notifyRecompile(this);
 	}
 

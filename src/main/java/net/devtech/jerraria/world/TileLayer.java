@@ -6,7 +6,7 @@ import net.devtech.jerraria.world.tile.VariantConvertable;
 import org.jetbrains.annotations.Nullable;
 
 public interface TileLayer {
-	int SKIP_UPDATES = 1;
+	int SKIP_ON_PLACE = 1;
 
 	VariantConvertable getBlockAndData(int x, int y);
 
@@ -14,6 +14,11 @@ public interface TileLayer {
 
 	@Nullable
 	TileData getBlockData(int x, int y);
+
+	@Nullable
+	default TileData putBlock(TileVariant variant, int x, int y) {
+		return this.putBlock(variant, x, y, 0);
+	}
 
 	/**
 	 * puts the block at the given location, creates a tile data for that location if the TileVariant has data

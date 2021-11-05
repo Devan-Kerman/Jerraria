@@ -42,8 +42,14 @@ public class ChunkAccessTileLayer implements TileLayer {
 
 	@Override
 	public @Nullable TileData putBlock(TileVariant variant, int x, int y, int flags) {
-		// todo
-		return null;
+		Chunk chunk = this.getter.getChunk(x >> World.LOG2_CHUNK_SIZE, y >> World.LOG2_CHUNK_SIZE);
+		int localX = x & World.CHUNK_MASK;
+		int localY = y & World.CHUNK_MASK;
+		TileData data = chunk.set(this.layers, localX, localY, variant);
+		if((flags & SKIP_ON_PLACE) == 0) {
+			//variant.onPlace(); (requires scheduling, pain)
+		}
+		return data;
 	}
 
 	<T> T get(BlockGetter<T> getter, int x, int y) {

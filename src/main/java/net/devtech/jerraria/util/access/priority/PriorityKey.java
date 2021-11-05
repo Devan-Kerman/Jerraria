@@ -10,13 +10,23 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
+import net.devtech.jerraria.util.access.RegisterOnlyAccess;
 
 public final class PriorityKey {
+	/**
+	 * The default apis in the access
+	 */
+	public static final PriorityKey DEFAULT = new Builder().build("default");
+	/**
+	 * What the {@link RegisterOnlyAccess#andThen(Object)} uses by default
+	 */
+	public static final PriorityKey STANDARD = new Builder().after(DEFAULT).build("standard");
+
 	static final Map<String, PriorityKey> KEY_IDS = new HashMap<>();
 	static final Set<String> BUILT = new HashSet<>();
-	private static final PriorityKey[] DEFAULT = new PriorityKey[0];
+	private static final PriorityKey[] EMPTY = new PriorityKey[0];
 	final String name;
-	PriorityKey[] before = DEFAULT, after = DEFAULT;
+	PriorityKey[] before = EMPTY, after = EMPTY;
 
 	public static Builder builder() {
 		return new Builder();
@@ -26,7 +36,7 @@ public final class PriorityKey {
 		this.name = name;
 	}
 
-	public static List<PriorityKey> sort(List<PriorityKey> keys) {
+	public static List<PriorityKey> sort(Iterable<PriorityKey> keys) {
 		return sort(keys, key -> {
 			ArrayList<PriorityKey> list = new ArrayList<>(Arrays.asList(key.after));
 			for(PriorityKey k : keys) {
@@ -38,7 +48,7 @@ public final class PriorityKey {
 		});
 	}
 
-	public static <T> List<T> sort(List<T> source, Function<T, List<T>> dependencies) {
+	public static <T> List<T> sort(Iterable<T> source, Function<T, List<T>> dependencies) {
 		List<T> sorted = new ArrayList<>();
 		Set<T> visited = new HashSet<>();
 

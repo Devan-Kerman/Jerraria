@@ -7,22 +7,18 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
+import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.func.ArrayFunc;
-import net.devtech.jerraria.world.tile.func.ChunkLinker;
 import net.devtech.jerraria.world.tile.func.TileProperty;
+import org.jetbrains.annotations.ApiStatus;
 
 public class Tile {
-	public static final Access<ChunkLinker<TileVariant>> LINK_ON_CHANGE = new AccessImpl<>(ArrayFunc.builder()
-			.voidMethod(FuncFinder.onlyAbstract())
-			.buildInfer());
-
-	// todo helpers
 	public static final Access<TileProperty<Boolean>> HAS_BLOCK_ENTITY = new AccessImpl<>(ArrayFunc.builder()
 			.retIfNN(FuncFinder.onlyAbstract())
 			.buildInfer());
 
 	static {
-		HAS_BLOCK_ENTITY.andThen(TileVariant::hasBlockData);
+		HAS_BLOCK_ENTITY.andThen(PriorityKey.DEFAULT, TileVariant::hasBlockData);
 	}
 
 	int linkFromX, linkToX, linkFromY, linkToY;
@@ -34,6 +30,29 @@ public class Tile {
 
 	public final void enableBlockData() {
 		this.hasBlockEntity = true;
+	}
+
+	public boolean isCompatible(TileVariant variant, TileData data) {
+		if(this.hasBlockEntity) {
+			return variant.owner == this;
+		} else if(this.hasBlockData(variant)) {
+			return !(data instanceof GenericTileData);
+		} else {
+			return false;
+		}
+	}
+
+	@ApiStatus.OverrideOnly
+	protected boolean hasBlockData(TileVariant variant) {
+		return this.hasBlockEntity;
+	}
+
+	@ApiStatus.OverrideOnly
+	protected TileData create(TileVariant variant) {
+		if(this.hasBlockData(variant)) {
+			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override TileData#create!");
+		}
+		return null;
 	}
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(Class<E> type, E defaultValue) {
@@ -49,7 +68,8 @@ public class Tile {
 	}
 
 	/**
-	 * The range relative to the tile in which the tile can modify blocks, when more granular control is needed {@link #LINK_ON_CHANGE}
+	 * todo implement + granular control
+	 * The range relative to the tile in which the tile can modify blocks
 	 */
 	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
 		this.linkFromX = linkFromX;
