@@ -1,5 +1,8 @@
 package net.devtech.jerraria.client.main;
 
+import java.nio.ByteBuffer;
+
+import net.devtech.jerraria.client.render.BufferBuilder;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -29,6 +32,7 @@ public class ClientMain {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
 			render();
+			BufferBuilder builder = new BufferBuilder();
 
 			GLFW.glfwSwapBuffers(window);
 			GLFW.glfwPollEvents();

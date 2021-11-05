@@ -2,41 +2,54 @@ package net.devtech.jerraria.client.render;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class BufferBuilder {
-	final ByteBuffer buffer;
+	public static ByteBuffer allocateBuffer(int size) {
+		ByteBuffer buffer = ByteBuffer.allocateDirect(size);
+		buffer.order(ByteOrder.nativeOrder());
+		return buffer;
+	}
 
-	public BufferBuilder(ByteBuffer buffer) {
-		this.buffer = buffer;
-		if(buffer.order() != ByteOrder.nativeOrder()) {
-			throw new IllegalArgumentException("Order of buffer is incorrect");
+	ByteBuffer buffer;
+
+	public BufferBuilder() {
+		this.buffer = allocateBuffer(1024);
+	}
+
+	ByteBuffer ensureCapacity(int bytes) {
+		ByteBuffer buffer = this.buffer;
+		if(buffer.remaining() < bytes) {
+			ByteBuffer old = buffer;
+			int oldCount = buffer.limit();
+			buffer = allocateBuffer(oldCount << 1);
+			buffer.put(0, old, 0, oldCount);
+			buffer.position(old.position());
 		}
+		return buffer;
 	}
 
 	public BufferBuilder bool(boolean bool) {
-		this.buffer.put((byte) (bool ? 1 : 0));
+		this.ensureCapacity(1).put((byte) (bool ? 1 : 0));
 		return this;
 	}
 
 	public BufferBuilder i32(int val) {
-		this.buffer.putInt(val);
+		this.ensureCapacity(4).putInt(val);
 		return this;
 	}
 
 	public BufferBuilder u32(int val) {
-		this.buffer.putInt(val);
+		this.ensureCapacity(4).putInt(val);
 		return this;
 	}
 
 	public BufferBuilder f32(float val) {
-		this.buffer.putFloat(val);
+		this.ensureCapacity(4).putFloat(val);
 		return this;
 	}
 
 	public BufferBuilder f64(double val) {
-		this.buffer.putDouble(val);
+		this.ensureCapacity(8).putDouble(val);
 		return this;
 	}
 
