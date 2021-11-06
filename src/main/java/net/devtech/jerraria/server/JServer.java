@@ -10,9 +10,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
-import net.devtech.jerraria.server.network.Nettyworking;
-import net.devtech.jerraria.server.network.NetworkSide;
-import net.devtech.jerraria.server.network.SplitterCodec;
+import net.devtech.jerraria.server.network.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.SocketAddress;
@@ -59,8 +57,10 @@ public abstract class JServer {
 				@Override
 				protected void initChannel(@NotNull SocketChannel channel) {
 					channel.pipeline()
-						.addLast("splitter", new SplitterCodec())
 						.addLast("timeout", new ReadTimeoutHandler(30))
+						.addLast("codec", new PacketCodec())
+						.addLast("splitter", new Pagination())
+						.addLast("heartbeat", new KeepAlive())
 						.addLast("connection", createClientConnection());
 				}
 			})
@@ -80,7 +80,11 @@ public abstract class JServer {
 		Iterator<Listener> iterator = listeners.iterator();
 
 		while (iterator.hasNext()) {
-			iterator.next().channel().closeFuture().syncUninterruptibly();
+			Listener listener = iterator.next();
+			listener.channel().closeFuture().syncUninterruptibly();
+			listener.parent().shutdownGracefully();
+			listener.child().shutdownGracefully();
+
 			iterator.remove();
 		}
 	}

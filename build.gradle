@@ -6,7 +6,12 @@ group 'net.devtech'
 version '1.0.0-SNAPSHOT'
 
 sourceSets {
-	client {}
+	client {
+		java {
+			compileClasspath += sourceSets.main.output
+			runtimeClasspath += sourceSets.main.output
+		}
+	}
 }
 
 configurations {
