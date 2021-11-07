@@ -40,6 +40,10 @@ public class JCIO {
 		return type.decode().read(pool, input);
 	}
 
+	public static void writeType(DataOutput output, NativeJCType<?> type) throws IOException {
+		output.writeByte(type.id());
+	}
+
 	@NotNull
 	static <T> JCElement<T> getElement(JCDecodePool pool, DataInput i, NativeJCType<T> type) throws IOException {
 		return new JCElement<>(type, read(type, pool, i));

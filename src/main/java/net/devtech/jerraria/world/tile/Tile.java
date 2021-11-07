@@ -1,8 +1,9 @@
 package net.devtech.jerraria.world.tile;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -15,9 +16,12 @@ import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
+import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.func.ArrayFunc;
+import net.devtech.jerraria.world.internal.ChunkIOUtil;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Long Live the Tile
@@ -35,13 +39,13 @@ public class Tile implements IdentifiedObject {
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
-	Map<String, Property<?, ?>> properties = new HashMap<>();
+	List<Property<?, ?>> properties = new ArrayList<>();
 	int cacheSize = 1;
 	boolean hasBlockEntity;
 	Id.Full id;
 	TileVariantCacheInitializationStackTrace variantTableInitializationStacktrace;
 
-	public TileVariant getDefaultState() {
+	public TileVariant getDefaultVariant() {
 		var cache = this.initializeCache("getDefaultState");
 		return cache[this.defaultIndex];
 	}
@@ -49,29 +53,34 @@ public class Tile implements IdentifiedObject {
 	// properties
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(String name, E defaultValue) {
-		return this.addProperty(name, new EnumProperty<>(defaultValue.getDeclaringClass(), defaultValue));
+		return this.addProperty(new EnumProperty<>(name, defaultValue.getDeclaringClass(), defaultValue));
 	}
 
 	public IntRangeProperty rangeProperty(String name, int from, int to, int defaultValue) {
-		return this.addProperty(name, new IntRangeProperty(from, to, defaultValue));
+		return this.addProperty(new IntRangeProperty(name, from, to, defaultValue));
 	}
 
 	public IntRangeProperty rangeProperty(String name, int from, int to) {
 		return this.rangeProperty(name, from, to, from);
 	}
 
-	public Map<String, Property<?, ?>> getProperties() {
+	public List<Property<?, ?>> getProperties() {
 		this.initializeCache("getProperties");
 		return this.properties;
 	}
 
-	public <P extends Property<?, ?>> P addProperty(String name, P property) {
+	public <P extends Property<?, ?>> P addProperty(P property) {
 		if(this.cache != null) {
 			throw new IllegalStateException("""
 				Cannot add property after blockstate cache has been initialized,
-				\tdo not call getDefaultState/getProperties in your constructor
+				\tdo not call getDefaultState/getProperties before addProperty
 				\tand only call addProperty in your constructor (or field init)""",
 				this.variantTableInitializationStacktrace);
+		}
+		String name = property.getName();
+		Objects.requireNonNull(name, "property name cannot be null!");
+		if(ChunkIOUtil.RESERVED_ID.equals(name)) {
+			throw new IllegalArgumentException("Cannot name tile property '"+ChunkIOUtil.RESERVED_ID+"'");
 		}
 
 		int size = property.values().size();
@@ -79,7 +88,7 @@ public class Tile implements IdentifiedObject {
 			throw new IllegalStateException("Cannot have property with no values!");
 		}
 		this.cacheSize *= size;
-		this.properties.put(name, property);
+		this.properties.add(property);
 		return property;
 	}
 
@@ -99,6 +108,27 @@ public class Tile implements IdentifiedObject {
 		if(this.hasBlockData(variant)) {
 			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
 			                                        "TileData#create!");
+		}
+		return null;
+	}
+
+	@ApiStatus.OverrideOnly
+	protected void write(TileData data, TileVariant variant, JCTagView.Builder builder) {
+		if(this.hasBlockData(variant)) {
+			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
+			                                        "TileData#write!");
+		}
+	}
+
+	/**
+	 * It is good practice to make this method delegate to the TileData's constructor
+	 */
+	@Nullable
+	@ApiStatus.OverrideOnly
+	protected TileData read(TileVariant variant, JCTagView view) {
+		if(this.hasBlockData(variant)) {
+			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
+			                                        "TileData#read!");
 		}
 		return null;
 	}
@@ -130,7 +160,7 @@ public class Tile implements IdentifiedObject {
 		Object2IntOpenHashMap<Property<?, ?>> properties = notCached ? new Object2IntOpenHashMap<>() : null;
 		int cacheIndex = 0;
 		int mul = 1;
-		for(Property<?, ?> property : this.properties.values()) {
+		for(Property<?, ?> property : this.properties) {
 			int index = property == substitute ? substitute.indexOfValue(value) : current.values.getInt(property);
 			List<?> values = property.values();
 			cacheIndex += index * mul;
@@ -143,7 +173,7 @@ public class Tile implements IdentifiedObject {
 		if(variant == null) {
 			if(properties == null) {
 				properties = new Object2IntOpenHashMap<>();
-				for(Property<?, ?> property : this.properties.values()) {
+				for(Property<?, ?> property : this.properties) {
 					this.addProperty(current, properties, property);
 				}
 			}
@@ -165,7 +195,7 @@ public class Tile implements IdentifiedObject {
 			this.variantTableInitializationStacktrace = new TileVariantCacheInitializationStackTrace(apiName);
 			this.cache = cache = new TileVariant[this.cacheSize];
 			this.withSub(null, null, null, true);
-			this.properties = Map.copyOf(this.properties);
+			this.properties = List.copyOf(this.properties);
 		}
 		return cache;
 	}

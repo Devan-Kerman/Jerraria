@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -141,7 +140,7 @@ public class Chunk {
 		// discard outdated actions
 		for(int i = this.actions.size() - 1; i >= 0; i--) {
 			TemporaryTileData action = this.actions.get(i);
-			if(action.isIncompatible(old, value)) {
+			if(!action.isCompatible(old, value)) {
 				this.actions.remove(i);
 			}
 		}

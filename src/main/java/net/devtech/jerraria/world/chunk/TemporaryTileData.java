@@ -21,14 +21,23 @@ public abstract class TemporaryTileData {
 		this.delay = delay;
 	}
 
-	public abstract void onInvalidated(TileVariant variant, @Nullable TileData data, World world, int x, int y);
+	abstract void onInvalidated(TileVariant variant, @Nullable TileData data, World world, int x, int y);
 
-	/**
-	 * When a block is replaced in a chunk, this method is called to determine whether the scheduled action should still be run at the allotted time
-	 */
-	public abstract boolean isIncompatible(TileVariant old, TileVariant new_);
+
+	abstract boolean isCompatible(TileVariant old, TileVariant new_);
 
 	// todo serialize n stuff, pain pain pain
+
+	public interface Type<T extends TemporaryTileData> {
+		void onInvalidated(T tileData, TileVariant variant, @Nullable TileData data, World world, int x, int y);
+
+		/**
+		 * When a block is replaced in a chunk, this method is called to determine whether the scheduled action should still be run at the allotted time
+		 */
+		boolean isCompatible(T tileData, TileVariant old, TileVariant new_);
+
+
+	}
 
 	public static class TempLink extends TemporaryTileData {
 		final Chunk chunk;
@@ -48,7 +57,7 @@ public abstract class TemporaryTileData {
 		}
 
 		@Override
-		public boolean isIncompatible(TileVariant old, TileVariant new_) {
+		public boolean isCompatible(TileVariant old, TileVariant new_) {
 			return false;
 		}
 	}

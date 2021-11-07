@@ -10,11 +10,18 @@ public class EnumProperty<E extends Enum<E>> implements Property<E, String> {
 	final Class<E> type;
 	final List<E> values;
 	final E defaultValue;
+	final String name;
 
-	EnumProperty(Class<E> type, E defaultValue) {
+	EnumProperty(String name, Class<E> type, E defaultValue) {
 		this.defaultValue = Objects.requireNonNull(defaultValue, "cannot have null default value for enum");
 		this.type = type;
 		this.values = List.of(type.getEnumConstants());
+		this.name = name;
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 	@Override

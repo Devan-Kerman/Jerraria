@@ -8,12 +8,14 @@ import net.devtech.jerraria.util.data.NativeJCType;
 
 public class IntRangeProperty extends AbstractIntList implements Property<Integer, Integer> {
 	final int from, length, defaultValue;
+	final String name;
 
 	/**
 	 * @param from inclusive
 	 * @param to exclusive
 	 */
-	IntRangeProperty(int from, int to, int defaultValue) {
+	IntRangeProperty(String name, int from, int to, int defaultValue) {
+		this.name = name;
 		if(defaultValue >= to) {
 			throw new IllegalArgumentException(defaultValue + " >= " + to);
 		} else if(defaultValue < from) {
@@ -22,6 +24,11 @@ public class IntRangeProperty extends AbstractIntList implements Property<Intege
 		this.from = from;
 		this.length = to - from;
 		this.defaultValue = defaultValue;
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 	@Override

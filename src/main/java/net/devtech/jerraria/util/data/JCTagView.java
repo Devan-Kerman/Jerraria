@@ -6,11 +6,14 @@ import net.devtech.jerraria.util.data.internal.JCTagBuilder;
 import org.jetbrains.annotations.Nullable;
 
 public interface JCTagView {
+	JCTagView EMPTY = JCTagView.builder().build();
 	static Builder builder() {
 		return new JCTagBuilder();
 	}
 
 	Set<String> getKeys();
+
+	JCElement<?> get(String key);
 
 	void forEach(ValuesConsumer consumer);
 
@@ -42,6 +45,10 @@ public interface JCTagView {
 
 		default Builder put(String key, JCTagView view) {
 			return this.put(key, NativeJCType.TAG, view);
+		}
+
+		default <T> Builder put(String key, JCElement<T> element) {
+			return this.put(key, element.type(), element.value());
 		}
 
 		JCTagView build();

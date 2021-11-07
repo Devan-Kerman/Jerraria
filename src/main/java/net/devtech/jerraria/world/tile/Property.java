@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import net.devtech.jerraria.util.data.JCElement;
 
 public interface Property<T, E> {
+	String getName();
+
 	List<T> values();
 
 	int defaultIndex();

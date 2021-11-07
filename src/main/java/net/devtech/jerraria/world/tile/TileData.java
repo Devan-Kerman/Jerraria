@@ -1,5 +1,6 @@
 package net.devtech.jerraria.world.tile;
 
+import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 
