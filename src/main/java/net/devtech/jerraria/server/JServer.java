@@ -9,6 +9,9 @@ import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import net.devtech.jerraria.server.network.*;
 import org.jetbrains.annotations.NotNull;
@@ -58,6 +61,12 @@ public abstract class JServer {
 				protected void initChannel(@NotNull SocketChannel channel) {
 					channel.pipeline()
 						.addLast("timeout", new ReadTimeoutHandler(30))
+						.addLast("http", new HttpServerCodec())
+						.addLast("http_aggregator", new HttpObjectAggregator(8192))
+						// this should be toggleable in case a reverse proxy wants to compress instead
+						.addLast("compression", new WebSocketServerCompressionHandler())
+						.addLast("handshake", new WebSocketServerHandshakeHandler(uri))
+						.addLast("websocket_codec", new WebSocketFrameCodec())
 						.addLast("codec", new PacketCodec())
 						.addLast("splitter", new Pagination())
 						.addLast("heartbeat", new KeepAlive())

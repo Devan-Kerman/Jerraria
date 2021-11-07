@@ -37,6 +37,7 @@ dependencies {
 	implementation 'org.jetbrains:annotations:22.0.0'
 
 	implementation 'io.netty:netty-handler:4.1.69.Final'
+	implementation 'io.netty:netty-codec-http:4.1.69.Final'
 	implementation 'io.netty:netty-transport-native-epoll:4.1.69.Final'
 	implementation 'io.netty:netty-transport-native-kqueue:4.1.69.Final'
 

@@ -2,6 +2,7 @@ package net.devtech.jerraria.server.network;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
@@ -15,5 +16,12 @@ public class KeepAlive extends ChannelDuplexHandler {
 		ctx.executor().scheduleAtFixedRate(() -> {
 			ctx.write(null);
 		}, 0, 10, TimeUnit.SECONDS);
+	}
+
+	@Override
+	public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) {
+		if (!(msg instanceof PingWebSocketFrame)) {
+			ctx.fireChannelRead(msg);
+		}
 	}
 }
