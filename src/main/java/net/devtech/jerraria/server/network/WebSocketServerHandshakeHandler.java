@@ -24,12 +24,12 @@ public class WebSocketServerHandshakeHandler extends ChannelInboundHandlerAdapte
 
 	@Override
 	public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) {
-		if (msg instanceof FullHttpRequest) {
-			handle(ctx, ((FullHttpRequest) msg).retain());
-		} else if (msg instanceof CloseWebSocketFrame) {
-			handshaker.close(ctx.channel(), ((CloseWebSocketFrame) msg).retain());
+		if (msg instanceof FullHttpRequest request) {
+			handle(ctx, request);
+		} else if (msg instanceof CloseWebSocketFrame closeFrame) {
+			handshaker.close(ctx.channel(), closeFrame);
 		} else if (msg instanceof PingWebSocketFrame) {
-			ctx.write(((PingWebSocketFrame) msg).retain());
+			ctx.write(msg);
 		} else {
 			ctx.fireChannelRead(msg);
 		}

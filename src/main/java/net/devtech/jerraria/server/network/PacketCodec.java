@@ -13,15 +13,10 @@ public class PacketCodec extends ByteToMessageCodec<PacketCodec.Packet> {
 
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Packet msg, ByteBuf out) {
-		if (msg == null) {
-			// Send a packet of zero size
-			out.writeInt(0);
-		} else {
-			// Send channel and data length
-			out.writeInt(Integer.BYTES + msg.data().readableBytes());
-			out.writeInt(msg.channel());
-			out.writeBytes(msg.data());
-		}
+		// Send channel and data length
+		out.writeInt(Integer.BYTES + msg.data().readableBytes());
+		out.writeInt(msg.channel());
+		out.writeBytes(msg.data());
 	}
 
 	@Override

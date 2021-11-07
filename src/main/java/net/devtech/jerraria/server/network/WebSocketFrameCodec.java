@@ -21,7 +21,7 @@ public class WebSocketFrameCodec extends ChannelDuplexHandler {
 	@Override
 	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
 		if (msg instanceof ByteBuf buf) {
-			ctx.write(new BinaryWebSocketFrame(buf).retain(), promise);
+			ctx.write(new BinaryWebSocketFrame(buf), promise);
 		} else {
 			ctx.write(msg, promise);
 		}

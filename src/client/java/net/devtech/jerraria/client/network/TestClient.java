@@ -43,7 +43,7 @@ public class TestClient {
 				.option(ChannelOption.TCP_NODELAY, true)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
-					protected void initChannel(@NotNull SocketChannel channel) throws Exception {
+					protected void initChannel(@NotNull SocketChannel channel) {
 						channel.pipeline()
 							.addLast("timeout", new ReadTimeoutHandler(30))
 							// only when wss scheme is used
@@ -53,10 +53,10 @@ public class TestClient {
 							.addLast("http_aggregator", new HttpObjectAggregator(8192))
 							.addLast("compression", WebSocketClientCompressionHandler.INSTANCE)
 							.addLast("handshake", handler)
+							.addLast("heartbeat", new KeepAlive())
 							.addLast("websocket_codec", new WebSocketFrameCodec())
 							.addLast("codec", new PacketCodec())
 							.addLast("splitter", new Pagination())
-							.addLast("heartbeat", new KeepAlive())
 							.addLast("connection", new ChannelInboundHandlerAdapter() {
 								@Override
 								public void channelActive(@NotNull ChannelHandlerContext ctx) {
@@ -74,6 +74,8 @@ public class TestClient {
 									} else {
 										System.err.println("Data mismatch through echo server");
 									}
+
+									ctx.close();
 								}
 							});
 					}

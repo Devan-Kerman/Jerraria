@@ -1,11 +1,11 @@
 package net.devtech.jerraria.server;
 
-import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.devtech.jerraria.server.network.NetworkSide;
 import org.jetbrains.annotations.NotNull;
 
-public class ClientConnection extends ChannelDuplexHandler {
+public class ClientConnection extends ChannelInboundHandlerAdapter {
 
 	private final NetworkSide side;
 

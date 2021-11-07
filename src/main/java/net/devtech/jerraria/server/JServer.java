@@ -36,19 +36,19 @@ public abstract class JServer {
 		// player.x += x;
 		// player.y += y;
 		//
-		// player.queuePacketWithResponse(MOVEMENT, Buffer.create().write(x).write(y)).await(response -> {
+		// player.sendPacket(MOVEMENT, buf -> buf.write(x).write(y), response -> {
 		//     player.x -= x;
 		//     player.y -= y;
 		// });
 
 		// server side
-		// player.listen(MOVEMENT, (buf, response) -> {
+		// player.listen(MOVEMENT, (buf, reply) -> {
 		//     int x = buffer.readInt();
 		//     int y = buffer.readInt();
 		//
 		//     server.execute(() -> {
 		//         if (!applyMovement(x, y)) {
-		//             response.queue(Buffer.empty());
+		//             reply.accept($ -> {});
 		//         }
 		//     });
 		// });
@@ -69,7 +69,6 @@ public abstract class JServer {
 						.addLast("websocket_codec", new WebSocketFrameCodec())
 						.addLast("codec", new PacketCodec())
 						.addLast("splitter", new Pagination())
-						.addLast("heartbeat", new KeepAlive())
 						.addLast("connection", createClientConnection());
 				}
 			})

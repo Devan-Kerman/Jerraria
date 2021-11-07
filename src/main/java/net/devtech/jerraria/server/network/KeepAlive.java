@@ -14,7 +14,7 @@ public class KeepAlive extends ChannelDuplexHandler {
 		ctx.fireChannelActive();
 
 		ctx.executor().scheduleAtFixedRate(() -> {
-			ctx.write(null);
+			ctx.writeAndFlush(new PingWebSocketFrame());
 		}, 0, 10, TimeUnit.SECONDS);
 	}
 
