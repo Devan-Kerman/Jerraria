@@ -1,7 +1,8 @@
 package net.devtech.jerraria.world.tile;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -34,54 +35,43 @@ public class Tile implements IdentifiedObject {
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
-	List<Property<?, ?>> properties = new ArrayList<>();
+	Map<String, Property<?, ?>> properties = new HashMap<>();
 	int cacheSize = 1;
 	boolean hasBlockEntity;
 	Id.Full id;
+	TileVariantCacheInitializationStackTrace variantTableInitializationStacktrace;
 
-	public final void enableBlockData() {
-		this.hasBlockEntity = true;
+	public TileVariant getDefaultState() {
+		var cache = this.initializeCache("getDefaultState");
+		return cache[this.defaultIndex];
 	}
 
-	public boolean isCompatible(TileVariant variant, TileData data) {
-		if(this.hasBlockEntity) {
-			return variant.owner == this;
-		} else if(this.hasBlockData(variant)) {
-			return !(data instanceof GenericTileData);
-		} else {
-			return false;
-		}
+	// properties
+
+	public <E extends Enum<E>> EnumProperty<E> enumProperty(String name, E defaultValue) {
+		return this.addProperty(name, new EnumProperty<>(defaultValue.getDeclaringClass(), defaultValue));
 	}
 
-	public <E extends Enum<E>> EnumProperty<E> enumProperty(Class<E> type, E defaultValue) {
-		return this.addProperty(new EnumProperty<>(type, defaultValue));
+	public IntRangeProperty rangeProperty(String name, int from, int to, int defaultValue) {
+		return this.addProperty(name, new IntRangeProperty(from, to, defaultValue));
 	}
 
-	public IntRangeProperty rangeProperty(int from, int to, int defaultValue) {
-		return this.addProperty(new IntRangeProperty(from, to, defaultValue));
+	public IntRangeProperty rangeProperty(String name, int from, int to) {
+		return this.rangeProperty(name, from, to, from);
 	}
 
-	public IntRangeProperty rangeProperty(int from, int to) {
-		return this.rangeProperty(from, to, from);
+	public Map<String, Property<?, ?>> getProperties() {
+		this.initializeCache("getProperties");
+		return this.properties;
 	}
 
-	/**
-	 * todo implement + granular control
-	 * The range relative to the tile in which the tile can modify blocks
-	 */
-	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
-		this.linkFromX = linkFromX;
-		this.linkToX = linkToX;
-		this.linkFromY = linkFromY;
-		this.linkToY = linkToY;
-	}
-
-	public <P extends Property<?, ?>> P addProperty(P property) {
+	public <P extends Property<?, ?>> P addProperty(String name, P property) {
 		if(this.cache != null) {
 			throw new IllegalStateException("""
 				Cannot add property after blockstate cache has been initialized,
-				\tdo not call getDefaultState in your constructor
-				\tand only call addProperty in your constructor (or field init)""");
+				\tdo not call getDefaultState/getProperties in your constructor
+				\tand only call addProperty in your constructor (or field init)""",
+				this.variantTableInitializationStacktrace);
 		}
 
 		int size = property.values().size();
@@ -89,20 +79,14 @@ public class Tile implements IdentifiedObject {
 			throw new IllegalStateException("Cannot have property with no values!");
 		}
 		this.cacheSize *= size;
-		this.properties.add(property);
+		this.properties.put(name, property);
 		return property;
 	}
 
-	public List<Property<?, ?>> getProperties() {
-		return this.properties;
-	}
+	// block data
 
-	public TileVariant getDefaultState() {
-		TileVariant[] cache = this.cache;
-		if(cache == null) {
-			cache = this.initializeCache();
-		}
-		return cache[this.defaultIndex];
+	public final void enableBlockData() {
+		this.hasBlockEntity = true;
 	}
 
 	@ApiStatus.OverrideOnly
@@ -119,12 +103,34 @@ public class Tile implements IdentifiedObject {
 		return null;
 	}
 
+	public boolean isCompatible(TileVariant variant, TileData data) {
+		if(this.hasBlockEntity) {
+			return variant.owner == this;
+		} else if(this.hasBlockData(variant)) {
+			return !(data instanceof GenericTileData);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * todo implement + granular control
+	 * The range relative to the tile in which the tile can modify blocks
+	 */
+	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
+		this.linkFromX = linkFromX;
+		this.linkToX = linkToX;
+		this.linkFromY = linkFromY;
+		this.linkToY = linkToY;
+	}
+
+
 	// this can be optimized via a map from Property -> int and a table for dimensions maybe
 	<T> TileVariant withSub(TileVariant current, Property<T, ?> substitute, T value, boolean notCached) {
 		Object2IntOpenHashMap<Property<?, ?>> properties = notCached ? new Object2IntOpenHashMap<>() : null;
 		int cacheIndex = 0;
 		int mul = 1;
-		for(Property<?, ?> property : this.properties) {
+		for(Property<?, ?> property : this.properties.values()) {
 			int index = property == substitute ? substitute.indexOfValue(value) : current.values.getInt(property);
 			List<?> values = property.values();
 			cacheIndex += index * mul;
@@ -137,7 +143,7 @@ public class Tile implements IdentifiedObject {
 		if(variant == null) {
 			if(properties == null) {
 				properties = new Object2IntOpenHashMap<>();
-				for(Property<?, ?> property : this.properties) {
+				for(Property<?, ?> property : this.properties.values()) {
 					this.addProperty(current, properties, property);
 				}
 			}
@@ -152,11 +158,16 @@ public class Tile implements IdentifiedObject {
 		properties.put(property, current == null ? property.defaultIndex() : current.values.getInt(property));
 	}
 
-	TileVariant[] initializeCache() {
-		TileVariant[] cache = new TileVariant[this.cacheSize];
-		this.withSub(null, null, null, true);
-		this.properties = List.copyOf(this.properties);
-		return this.cache = cache;
+
+	TileVariant[] initializeCache(String apiName) {
+		TileVariant[] cache = this.cache;
+		if(cache == null) {
+			this.variantTableInitializationStacktrace = new TileVariantCacheInitializationStackTrace(apiName);
+			this.cache = cache = new TileVariant[this.cacheSize];
+			this.withSub(null, null, null, true);
+			this.properties = Map.copyOf(this.properties);
+		}
+		return cache;
 	}
 
 	@Override
@@ -176,6 +187,12 @@ public class Tile implements IdentifiedObject {
 			this.id = id;
 		} else {
 			throw new UnsupportedOperationException("Cannot use custom FastRegistry on Tile!");
+		}
+	}
+
+	static final class TileVariantCacheInitializationStackTrace extends RuntimeException {
+		public TileVariantCacheInitializationStackTrace(String methodName) {
+			super("call to method " + methodName + " forced initialization of TileVariant table");
 		}
 	}
 }

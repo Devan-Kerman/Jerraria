@@ -34,6 +34,7 @@ public class SynchronousWorld extends TickingWorld {
 		@Override
 		public Chunk get(long key) {
 			Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");
+
 			return null;
 		}
 	}
