@@ -2,8 +2,14 @@ package net.devtech.jerraria.world.tile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.content.Tiles;
+import net.devtech.jerraria.registry.FastRegistry;
+import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
@@ -12,10 +18,14 @@ import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
 
-public class Tile {
+/**
+ * Long Live the Tile
+ */
+public class Tile implements IdentifiedObject {
 	public static final Access<TileProperty<Boolean>> HAS_BLOCK_ENTITY = new AccessImpl<>(ArrayFunc.builder()
-			.retIfNN(FuncFinder.onlyAbstract())
-			.buildInfer());
+		.retIfNN(FuncFinder.onlyAbstract())
+		.buildInfer());
+	private static final Logger LOGGER = Logger.getLogger("Tile");
 
 	static {
 		HAS_BLOCK_ENTITY.andThen(PriorityKey.DEFAULT, TileVariant::hasBlockData);
@@ -27,6 +37,7 @@ public class Tile {
 	List<Property<?, ?>> properties = new ArrayList<>();
 	int cacheSize = 1;
 	boolean hasBlockEntity;
+	Id.Full id;
 
 	public final void enableBlockData() {
 		this.hasBlockEntity = true;
@@ -40,19 +51,6 @@ public class Tile {
 		} else {
 			return false;
 		}
-	}
-
-	@ApiStatus.OverrideOnly
-	protected boolean hasBlockData(TileVariant variant) {
-		return this.hasBlockEntity;
-	}
-
-	@ApiStatus.OverrideOnly
-	protected TileData create(TileVariant variant) {
-		if(this.hasBlockData(variant)) {
-			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override TileData#create!");
-		}
-		return null;
 	}
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(Class<E> type, E defaultValue) {
@@ -81,9 +79,9 @@ public class Tile {
 	public <P extends Property<?, ?>> P addProperty(P property) {
 		if(this.cache != null) {
 			throw new IllegalStateException("""
-					Cannot add property after blockstate cache has been initialized,\s
-					\tdo not call getDefaultState in your constructor\s
-					\tand only call addProperty in your constructor (or field init)""");
+				Cannot add property after blockstate cache has been initialized,
+				\tdo not call getDefaultState in your constructor
+				\tand only call addProperty in your constructor (or field init)""");
 		}
 
 		int size = property.values().size();
@@ -105,6 +103,20 @@ public class Tile {
 			cache = this.initializeCache();
 		}
 		return cache[this.defaultIndex];
+	}
+
+	@ApiStatus.OverrideOnly
+	protected boolean hasBlockData(TileVariant variant) {
+		return this.hasBlockEntity;
+	}
+
+	@ApiStatus.OverrideOnly
+	protected TileData create(TileVariant variant) {
+		if(this.hasBlockData(variant)) {
+			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
+			                                        "TileData#create!");
+		}
+		return null;
 	}
 
 	// this can be optimized via a map from Property -> int and a table for dimensions maybe
@@ -134,7 +146,9 @@ public class Tile {
 		return variant;
 	}
 
-	private void addProperty(TileVariant current, Object2IntOpenHashMap<Property<?, ?>> properties, Property<?, ?> property) {
+	private void addProperty(TileVariant current,
+		Object2IntOpenHashMap<Property<?, ?>> properties,
+		Property<?, ?> property) {
 		properties.put(property, current == null ? property.defaultIndex() : current.values.getInt(property));
 	}
 
@@ -143,5 +157,25 @@ public class Tile {
 		this.withSub(null, null, null, true);
 		this.properties = List.copyOf(this.properties);
 		return this.cache = cache;
+	}
+
+	@Override
+	public <T extends IdentifiedObject> Id.Full getId(FastRegistry<T> registry, Function<T, Id.Full> access)
+		throws UnsupportedOperationException {
+		if(this.id == null) {
+			throw new IllegalArgumentException(this + " not registered!");
+		} else if(registry != Tiles.REGISTRY) {
+			throw new UnsupportedOperationException("Cannot use custom FastRegistry on Tile!");
+		}
+		return id;
+	}
+
+	@Override
+	public void setId_(FastRegistry<?> registry, Id.Full id) throws UnsupportedOperationException {
+		if(registry == Tiles.REGISTRY) {
+			this.id = id;
+		} else {
+			throw new UnsupportedOperationException("Cannot use custom FastRegistry on Tile!");
+		}
 	}
 }

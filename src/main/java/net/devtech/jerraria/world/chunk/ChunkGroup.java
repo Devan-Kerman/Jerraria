@@ -8,11 +8,23 @@ import net.devtech.jerraria.world.internal.TickingWorld;
 public class ChunkGroup {
 	final TickingWorld backing;
 	final World local;
+	int totalTickets;
 	public final Long2ObjectMap<Chunk> chunks = new Long2ObjectOpenHashMap<>();
 
 	public ChunkGroup(TickingWorld world) {
 		this.backing = world;
 		this.local = new World();
+	}
+
+	public void ticket() {
+		this.totalTickets++;
+	}
+
+	public void unticket() {
+		this.totalTickets--;
+		if(this.totalTickets == 0) {
+			this.backing.unloadGroup(this);
+		}
 	}
 
 	public boolean contains(Chunk chunk) {

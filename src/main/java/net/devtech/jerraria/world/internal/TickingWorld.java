@@ -11,7 +11,7 @@ import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.chunk.Chunk;
 import net.devtech.jerraria.world.chunk.ChunkGroup;
 
-public abstract class TickingWorld implements World {
+public abstract class TickingWorld extends AbstractWorld implements World {
 	final Set<ChunkGroup> groups = new HashSet<>();
 	final Set<Chunk> toRelink = new HashSet<>();
 	final Executor executor;
@@ -27,6 +27,8 @@ public abstract class TickingWorld implements World {
 	public void removeGroup(ChunkGroup group) {
 		this.groups.remove(group);
 	}
+
+	public abstract void unloadGroup(ChunkGroup group);
 
 	public void createGroups() {
 		while(!this.toRelink.isEmpty()) {
@@ -47,4 +49,6 @@ public abstract class TickingWorld implements World {
 		}
 		ticks.forEach(CompletableFuture::join);
 	}
+
+
 }

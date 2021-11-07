@@ -5,6 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.sun.tools.javac.Main;
 import org.jetbrains.annotations.Nullable;
 
 public class Validate {

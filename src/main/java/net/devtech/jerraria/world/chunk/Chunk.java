@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -25,12 +26,27 @@ public class Chunk {
 	final Int2ObjectMap<TileData> data = new Int2ObjectOpenHashMap<>();
 	final ArrayList<TemporaryTileData> actions = new ArrayList<>();
 	final Object2IntMap<Chunk> links = new Object2IntOpenHashMap<>();
+	int ticketCount;
 	ChunkGroup group;
 
 	public Chunk(TickingWorld world, int chunkX, int chunkY) {
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
+	}
+
+	public void ticket() {
+		this.ticketCount++;
+		if(this.group != null) {
+			this.group.ticket();
+		}
+	}
+
+	public void unticket() {
+		this.ticketCount--;
+		if(this.group != null) {
+			this.group.unticket();
+		}
 	}
 
 	public void removeLink(Chunk chunk) {
