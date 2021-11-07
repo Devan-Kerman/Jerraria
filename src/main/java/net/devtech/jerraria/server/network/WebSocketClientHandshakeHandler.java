@@ -7,7 +7,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
-import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import org.jetbrains.annotations.NotNull;
 
 public class WebSocketClientHandshakeHandler extends ChannelInboundHandlerAdapter {
@@ -19,10 +18,6 @@ public class WebSocketClientHandshakeHandler extends ChannelInboundHandlerAdapte
 		this.handshaker = handshaker;
 	}
 
-	public ChannelPromise getPromise() {
-		return promise;
-	}
-
 	@Override
 	public void handlerAdded(ChannelHandlerContext ctx) {
 		promise = ctx.newPromise();
@@ -31,7 +26,7 @@ public class WebSocketClientHandshakeHandler extends ChannelInboundHandlerAdapte
 	@Override
 	public void channelActive(@NotNull ChannelHandlerContext ctx) {
 		handshaker.handshake(ctx.channel());
-		ctx.fireChannelActive();
+		promise.addListener(future -> ctx.fireChannelActive());
 	}
 
 	@Override
@@ -45,12 +40,8 @@ public class WebSocketClientHandshakeHandler extends ChannelInboundHandlerAdapte
 		Channel channel = ctx.channel();
 
 		if (!handshaker.isHandshakeComplete()) {
-			try {
-				handshaker.finishHandshake(channel, (FullHttpResponse) msg);
-				promise.setSuccess();
-			} catch (WebSocketHandshakeException exception) {
-				promise.setFailure(exception);
-			}
+			handshaker.finishHandshake(channel, (FullHttpResponse) msg);
+			promise.setSuccess();
 		} else if (msg instanceof CloseWebSocketFrame) {
 			handshaker.close(channel, ((CloseWebSocketFrame) msg).retain());
 		} else {

@@ -59,14 +59,20 @@ public class TestClient {
 							.addLast("heartbeat", new KeepAlive())
 							.addLast("connection", new ChannelInboundHandlerAdapter() {
 								@Override
+								public void channelActive(@NotNull ChannelHandlerContext ctx) {
+									ctx.fireChannelActive();
+									ctx.writeAndFlush(new PacketCodec.Packet(1, ctx.alloc().buffer().writeBytes(data)));
+								}
+
+								@Override
 								public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) {
 									byte[] received = new byte[data.length];
 									((PacketCodec.Packet) msg).data().readBytes(received, 0, data.length);
 
-									if (!Arrays.equals(data, received)) {
-										System.err.println("Data mismatch through echo server");
-									} else {
+									if (Arrays.equals(data, received)) {
 										System.out.println("Data sent and received successfully");
+									} else {
+										System.err.println("Data mismatch through echo server");
 									}
 								}
 							});
@@ -75,8 +81,6 @@ public class TestClient {
 				.connect("::1", 8008)
 				.sync()
 				.channel();
-			handler.getPromise().sync();
-			channel.writeAndFlush(new PacketCodec.Packet(1, channel.alloc().buffer().writeBytes(data)));
 			channel.closeFuture().sync();
 		} finally {
 			group.shutdownGracefully();
