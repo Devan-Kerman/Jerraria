@@ -18,12 +18,6 @@ public final class UUID2ObjectMap<T> extends AbstractMap<Id.Full, T> {
 	private int mask, size, maxFill;
 	EntrySet entries;
 
-	public static void main(String[] args) {
-		UUID2ObjectMap<String> test = new UUID2ObjectMap<>(128);
-		test.put(10, 10, "deez");
-		System.out.println(test.get(10, 10));
-	}
-
 	public UUID2ObjectMap(int size) {
 		this(.5f, size);
 	}

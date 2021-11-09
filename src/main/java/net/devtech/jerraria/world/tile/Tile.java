@@ -1,5 +1,7 @@
 package net.devtech.jerraria.world.tile;
 
+import static java.util.Objects.requireNonNullElse;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,9 +17,9 @@ import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
-import net.devtech.jerraria.util.data.JCTagView;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
-import net.devtech.jerraria.world.internal.ChunkIOUtil;
+import net.devtech.jerraria.world.internal.ChunkCodec;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -78,8 +80,8 @@ public class Tile implements IdentifiedObject {
 		}
 		String name = property.getName();
 		Objects.requireNonNull(name, "property name cannot be null!");
-		if(ChunkIOUtil.RESERVED_ID.equals(name)) {
-			throw new IllegalArgumentException("Cannot name tile property '"+ChunkIOUtil.RESERVED_ID+"'");
+		if(ChunkCodec.RESERVED_ID.equals(name)) {
+			throw new IllegalArgumentException("Cannot name tile property '" + ChunkCodec.RESERVED_ID + "'");
 		}
 
 		int size = property.values().size();
@@ -112,11 +114,12 @@ public class Tile implements IdentifiedObject {
 	}
 
 	@ApiStatus.OverrideOnly
-	protected void write(TileData data, TileVariant variant, JCTagView.Builder builder) {
+	protected JCElement<?> write(TileData data, TileVariant variant) {
 		if(this.hasBlockData(variant)) {
 			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
 			                                        "TileData#write!");
 		}
+		return null;
 	}
 
 	/**
@@ -124,7 +127,7 @@ public class Tile implements IdentifiedObject {
 	 */
 	@Nullable
 	@ApiStatus.OverrideOnly
-	protected TileData read(TileVariant variant, JCTagView view) {
+	protected TileData read(TileVariant variant, JCElement<?> view) {
 		if(this.hasBlockData(variant)) {
 			throw new UnsupportedOperationException("Tile has blockdata for " + variant + " but doesn't override " +
 			                                        "TileData#read!");
@@ -223,5 +226,11 @@ public class Tile implements IdentifiedObject {
 		public TileVariantCacheInitializationStackTrace(String methodName) {
 			super("call to method " + methodName + " forced initialization of TileVariant table");
 		}
+	}
+
+	@Override
+	public String toString() {
+		String name = this.getClass().getSimpleName();
+		return name + "[" + requireNonNullElse(this.id, name) + "]";
 	}
 }

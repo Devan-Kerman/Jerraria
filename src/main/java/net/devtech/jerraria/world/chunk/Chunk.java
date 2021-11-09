@@ -1,14 +1,20 @@
 package net.devtech.jerraria.world.chunk;
 
-import static net.devtech.jerraria.world.tile.InternalTileDataAccess.*;
+import static net.devtech.jerraria.world.tile.InternalTileAccess.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntLongPair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.content.Tiles;
+import net.devtech.jerraria.util.data.JCTagView;
+import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.world.internal.ChunkCodec;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -22,16 +28,50 @@ public class Chunk {
 	 * A flattened 3 dimensional array of each tile layer
 	 */
 	final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
-	final Int2ObjectMap<TileData> data = new Int2ObjectOpenHashMap<>();
-	final ArrayList<TemporaryTileData> actions = new ArrayList<>();
-	final Object2IntMap<Chunk> links = new Object2IntOpenHashMap<>();
+	final Int2ObjectMap<TileData> data;
+	final List<TemporaryTileData> actions;
+	final Object2IntMap<Chunk> links;
+	List<IntLongPair> unresolved;
+
 	int ticketCount;
 	ChunkGroup group;
 
 	public Chunk(TickingWorld world, int chunkX, int chunkY) {
+		Arrays.fill(this.variants, Tiles.AIR.getDefaultVariant());
+		this.data = new Int2ObjectOpenHashMap<>();
+		this.actions = new ArrayList<>();
+		this.links = new Object2IntOpenHashMap<>();
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
+	}
+
+	public Chunk(TickingWorld world, int chunkX, int chunkY, JCTagView tag) {
+		this.world = world;
+		this.chunkX = chunkX;
+		this.chunkY = chunkY;
+		ChunkCodec.populateTiles(variants, tag.get("tiles", NativeJCType.POOLED_TAG_LIST));
+		this.data = ChunkCodec.deserializeData(world, chunkX, chunkY, this.variants, tag.get("data", NativeJCType.INT_ANY_LIST));
+		this.actions = ChunkCodec.deserializeTemporaryData(tag.get("actions", NativeJCType.ID_ANY_LIST));
+		this.unresolved = tag.get("links", NativeJCType.INT_LONG_LIST);
+		this.links = new Object2IntOpenHashMap<>(unresolved.size());
+	}
+
+	public JCTagView write() {
+		JCTagView.Builder tag = JCTagView.builder();
+		tag.put("tiles", NativeJCType.POOLED_TAG_LIST, ChunkCodec.writeTiles(this.variants));
+		tag.put("data", NativeJCType.INT_ANY_LIST, ChunkCodec.serializeData(this.variants, this.data));
+		tag.put("actions", NativeJCType.ID_ANY_LIST, ChunkCodec.serializeTemporaryData(this.actions));
+		tag.put("links", NativeJCType.INT_LONG_LIST, ChunkCodec.serializeLinks(this.links));
+		return tag;
+	}
+
+	public void resolve() {
+		this.links.putAll(ChunkCodec.deserializeLinks(this.unresolved, this.world));
+	}
+
+	public List<IntLongPair> getUnresolved() {
+		return this.unresolved;
 	}
 
 	public void ticket() {
@@ -119,11 +159,11 @@ public class Chunk {
 	}
 
 	public TileVariant get(TileLayers layer, int x, int y) {
-		return this.variants[this.getIndex(layer, x, y)];
+		return this.variants[getIndex(layer, x, y)];
 	}
 
 	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
-		int index = this.getIndex(layer, x, y);
+		int index = getIndex(layer, x, y);
 		TileVariant old = this.variants[index];
 		TileData data = this.data.get(index);
 		TileData replacement;
@@ -155,14 +195,14 @@ public class Chunk {
 	}
 
 	public TileData getData(TileLayers layers, int x, int y) {
-		return this.data.get(this.getIndex(layers, x, y));
+		return this.data.get(getIndex(layers, x, y));
 	}
 
 	public TileData setData(TileLayers layers, int x, int y, TileData data) {
-		return this.data.put(this.getIndex(layers, x, y), data);
+		return this.data.put(getIndex(layers, x, y), data);
 	}
 
-	private int getIndex(TileLayers layer, int x, int y) {
+	private static int getIndex(TileLayers layer, int x, int y) {
 		return layer.ordinal() + TileLayers.COUNT * x + TileLayers.COUNT * World.CHUNK_SIZE * y;
 	}
 }

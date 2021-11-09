@@ -4,13 +4,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.JCType;
 import net.devtech.jerraria.util.data.NativeJCType;
 
 public class JCTagViewImpl implements JCTagView {
-	final Map<String, Entry<?, ?>> entries;
+	Map<String, Entry<?, ?>> entries;
 
 	JCTagViewImpl(Map<String, Entry<?, ?>> entries) {
 		this.entries = entries;
@@ -60,10 +60,10 @@ public class JCTagViewImpl implements JCTagView {
 	@Override
 	public long getLong(String key, long defaultValue) {
 		Entry<?, ?> entry = this.entries.get(key);
-		if(entry.type == NativeJCType.INT) {
-			return (Integer) entry.value;
-		} else if(entry.type.nativeType() == NativeJCType.INT) {
-			return (Integer) this.getObject(entry);
+		if(entry.type == NativeJCType.LONG) {
+			return (Long) entry.value;
+		} else if(entry.type.nativeType() == NativeJCType.LONG) {
+			return (Long) this.getObject(entry);
 		} else {
 			return defaultValue;
 		}
@@ -91,7 +91,7 @@ public class JCTagViewImpl implements JCTagView {
 		}
 
 		JCElement<?> convert() {
-			return new JCElement<>(type.nativeType(), type.convertToNative(value));
+			return JCElement.newInstance(type.nativeType(), type.convertToNative(value));
 		}
 	}
 

@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.tile;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.AbstractIntList;
-import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.NativeJCType;
 
 public class IntRangeProperty extends AbstractIntList implements Property<Integer, Integer> {
@@ -48,7 +48,7 @@ public class IntRangeProperty extends AbstractIntList implements Property<Intege
 
 	@Override
 	public JCElement<Integer> convert(Integer value) {
-		return new JCElement<>(NativeJCType.INT, value);
+		return JCElement.newInstance(NativeJCType.INT, value);
 	}
 
 	@Override

@@ -13,6 +13,12 @@ import com.google.common.collect.Lists;
 import net.devtech.jerraria.util.access.RegisterOnlyAccess;
 
 public final class PriorityKey {
+	static final Map<String, PriorityKey> KEY_IDS = new HashMap<>();
+	static final Set<String> BUILT = new HashSet<>();
+	private static final PriorityKey[] EMPTY = new PriorityKey[0];
+	final String name;
+	PriorityKey[] before = EMPTY, after = EMPTY;
+
 	/**
 	 * The default apis in the access
 	 */
@@ -21,12 +27,6 @@ public final class PriorityKey {
 	 * What the {@link RegisterOnlyAccess#andThen(Object)} uses by default
 	 */
 	public static final PriorityKey STANDARD = new Builder().after(DEFAULT).build("standard");
-
-	static final Map<String, PriorityKey> KEY_IDS = new HashMap<>();
-	static final Set<String> BUILT = new HashSet<>();
-	private static final PriorityKey[] EMPTY = new PriorityKey[0];
-	final String name;
-	PriorityKey[] before = EMPTY, after = EMPTY;
 
 	public static Builder builder() {
 		return new Builder();

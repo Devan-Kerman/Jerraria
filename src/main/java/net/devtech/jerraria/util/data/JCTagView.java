@@ -2,6 +2,7 @@ package net.devtech.jerraria.util.data;
 
 import java.util.Set;
 
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.internal.JCTagBuilder;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,5 +55,7 @@ public interface JCTagView {
 		}
 
 		JCTagView build();
+
+		void forceImmutable();
 	}
 }

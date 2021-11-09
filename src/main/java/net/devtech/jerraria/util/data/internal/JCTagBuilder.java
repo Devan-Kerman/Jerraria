@@ -3,6 +3,7 @@ package net.devtech.jerraria.util.data.internal;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.JCType;
 import net.devtech.jerraria.util.data.NativeJCType;
@@ -27,5 +28,10 @@ public class JCTagBuilder extends JCTagViewImpl implements JCTagView.Builder {
 	@Override
 	public JCTagView build() {
 		return new JCTagViewImpl(Map.copyOf(this.entries));
+	}
+
+	@Override
+	public void forceImmutable() {
+		this.entries = Map.copyOf(this.entries);
 	}
 }

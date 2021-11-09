@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.tile;
 import java.util.List;
 import java.util.Objects;
 
-import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.NativeJCType;
 
 public class EnumProperty<E extends Enum<E>> implements Property<E, String> {
@@ -46,7 +46,7 @@ public class EnumProperty<E extends Enum<E>> implements Property<E, String> {
 
 	@Override
 	public JCElement<String> convert(E value) {
-		return new JCElement<>(NativeJCType.STRING, value.name());
+		return JCElement.newInstance(NativeJCType.STRING, value.name());
 	}
 
 	@Override

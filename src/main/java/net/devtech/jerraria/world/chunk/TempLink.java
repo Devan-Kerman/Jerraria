@@ -6,10 +6,11 @@ import java.util.List;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
@@ -60,13 +61,13 @@ public class TempLink extends TemporaryTileData<LongList> {
 	}
 
 	@Override
-	protected JCElement<LongList> write() {
+	public JCElement<LongList> write() {
 		LongList longs = new LongArrayList();
 		longs.add(this.encode());
 		for(Chunk link : this.links) {
 			longs.add(link.getId());
 		}
-		return new JCElement<>(NativeJCType.LONG_ARRAY, longs);
+		return JCElement.newInstance(NativeJCType.LONG_ARRAY, longs);
 	}
 
 	protected List<Chunk> resolve(World world) {
@@ -76,7 +77,7 @@ public class TempLink extends TemporaryTileData<LongList> {
 
 		if(this.unresolved != null) {
 			for(long a : this.unresolved) {
-				this.links.add(world.getChunk(Chunk.getA(a), Chunk.getB(a)));
+				this.links.add(((AbstractWorld)world).getChunk(Chunk.getA(a), Chunk.getB(a)));
 			}
 			this.unresolved = null;
 		}

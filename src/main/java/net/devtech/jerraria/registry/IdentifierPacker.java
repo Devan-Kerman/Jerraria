@@ -85,7 +85,7 @@ public final class IdentifierPacker {
 			// the previous ones
 		}
 
-		packed <<= (long) BITS_PER_CHAR * (MAX_SIZE - len);
+		packed <<= (long) BITS_PER_CHAR * (MAX_SIZE - (len - 1));
 
 		return packed;
 	}
@@ -110,7 +110,7 @@ public final class IdentifierPacker {
 		int len = (int) (packed >>> (Long.SIZE - STR_LEN_BITS_SIZE));
 		char[] buf = new char[len];
 		for(int i = 0; i < len; i++) {
-			long shifted = packed >>> BITS_PER_CHAR * (MAX_SIZE - (i + 1));
+			long shifted = packed >>> BITS_PER_CHAR * (MAX_SIZE - i);
 			buf[i] = (char) ID_TO_CHAR[(int) (CHAR_MASK & shifted)];
 		}
 		return new String(buf);

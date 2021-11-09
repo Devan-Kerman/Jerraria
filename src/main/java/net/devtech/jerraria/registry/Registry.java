@@ -16,7 +16,7 @@ public abstract class Registry<T> {
 
 	public <C extends T> C register(Id.Full id, C value) {
 		T put = this.map.put(id.packedNamespace, id.getPath(), value);
-		Validate.notNull(put, "multiple values for same id " + id + "");
+		Validate.isNull(put, "multiple values for same id " + id + " " + value + " " + put);
 		return value;
 	}
 

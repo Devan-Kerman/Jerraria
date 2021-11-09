@@ -3,16 +3,24 @@ package net.devtech.jerraria.util.data;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntLongImmutablePair;
+import it.unimi.dsi.fastutil.ints.IntLongPair;
+import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
+import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.util.data.bin.BinCodec;
 import net.devtech.jerraria.util.data.bin.BinDecode;
 import net.devtech.jerraria.util.data.bin.BinEncode;
 import net.devtech.jerraria.util.data.codec.ArrayCodec;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.pool.JCDecodePool;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +32,7 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 
 	public static final NativeJCType<Integer> INT = new NativeJCType<>((p, i) -> i.readInt(),
 		(p, o, v) -> o.writeInt(v));
+	public static final NativeJCType<Long> LONG = new NativeJCType<>((p, i) -> i.readLong(), (p, o, v) -> o.writeLong(v));
 	public static final NativeJCType<IntList> INT_ARRAY = new NativeJCType<>(ArrayCodec.INT);
 	public static final NativeJCType<ByteList> BYTE_ARRAY = new NativeJCType<>(ArrayCodec.BYTE);
 	public static final NativeJCType<LongList> LONG_ARRAY = new NativeJCType<>(ArrayCodec.LONG);
@@ -50,9 +59,9 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 	});
 	public static final NativeJCType<JCTagView> TAG = new NativeJCType<>((p, input) -> {
 		JCTagView.Builder builder = JCTagView.builder();
-		for(int i = 0; i < input.readInt(); i++) {
-			var type = JCIO.readType(input);
-			JCIO.readEntry(input, p, builder, type);
+		int len = input.readInt();
+		for(int i = 0; i < len; i++) {
+			JCIO.readEntry(input, p, builder);
 		}
 		return builder.build();
 	}, (o, output, value) -> {
@@ -76,6 +85,13 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 	public static final NativeJCType<Id.Full> POOLED_PACKED_ID = pooled(PACKED_ID);
 	public static final NativeJCType<JCTagView> POOLED_TAG = pooled(TAG);
 	public static final NativeJCType<List<JCTagView>> POOLED_TAG_LIST = listType(POOLED_TAG);
+	public static final NativeJCType<Pair<JCElement, JCElement>> PAIR = NativeJCType.pairType(ANY, ANY, ObjectObjectImmutablePair::new);
+	public static final NativeJCType<Pair<Id.Full, JCElement>> ID_ANY = NativeJCType.pairType(PACKED_ID, ANY, ObjectObjectImmutablePair::new);
+	public static final NativeJCType<IntObjectPair<JCElement>> INT_ANY = NativeJCType.pairType(INT, ANY, IntObjectImmutablePair::new);
+	public static final NativeJCType<List<IntObjectPair<JCElement>>> INT_ANY_LIST = listType(INT_ANY);
+	public static final NativeJCType<IntLongPair> INT_LONG = NativeJCType.pairType(INT, LONG, IntLongImmutablePair::new);
+	public static final NativeJCType<List<Pair<Id.Full, JCElement>>> ID_ANY_LIST = listType(ID_ANY);
+	public static final NativeJCType<List<IntLongPair>> INT_LONG_LIST = listType(INT_LONG);
 
 	static int idCounter;
 
@@ -121,7 +137,7 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 		return new NativeJCType<>((pool, input) -> {
 			return (T) pool.getElement(input.readInt()).value();
 		}, (pool, output, value) -> {
-			int index = pool.getIndex(new JCElement<>(type, value));
+			int index = pool.getIndex(JCElement.newInstance(type, value));
 			output.writeInt(index);
 		});
 	}
@@ -142,4 +158,12 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 		});
 	}
 
+	static <A, B, T extends Pair<A, B>> NativeJCType<T> pairType(NativeJCType<A> a, NativeJCType<B> b, BiFunction<A, B, T> pairCreator) {
+		return new NativeJCType<>((pool, input) -> {
+			return pairCreator.apply(a.decode.read(pool, input), b.decode.read(pool, input));
+		}, (pool, output, value) -> {
+			a.encode.write(pool, output, value.first());
+			b.encode.write(pool, output, value.second());
+		});
+	}
 }

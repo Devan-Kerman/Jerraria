@@ -6,6 +6,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.pool.JCDecodePool;
 import net.devtech.jerraria.util.data.pool.JCEncodePool;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,7 @@ public class JCIO {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
 		type.encode().write(pool, dos, value);
+
 		pool.write(output);
 		output.write(baos.toByteArray());
 	}
@@ -29,6 +31,13 @@ public class JCIO {
 	public static <T> void write(NativeJCType<T> type, JCEncodePool pool, DataOutput output, T value) throws IOException {
 		output.writeByte(type.id());
 		type.encode().write(pool, output, value);
+	}
+
+	static <T> void readEntry(DataInput input, JCDecodePool pool, JCTagView.Builder builder)
+		throws IOException {
+		var key = NativeJCType.POOLED_STRING.decode().read(pool, input);
+		NativeJCType type = JCIO.readType(input);
+		builder.put(key, type, read(type, pool, input));
 	}
 
 	public static NativeJCType<?> readType(DataInput input) throws IOException {
@@ -46,16 +55,12 @@ public class JCIO {
 
 	@NotNull
 	static <T> JCElement<T> getElement(JCDecodePool pool, DataInput i, NativeJCType<T> type) throws IOException {
-		return new JCElement<>(type, read(type, pool, i));
+		return JCElement.newInstance(type, read(type, pool, i));
 	}
 
 	public static <T> JCElement<T> read(JCDecodePool pool, DataInput input) throws IOException {
 		return (JCElement<T>) getElement(pool, input, readType(input));
 	}
 
-	static <T> void readEntry(DataInput input, JCDecodePool pool, JCTagView.Builder builder, NativeJCType<T> type)
-		throws IOException {
-		var key = NativeJCType.POOLED_STRING.decode().read(pool, input);
-		builder.put(key, type, read(type, pool, input));
-	}
+
 }

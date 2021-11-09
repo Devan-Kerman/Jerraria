@@ -1,19 +1,19 @@
 package net.devtech.jerraria.world.chunk;
 
-import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
-import net.devtech.jerraria.util.data.JCElement;
+import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class TemporaryTileData<T> {
 	public static final Registry<Type<?>> REGISTRY = new Registry.Fast<>(null);
-	final Type<T> type;
+	public final Type<T> type;
 	final TileLayers layer;
 	final int localX, localY;
 	int counter;
@@ -21,12 +21,12 @@ public abstract class TemporaryTileData<T> {
 	public static <T> Type<T> createType(Creator<T> creator, Deserializer<T> deserializer) {
 		return new Type<>() {
 			@Override
-			protected TemporaryTileData<T> read(JCElement<T> element) {
+			public TemporaryTileData<T> read(JCElement<T> element) {
 				return deserializer.create(this, element);
 			}
 
 			@Override
-			protected TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time) {
+			public TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time) {
 				return creator.create(this, layers, localX, localY, time);
 			}
 		};
@@ -66,7 +66,8 @@ public abstract class TemporaryTileData<T> {
 
 	protected abstract boolean isCompatible(TileVariant old, TileVariant new_);
 
-	protected abstract JCElement<T> write();
+	@ApiStatus.OverrideOnly
+	public abstract JCElement<T> write();
 
 	protected long encode() {
 		long packedData = 0;
@@ -86,9 +87,12 @@ public abstract class TemporaryTileData<T> {
 			return REGISTRY;
 		}
 
-		protected abstract TemporaryTileData<T> read(JCElement<T> element);
+		@ApiStatus.OverrideOnly
+		public abstract TemporaryTileData<T> read(JCElement<T> element);
 
-		protected abstract TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time);
+		@ApiStatus.OverrideOnly
+		public abstract TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time);
+
 	}
 
 	public interface Creator<T> {
