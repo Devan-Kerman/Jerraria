@@ -3,14 +3,10 @@ package world;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Vector;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.content.Tiles;
@@ -22,11 +18,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class WorldTest {
+	SynchronousWorld setupServer(boolean maintainOrder) throws IOException {
+		Path dir = Files.createTempDirectory("jerraria_test");
+		Executor executor = ForkJoinPool.commonPool();
+		return new SynchronousWorld(dir, executor, maintainOrder);
+	}
+
 	@Test
 	public void loadUnload() throws IOException {
-		Path dir = Files.createTempDirectory("jerraria_test");
-		Executor executor = Executors.newSingleThreadExecutor();
-		SynchronousWorld world = new SynchronousWorld(dir, executor, false);
+		SynchronousWorld world = this.setupServer(false);
 		Chunk chunk = world.getChunk(10, 10);
 		TileVariant variant = Tiles.TEST.getDefaultVariant();
 		chunk.ticket();
@@ -38,9 +38,7 @@ public class WorldTest {
 
 	@Test
 	public void synchronizedTicking() throws IOException {
-		Path dir = Files.createTempDirectory("jerraria_test");
-		Executor executor = ForkJoinPool.commonPool();
-		SynchronousWorld world = new SynchronousWorld(dir, executor, true);
+		SynchronousWorld world = this.setupServer(true);
 		Chunk test = world.getChunk(-1, -1);
 		Vector<Long> longs = new Vector<>();
 		LongList a = new LongArrayList();
@@ -59,9 +57,7 @@ public class WorldTest {
 
 	@Test
 	public void concurrentTicking() throws IOException {
-		Path dir = Files.createTempDirectory("jerraria_test");
-		Executor executor = ForkJoinPool.commonPool();
-		SynchronousWorld world = new SynchronousWorld(dir, executor, true);
+		SynchronousWorld world = this.setupServer(true);
 		Vector<Long> longs = new Vector<>();
 		LongList a = new LongArrayList();
 		for(int cx = 0; cx < 10; cx++) {
@@ -72,7 +68,10 @@ public class WorldTest {
 				data.ids = longs;
 			}
 		}
+		long start = System.currentTimeMillis();
 		world.tick();
+		long end = System.currentTimeMillis();
+		System.out.println("World tick took " + (end - start) + "ms");
 		// hope a race condition happens, if it doesn't, idk try running it again it works on my machine
 		Assertions.assertNotEquals(a, longs);
 	}

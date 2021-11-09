@@ -17,5 +17,7 @@ public abstract class TileData implements VariantConvertable {
 		return this.currentState;
 	}
 
+	// todo replace with something a little more generic to avoid ticking idle chunks
+	//  and to allow mods to attach ticking to data
 	public abstract void tick(World world, TileLayers layer, int x, int y);
 }
