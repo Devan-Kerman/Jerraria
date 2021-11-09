@@ -24,8 +24,8 @@ public class SynchronousWorld extends TickingWorld {
 	final Long2ObjectMap<Chunk> loadedChunkCache = new Long2ObjectOpenHashMap<>();
 	final ChunkReader reader;
 
-	public SynchronousWorld(Path directory, Executor executor) {
-		super(executor);
+	public SynchronousWorld(Path directory, Executor executor, boolean maintainOrder) {
+		super(executor, maintainOrder);
 		this.directory = directory;
 		this.reader = new ChunkReader();
 	}

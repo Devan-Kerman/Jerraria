@@ -1,5 +1,6 @@
 package net.devtech.jerraria.world.chunk;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.devtech.jerraria.world.internal.AbstractWorld;
@@ -9,11 +10,12 @@ public class ChunkGroup {
 	final TickingWorld backing;
 	final World local;
 	int totalTickets;
-	public final Long2ObjectMap<Chunk> chunks = new Long2ObjectOpenHashMap<>();
+	public final Long2ObjectMap<Chunk> chunks;
 
 	public ChunkGroup(TickingWorld world) {
 		this.backing = world;
 		this.local = new World();
+		chunks = world.doesMaintainOrder() ? new Long2ObjectLinkedOpenHashMap<>() : new Long2ObjectOpenHashMap<>();
 	}
 
 	public void ticket() {

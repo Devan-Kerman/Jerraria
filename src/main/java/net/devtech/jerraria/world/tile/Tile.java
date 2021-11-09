@@ -231,6 +231,6 @@ public class Tile implements IdentifiedObject {
 	@Override
 	public String toString() {
 		String name = this.getClass().getSimpleName();
-		return name + "[" + requireNonNullElse(this.id, name) + "]";
+		return name + " " + requireNonNullElse(this.id, "unregistered");
 	}
 }

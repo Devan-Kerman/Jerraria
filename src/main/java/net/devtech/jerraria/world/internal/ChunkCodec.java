@@ -91,7 +91,7 @@ public class ChunkCodec {
 		for(TemporaryTileData datum : data) {
 			elements.add(new ObjectObjectImmutablePair<>(
 				TemporaryTileData.REGISTRY.getId(datum.type),
-				datum.write()
+				((TemporaryTileData.Type)datum.type).serialize(datum)
 			));
 		}
 		return elements;

@@ -11,32 +11,37 @@ import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class TemporaryTileData<T> {
+public abstract class TemporaryTileData {
 	public static final Registry<Type<?>> REGISTRY = new Registry.Fast<>(null);
-	public final Type<T> type;
+	public final Type<?> type;
 	final TileLayers layer;
 	final int localX, localY;
 	int counter;
 
-	public static <T> Type<T> createType(Creator<T> creator, Deserializer<T> deserializer) {
+	public static <T extends TemporaryTileData, E> Type<T> createType(Creator<T> creator, Deserializer<T, E> deserializer, Serializer<T, E> serializer) {
 		return new Type<>() {
 			@Override
-			public TemporaryTileData<T> read(JCElement<T> element) {
-				return deserializer.create(this, element);
+			public T read(JCElement<?> element) {
+				return deserializer.create(this, (JCElement<E>) element);
 			}
 
 			@Override
-			public TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time) {
+			public T create(TileLayers layers, int localX, int localY, int time) {
 				return creator.create(this, layers, localX, localY, time);
+			}
+
+			@Override
+			public JCElement<?> serialize(TemporaryTileData data) {
+				return serializer.serialize((T) data, this);
 			}
 		};
 	}
 
-	public static <T> Type<T> createAndRegister(Creator<T> creator, Deserializer<T> deserializer, Id.Full id) {
-		return REGISTRY.register(id, createType(creator, deserializer));
+	public static <T extends TemporaryTileData, E> Type<T> createAndRegister(Creator<T> creator, Deserializer<T, E> deserializer, Serializer<T, E> serializer, Id.Full id) {
+		return REGISTRY.register(id, createType(creator, deserializer, serializer));
 	}
 
-	protected TemporaryTileData(Type<T> type, TileLayers layer, int localX, int localY, int time) {
+	protected TemporaryTileData(Type<?> type, TileLayers layer, int localX, int localY, int time) {
 		this.type = type;
 		this.layer = layer;
 		this.localX = localX;
@@ -44,7 +49,7 @@ public abstract class TemporaryTileData<T> {
 		this.counter = time;
 	}
 
-	protected TemporaryTileData(Type<T> type, long packedData) {
+	protected TemporaryTileData(Type<?> type, long packedData) {
 		this.type = type;
 		this.layer = TileLayers.LAYERS.get((int) (packedData & TileLayers.COUNT_MASK));
 		packedData >>= TileLayers.COUNT_LOG2;
@@ -66,9 +71,6 @@ public abstract class TemporaryTileData<T> {
 
 	protected abstract boolean isCompatible(TileVariant old, TileVariant new_);
 
-	@ApiStatus.OverrideOnly
-	public abstract JCElement<T> write();
-
 	protected long encode() {
 		long packedData = 0;
 		packedData |= this.layer.ordinal();
@@ -81,25 +83,31 @@ public abstract class TemporaryTileData<T> {
 		return packedData;
 	}
 
-	public static abstract class Type<T> extends DefaultIdentifiedObject {
+	public static abstract class Type<T extends TemporaryTileData> extends DefaultIdentifiedObject {
 		@Override
 		protected final Registry<Type<?>> getValidRegistry() {
 			return REGISTRY;
 		}
 
 		@ApiStatus.OverrideOnly
-		public abstract TemporaryTileData<T> read(JCElement<T> element);
+		public abstract T read(JCElement<?> element);
 
 		@ApiStatus.OverrideOnly
-		public abstract TemporaryTileData<T> create(TileLayers layers, int localX, int localY, int time);
+		public abstract T create(TileLayers layers, int localX, int localY, int time);
 
+		@ApiStatus.OverrideOnly
+		public abstract JCElement<?> serialize(T data);
 	}
 
-	public interface Creator<T> {
-		TemporaryTileData<T> create(Type<T> type, TileLayers layers, int localX, int localY, int time);
+	public interface Creator<T extends TemporaryTileData> {
+		T create(Type<? extends T> type, TileLayers layers, int localX, int localY, int time);
 	}
 
-	public interface Deserializer<T> {
-		TemporaryTileData<T> create(Type<T> type, JCElement<T> element);
+	public interface Deserializer<T extends TemporaryTileData, E> {
+		T create(Type<? extends T> type, JCElement<E> element);
+	}
+
+	public interface Serializer<T extends TemporaryTileData, E> {
+		JCElement<E> serialize(T data, Type<?> type);
 	}
 }
