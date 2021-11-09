@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 public interface VirtualFile {
@@ -34,7 +35,7 @@ public interface VirtualFile {
 		@Nullable
 		VirtualFile resolve(String name);
 
-		Iterable<VirtualFile> children();
+		Collection<VirtualFile> children();
 	}
 
 	interface Regular extends VirtualFile {

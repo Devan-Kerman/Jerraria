@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Objects;
 
 public class PathVirtualFile implements VirtualFile {
@@ -62,7 +63,7 @@ public class PathVirtualFile implements VirtualFile {
 		}
 
 		@Override
-		public Iterable<VirtualFile> children() {
+		public Collection<VirtualFile> children() {
 			try {
 				return Files.list(path).map(PathVirtualFile::of).toList();
 			} catch (IOException exception) {

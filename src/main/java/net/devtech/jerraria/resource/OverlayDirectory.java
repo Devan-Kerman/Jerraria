@@ -2,10 +2,7 @@ package net.devtech.jerraria.resource;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public record OverlayDirectory(String name, List<Directory> directories) implements VirtualFile.Directory {
 
@@ -16,19 +13,27 @@ public record OverlayDirectory(String name, List<Directory> directories) impleme
 
 	@Override
 	public @Nullable VirtualFile resolve(String name) {
+		List<Directory> innerDirectories = new ArrayList<>();
+
 		for (Directory directory : directories) {
 			VirtualFile resolved = directory.resolve(name);
 
-			if (resolved != null) {
+			if (resolved instanceof Directory inner) {
+				innerDirectories.add(inner);
+			} else if (resolved != null) {
 				return resolved;
 			}
 		}
 
-		return null;
+		if (!innerDirectories.isEmpty()) {
+			return new OverlayDirectory(name, innerDirectories);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public Iterable<VirtualFile> children() {
+	public Collection<VirtualFile> children() {
 		Map<String, OverlayDirectory> overlays = new HashMap<>();
 		List<VirtualFile> files = new ArrayList<>();
 
