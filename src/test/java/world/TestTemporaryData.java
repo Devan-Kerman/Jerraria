@@ -1,12 +1,7 @@
 package world;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
-import it.unimi.dsi.fastutil.ints.IntIntPair;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.util.data.element.JCElement;
@@ -44,6 +39,6 @@ public class TestTemporaryData extends TemporaryTileData {
 	}
 
 	protected JCElement<Long> write(Type<?> type) {
-		return JCElement.newInstance(NativeJCType.LONG, this.encode());
+		return JCElement.create(NativeJCType.LONG, this.encode());
 	}
 }

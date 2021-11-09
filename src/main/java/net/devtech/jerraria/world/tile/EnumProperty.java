@@ -46,7 +46,7 @@ public class EnumProperty<E extends Enum<E>> implements Property<E, String> {
 
 	@Override
 	public JCElement<String> convert(E value) {
-		return JCElement.newInstance(NativeJCType.STRING, value.name());
+		return JCElement.create(NativeJCType.STRING, value.name());
 	}
 
 	@Override

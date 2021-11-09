@@ -11,7 +11,7 @@ import net.devtech.jerraria.util.data.pool.JCEncodePool;
 
 public interface JCElement<T> {
 
-	static <T, C> JCElement<T> newInstance(JCType<C, T> type, C value) {
+	static <T, C> JCElement<T> create(JCType<C, T> type, C value) {
 		return new JCElementImpl<>(type, value);
 	}
 

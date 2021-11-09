@@ -48,7 +48,7 @@ public class IntRangeProperty extends AbstractIntList implements Property<Intege
 
 	@Override
 	public JCElement<Integer> convert(Integer value) {
-		return JCElement.newInstance(NativeJCType.INT, value);
+		return JCElement.create(NativeJCType.INT, value);
 	}
 
 	@Override

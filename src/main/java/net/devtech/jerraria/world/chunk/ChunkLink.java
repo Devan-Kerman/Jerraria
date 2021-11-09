@@ -53,7 +53,7 @@ public class ChunkLink extends TemporaryTileData {
 		for(Chunk link : this.links) {
 			longs.add(link.getId());
 		}
-		return JCElement.newInstance(NativeJCType.LONG_ARRAY, longs);
+		return JCElement.create(NativeJCType.LONG_ARRAY, longs);
 	}
 
 	@Override

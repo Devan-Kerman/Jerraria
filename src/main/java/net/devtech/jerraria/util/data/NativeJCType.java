@@ -137,7 +137,7 @@ public record NativeJCType<T>(BinDecode<T> decode, BinEncode<T> encode, int id) 
 		return new NativeJCType<>((pool, input) -> {
 			return (T) pool.getElement(input.readInt()).value();
 		}, (pool, output, value) -> {
-			int index = pool.getIndex(JCElement.newInstance(type, value));
+			int index = pool.getIndex(JCElement.create(type, value));
 			output.writeInt(index);
 		});
 	}

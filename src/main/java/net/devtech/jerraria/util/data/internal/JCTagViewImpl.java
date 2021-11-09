@@ -91,7 +91,7 @@ public class JCTagViewImpl implements JCTagView {
 		}
 
 		JCElement<?> convert() {
-			return JCElement.newInstance(type.nativeType(), type.convertToNative(value));
+			return JCElement.create(type.nativeType(), type.convertToNative(value));
 		}
 	}
 

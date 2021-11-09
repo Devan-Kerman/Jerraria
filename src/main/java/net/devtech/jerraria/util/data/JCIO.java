@@ -55,7 +55,7 @@ public class JCIO {
 
 	@NotNull
 	static <T> JCElement<T> getElement(JCDecodePool pool, DataInput i, NativeJCType<T> type) throws IOException {
-		return JCElement.newInstance(type, read(type, pool, i));
+		return JCElement.create(type, read(type, pool, i));
 	}
 
 	public static <T> JCElement<T> read(JCDecodePool pool, DataInput input) throws IOException {
