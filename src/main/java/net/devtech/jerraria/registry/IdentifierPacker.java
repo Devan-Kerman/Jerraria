@@ -9,6 +9,8 @@ import net.devtech.jerraria.util.Log2;
 /**
  * a packed string is in the following format: [string len] [char id...]. Examples: "test": [4] [0, 1, 2, 0, 0, 0, 0,
  * ...]
+ *
+ * This is basically a based32 encoder at home
  */
 public final class IdentifierPacker {
 	public static final String VALID = "[a-z][0-9]_-/.:";

@@ -134,4 +134,9 @@ public abstract class Id {
 		}
 		return hash;
 	}
+
+	@Override
+	public String toString() {
+		return this.unpackNamespace() + ":" + this.getUnpackedPath();
+	}
 }

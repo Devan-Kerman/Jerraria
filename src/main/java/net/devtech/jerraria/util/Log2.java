@@ -11,6 +11,18 @@ public final class Log2 {
 		LogTable256[0] = -1; // if you want log(0) to return -1
 	}
 
+	public static int nearestPowerOf2(int in) {
+		long v = in & 0xFFFFFFFFL;
+		v--;
+		v |= v >> 1;
+		v |= v >> 2;
+		v |= v >> 4;
+		v |= v >> 8;
+		v |= v >> 16;
+		v++;
+		return (int) v;
+	}
+
 	public static int log2(int in) {
 		if(in < 0) {
 			throw new IllegalArgumentException("in cannot be less than 0!");

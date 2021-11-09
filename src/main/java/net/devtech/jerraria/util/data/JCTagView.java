@@ -17,6 +17,8 @@ public interface JCTagView {
 
 	void forEach(ValuesConsumer consumer);
 
+	long getLong(String key, long defaultValue);
+
 	interface ValuesConsumer {
 		<T, N> void accept(String key, JCType<T, N> type, T value) throws Throwable;
 	}

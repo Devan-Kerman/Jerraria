@@ -15,7 +15,8 @@ public abstract class AbstractWorld implements World {
 		Arrays.setAll(this.tileLayers, value -> new ChunkAccessTileLayer(TileLayers.LAYERS.get(value), this::getChunk));
 	}
 
-	protected abstract Chunk getChunk(int x, int y);
+	@Override
+	public abstract Chunk getChunk(int x, int y);
 
 	@Override
 	public TileLayer layerFor(TileLayers layers) {

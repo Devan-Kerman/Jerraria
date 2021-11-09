@@ -26,7 +26,7 @@ public class SynchronousWorld extends TickingWorld {
 	}
 
 	@Override
-	protected synchronized Chunk getChunk(int x, int y) {
+	public synchronized Chunk getChunk(int x, int y) {
 		return this.loadedChunkCache.computeIfAbsent(Chunk.combineInts(x, y), this.reader);
 	}
 

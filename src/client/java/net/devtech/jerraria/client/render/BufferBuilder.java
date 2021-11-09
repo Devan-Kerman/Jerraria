@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL20.glBufferData;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import net.devtech.jerraria.util.Log2;
 import org.lwjgl.opengl.GL20;
 
 public final class BufferBuilder {
@@ -21,15 +22,7 @@ public final class BufferBuilder {
 	public BufferBuilder(int expectedSize, int length) {
 		this.vertexLength = length;
 		// compute the next highest power of 2 of 32-bit v
-		long v = expectedSize & 0xFFFFFFFFL;
-		v--;
-		v |= v >> 1;
-		v |= v >> 2;
-		v |= v >> 4;
-		v |= v >> 8;
-		v |= v >> 16;
-		v++;
-		this.buffer = allocateBuffer((int) v);
+		this.buffer = allocateBuffer(Log2.nearestPowerOf2(expectedSize));
 	}
 
 	int vertexOffset() {

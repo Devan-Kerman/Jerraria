@@ -2,16 +2,15 @@ package net.devtech.jerraria.world.tile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.content.Tiles;
-import net.devtech.jerraria.registry.FastRegistry;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
+import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
@@ -201,7 +200,7 @@ public class Tile implements IdentifiedObject {
 	}
 
 	@Override
-	public <T extends IdentifiedObject> Id.Full getId(FastRegistry<T> registry, Function<T, Id.Full> access)
+	public <T extends IdentifiedObject> Id.Full getId(Registry.Fast<T> registry, Function<T, Id.Full> access)
 		throws UnsupportedOperationException {
 		if(this.id == null) {
 			throw new IllegalArgumentException(this + " not registered!");
@@ -212,7 +211,7 @@ public class Tile implements IdentifiedObject {
 	}
 
 	@Override
-	public void setId_(FastRegistry<?> registry, Id.Full id) throws UnsupportedOperationException {
+	public void setId_(Registry.Fast<?> registry, Id.Full id) throws UnsupportedOperationException {
 		if(registry == Tiles.REGISTRY) {
 			this.id = id;
 		} else {

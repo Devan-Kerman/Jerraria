@@ -57,6 +57,18 @@ public class JCTagViewImpl implements JCTagView {
 		}
 	}
 
+	@Override
+	public long getLong(String key, long defaultValue) {
+		Entry<?, ?> entry = this.entries.get(key);
+		if(entry.type == NativeJCType.INT) {
+			return (Integer) entry.value;
+		} else if(entry.type.nativeType() == NativeJCType.INT) {
+			return (Integer) this.getObject(entry);
+		} else {
+			return defaultValue;
+		}
+	}
+
 	private static <T> void apply(ValuesConsumer consumer, String key, Entry<T, ?> entry) {
 		try {
 			consumer.accept(key, entry.type, entry.value);

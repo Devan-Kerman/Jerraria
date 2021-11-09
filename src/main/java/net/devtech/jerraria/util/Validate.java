@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.sun.tools.javac.Main;
 import org.jetbrains.annotations.Nullable;
@@ -146,6 +147,13 @@ public class Validate {
 			smol = Math.min(smol, i);
 		}
 		return smol;
+	}
+
+	/**
+	 * static blocks in interfaces at home
+	 */
+	public static <T> T create(Supplier<T> supplier) {
+		return supplier.get();
 	}
 
 	public interface Msg<T> {

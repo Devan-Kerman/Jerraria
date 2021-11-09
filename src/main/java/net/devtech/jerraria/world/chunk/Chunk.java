@@ -76,9 +76,8 @@ public class Chunk {
 		List<TemporaryTileData> tileActions = this.actions;
 		for(int i = tileActions.size() - 1; i >= 0; i--) {
 			TemporaryTileData action = tileActions.get(i);
-			if(action.counter == action.delay) {
+			if(action.counter <= 0 || --action.counter == 0) {
 				this.runAction(this.world, action);
-				action.counter = 0;
 				tileActions.remove(i);
 				originals--;
 			}
@@ -87,9 +86,8 @@ public class Chunk {
 		while(this.actions.size() > originals) {
 			for(int i = tileActions.size() - 1; i >= originals; i--) {
 				TemporaryTileData action = tileActions.get(i);
-				if(action.delay == 0) {
+				if(action.counter <= 0 || --action.counter == 0) {
 					this.runAction(this.world, action);
-					action.counter = 0;
 					tileActions.remove(i);
 					originals--;
 				}
@@ -106,10 +104,18 @@ public class Chunk {
 		return (long)a << 32| b & 0xFFFFFFFFL;
 	}
 
-	private void runAction(World world, TemporaryTileData action) {
+	public static int getB(long id) {
+		return (int) (id & 0xFFFFFFFFL);
+	}
+
+	public static int getA(long id) {
+		return (int) ((id >>> 32) & 0xFFFFFFFFL);
+	}
+
+	private void runAction(World world, TemporaryTileData<?> action) {
 		TileVariant variant = this.get(action.layer, action.localX, action.localY);
 		TileData data = this.getData(action.layer, action.localX, action.localY);
-		action.onInvalidated(variant, data, world, this.chunkX * World.CHUNK_SIZE + action.localX, this.chunkY * World.CHUNK_SIZE + action.localY);
+		action.onInvalidated(this, variant, data, world, this.chunkX * World.CHUNK_SIZE + action.localX, this.chunkY * World.CHUNK_SIZE + action.localY);
 	}
 
 	public TileVariant get(TileLayers layer, int x, int y) {

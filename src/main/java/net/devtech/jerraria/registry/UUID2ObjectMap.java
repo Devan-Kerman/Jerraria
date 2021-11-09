@@ -65,7 +65,7 @@ public final class UUID2ObjectMap<T> extends AbstractMap<Id.Full, T> {
 				long[] key1 = this.key1, key2 = this.key2;
 				Object[] value1 = this.value1;
 				this.resize(size);
-				final int mask1 = size - 1; // Note that this is used by the hashing macro
+				final int mask1 = size - 1;
 				int pos1;
 				for(int i = key2.length - 1; i >= 0; i--) {
 					if(this.hasEntry(pos1 = HashCommon.mix(hash(key1[i], key2[i])) & mask1)) {
