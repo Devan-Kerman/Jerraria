@@ -75,6 +75,14 @@ public class ChunkGroup {
 			return chunk;
 		}
 
+		Chunk getChunk0(int x, int y) {
+			Chunk chunk = ChunkGroup.this.chunks.get(Chunk.combineInts(x, y));
+			if(chunk == null) {
+				chunk = backing.getChunk(x, y);
+			}
+			return chunk;
+		}
+
 		@Override
 		public CompletableFuture<World> linkAndExecute(Consumer<ChunkLinkingAccess> access) {
 			LongSet list = new LongOpenHashSet();
@@ -96,6 +104,18 @@ public class ChunkGroup {
 					list.forEach(l -> acc.link(Chunk.getA(l), Chunk.getB(l)));
 				});
 			}
+		}
+
+		@Override
+		public ChunkLinkingAccess getUnsafeLinkingAccess(int startChunkX, int startChunkY) {
+			Chunk chunk = this.getChunk(startChunkX, startChunkY);
+			return (chunkX, chunkY) -> chunk.addLink(this.getChunk0(chunkX, chunkY));
+		}
+
+		@Override
+		public ChunkLinkingAccess getUnsafeUnlinkingAccess(int startX, int startY) {
+			Chunk chunk = this.getChunk(startX, startY);
+			return (chunkX, chunkY) -> chunk.removeLink(this.getChunk0(chunkX, chunkY));
 		}
 	}
 }

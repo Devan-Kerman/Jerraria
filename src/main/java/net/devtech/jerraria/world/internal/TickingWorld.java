@@ -121,4 +121,16 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 			this.groups.add(group);
 		}
 	}
+
+	@Override
+	public ChunkLinkingAccess getUnsafeLinkingAccess(int startChunkX, int startChunkY) {
+		Chunk chunk = this.getChunk(startChunkX, startChunkY);
+		return (chunkX, chunkY) -> chunk.addLink(this.getChunk(chunkX, chunkY));
+	}
+
+	@Override
+	public ChunkLinkingAccess getUnsafeUnlinkingAccess(int startX, int startY) {
+		Chunk chunk = this.getChunk(startX, startY);
+		return (chunkX, chunkY) -> chunk.removeLink(this.getChunk(chunkX, chunkY));
+	}
 }
