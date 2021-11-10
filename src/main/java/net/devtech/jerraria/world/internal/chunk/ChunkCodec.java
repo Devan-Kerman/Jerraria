@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.internal;
+package net.devtech.jerraria.world.internal.chunk;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,7 @@ import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
-import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.internal.chunk.Chunk;
-import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
+import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.tile.InternalTileAccess;
 import net.devtech.jerraria.world.tile.Property;
 import net.devtech.jerraria.world.tile.Tile;
@@ -73,36 +71,37 @@ public class ChunkCodec {
 		return list;
 	}
 
-	public static Int2ObjectMap<TileData> deserializeData(World world, int cx, int cy, TileVariant[] variants, List<IntObjectPair<JCElement>> view) {
+	public static Int2ObjectMap<TileData> deserializeData(int cx, int cy, TileVariant[] variants, List<IntObjectPair<JCElement>> view) {
 		Int2ObjectMap<TileData> tiles = new Int2ObjectOpenHashMap<>();
 		for(IntObjectPair<JCElement> pair : view) {
 			JCElement data = pair.second();
 			int loc = pair.firstInt();
 			TileVariant variant = variants[loc];
 			TileData read = InternalTileAccess.read(variant, data);
-			InternalTileAccess.init(read, world, loc, cx, cy);
+			InternalTileDataAccess.init(read, loc, cx, cy);
 			tiles.put(loc, read);
 		}
 		return tiles;
 	}
 
-	public static List<Pair<Id.Full, JCElement>> serializeTemporaryData(List<TemporaryTileData> data) {
+	public static List<Pair<Id.Full, JCElement>> serializeTemporaryData(List<UnpositionedTileData> data) {
 		List<Pair<Id.Full, JCElement>> elements = new ArrayList<>(data.size());
-		for(TemporaryTileData datum : data) {
+		for(UnpositionedTileData datum : data) {
 			elements.add(new ObjectObjectImmutablePair<>(
-				TemporaryTileData.REGISTRY.getId(datum.type),
-				((TemporaryTileData.Type)datum.type).serialize(datum)
+				UnpositionedTileData.REGISTRY.getId(datum.getType()),
+				((TemporaryTileData.Type)datum.getType()).serialize(datum)
 			));
 		}
 		return elements;
 	}
 
-	public static List<TemporaryTileData> deserializeTemporaryData(List<Pair<Id.Full, JCElement>> elements) {
-		List<TemporaryTileData> data = new ArrayList<>();
+	// might be more effecient to store this as a Map<Id, List<JCElement>>
+	public static List<UnpositionedTileData> deserializeTemporaryData(Chunk chunk, List<Pair<Id.Full, JCElement>> elements) {
+		List<UnpositionedTileData> data = new ArrayList<>();
 		for(var element : elements) {
 			Id.Full id = element.first();
-			TemporaryTileData.Type type = TemporaryTileData.REGISTRY.getForId(id);
-			TemporaryTileData read = type.read(element.second());
+			TemporaryTileData.Type type = UnpositionedTileData.REGISTRY.getForId(id);
+			UnpositionedTileData read = type.read(chunk, element.second());
 			data.add(read);
 		}
 		return data;

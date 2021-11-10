@@ -10,7 +10,7 @@ import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
 
 public class ScheduledTick extends TemporaryTileData {
-	public static final TemporaryTileData.Type<ScheduledTick> TYPE = TemporaryTileData.createAndRegister(ScheduledTick::new, ScheduledTick::new, ScheduledTick::write,
+	public static final TemporaryTileData.Type<ScheduledTick> TYPE = UnpositionedTileData.createAndRegister(ScheduledTick::new, ScheduledTick::new, ScheduledTick::write,
 		Id.createFull("jerraria", "scheduled"));
 
 	protected ScheduledTick(Type<?> type, TileLayers layer, int localX, int localY, int time) {
@@ -38,7 +38,7 @@ public class ScheduledTick extends TemporaryTileData {
 	}
 
 	@Override
-	protected boolean isCompatible(TileVariant old, TileVariant new_) {
+	public boolean isCompatible(TileVariant old, TileData oldData, TileVariant new_, TileData newData) {
 		return old.getOwner() == new_.getOwner();
 	}
 }

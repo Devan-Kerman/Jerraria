@@ -8,7 +8,4 @@ import net.devtech.jerraria.world.World;
  * is because it will lead to conflicts
  */
 public final class GenericTileData extends TileData {
-	@Override
-	public void tick(World world, TileLayers layer, int x, int y) {
-	}
 }

@@ -3,6 +3,9 @@ package net.devtech.jerraria.world.tile;
 import java.util.Iterator;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.devtech.jerraria.world.TileLayers;
+import net.devtech.jerraria.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public final class TileVariant implements VariantConvertable {
 	final Tile owner;
@@ -35,6 +38,14 @@ public final class TileVariant implements VariantConvertable {
 
 	public TileData createData() {
 		return this.owner.create(this);
+	}
+
+	public boolean doesTick(World world, TileData data, TileLayers layers, int x, int y) {
+		return this.getOwner().doesDataTick(world, this, data, layers, x, y);
+	}
+
+	public void tickData(World world, TileData data, TileLayers layers, int x, int y) {
+		this.getOwner().tickData(world, this, data, layers, x, y);
 	}
 
 	/**

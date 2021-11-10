@@ -1,9 +1,5 @@
 package net.devtech.jerraria.world.internal.chunk;
 
-import static net.devtech.jerraria.world.tile.InternalTileAccess.getAbsX;
-import static net.devtech.jerraria.world.tile.InternalTileAccess.getAbsY;
-import static net.devtech.jerraria.world.tile.InternalTileAccess.getLayer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +16,6 @@ import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.internal.ChunkCodec;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -34,7 +29,7 @@ public class Chunk implements Executor {
 	 */
 	final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
 	final Int2ObjectMap<TileData> data;
-	final List<TemporaryTileData> actions;
+	final List<UnpositionedTileData> actions;
 	final Object2IntMap<Chunk> links;
 	final List<Runnable> immediateTasks = new ArrayList<>();
 	List<IntLongPair> unresolved;
@@ -57,14 +52,14 @@ public class Chunk implements Executor {
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 		ChunkCodec.populateTiles(variants, tag.get("tiles", NativeJCType.POOLED_TAG_LIST));
-		this.data = ChunkCodec.deserializeData(world,
+		this.data = ChunkCodec.deserializeData(
 			chunkX,
 			chunkY,
 			this.variants,
 			tag.get("data", NativeJCType.INT_ANY_LIST));
-		this.actions = ChunkCodec.deserializeTemporaryData(tag.get("actions", NativeJCType.ID_ANY_LIST));
 		this.unresolved = tag.get("links", NativeJCType.INT_LONG_LIST);
 		this.links = new Object2IntOpenHashMap<>(unresolved.size());
+		this.actions = ChunkCodec.deserializeTemporaryData(this, tag.get("actions", NativeJCType.ID_ANY_LIST));
 	}
 
 	public JCTagView write() {
@@ -77,7 +72,7 @@ public class Chunk implements Executor {
 	}
 
 
-	public <T extends TemporaryTileData> T schedule(TemporaryTileData.Type<T> type,
+	public <T extends UnpositionedTileData> T schedule(TemporaryTileData.Type<T> type,
 		TileLayers layer,
 		int x,
 		int y,
@@ -146,11 +141,7 @@ public class Chunk implements Executor {
 
 
 	public void tick() {
-		for(TileData value : this.data.values()) {
-			value.tick(this.world, getLayer(value), getAbsX(value), getAbsY(value));
-		}
-
-		List<TemporaryTileData> data = this.actions;
+		var data = this.actions;
 		int originals = 0;
 		do {
 			for(int i = data.size() - 1; i >= originals; i--) {
@@ -196,30 +187,37 @@ public class Chunk implements Executor {
 	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
 		int index = getIndex(layer, x, y);
 		TileVariant old = this.variants[index];
-		TileData data = this.data.get(index);
+		TileData oldData = this.data.get(index);
 		TileData replacement;
 		// todo when attach api is added, add a 'onReplace' with TileData so mods can choose on an individual basis
 		//  whether or not
 		//  their data is compatible with the new block
-		if(value.isCompatible(data)) {
+		if(value.isCompatible(oldData)) {
+			replacement = oldData;
+		} else {
 			if(value.hasBlockData()) {
 				replacement = value.createData();
+				InternalTileDataAccess.init(replacement, index, this.chunkX, this.chunkY);
 				this.data.put(index, replacement);
 			} else {
 				replacement = null;
 				this.data.remove(index);
 			}
-		} else {
-			replacement = data;
 		}
 
 		this.variants[index] = value;
 
 		// discard outdated actions
 		for(int i = this.actions.size() - 1; i >= 0; i--) {
-			TemporaryTileData action = this.actions.get(i);
-			if(!action.isCompatible(old, value)) {
+			UnpositionedTileData action = this.actions.get(i);
+			if(!action.isCompatible(old, oldData, value, replacement)) {
 				this.actions.remove(i);
+			}
+		}
+
+		if(replacement != oldData && replacement != null) {
+			if(value.doesTick(world, oldData, layer, InternalTileDataAccess.getAbsX(replacement), InternalTileDataAccess.getAbsY(replacement))) {
+				this.actions.add(replacement);
 			}
 		}
 
@@ -249,34 +247,42 @@ public class Chunk implements Executor {
 		}
 	}
 
-	private static int getIndex(TileLayers layer, int x, int y) {
+	static int getIndex(TileLayers layer, int x, int y) {
 		return layer.ordinal() + TileLayers.COUNT * x + TileLayers.COUNT * World.CHUNK_SIZE * y;
 	}
 
-	private boolean execute(List<TemporaryTileData> tileActions, int index) {
-		TemporaryTileData action = tileActions.get(index);
-		if(action.counter <= 0 || (action.counter != Integer.MAX_VALUE && --action.counter == 0)) {
-			this.runAction(this.group.local, action);
+	private boolean execute(List<UnpositionedTileData> tileActions, int index) {
+		UnpositionedTileData action = tileActions.get(index);
+
+		TileData data = action instanceof TileData t ? t : null;
+		TileVariant variant = data != null ? data.getVariant() : null;
+		if(action instanceof TemporaryTileData.Tickable t) {
+			variant = this.get(action.getLayer(), action.getLocalX(), action.getLocalY());
+			if(variant.hasBlockData()) {
+				data = this.getData(action.getLayer(), action.getLocalX(), action.getLocalY());
+			}
+			t.tick(this, this.group.local, variant, data, action.getLayer(),
+				this.chunkX * World.CHUNK_SIZE + action.getLocalX(),
+				this.chunkY * World.CHUNK_SIZE + action.getLocalY());
+		}
+
+		boolean shouldEnd = action.getCounter() <= 0 || (action.getCounter() != Integer.MAX_VALUE && action.getAndDecrement() <= 0);
+		if(shouldEnd) {
+			if(variant == null) {
+				variant = this.get(action.getLayer(), action.getLocalX(), action.getLocalY());
+				if(variant.hasBlockData()) {
+					data = this.getData(action.getLayer(), action.getLocalX(), action.getLocalY());
+				}
+			}
+
+			if(action instanceof TemporaryTileData t)
+			t.onInvalidated(this, this.group.local, variant, data,
+				action.getLayer(),
+				this.chunkX * World.CHUNK_SIZE + action.getLocalX(),
+				this.chunkY * World.CHUNK_SIZE + action.getLocalY());
 			tileActions.remove(index);
 			return false;
 		}
 		return true;
-	}
-
-	private void runAction(World world, TemporaryTileData action) {
-		TileVariant variant = this.get(action.layer, action.localX, action.localY);
-		TileData data;
-		if(variant.hasBlockData()) {
-			data = this.getData(action.layer, action.localX, action.localY);
-		} else {
-			data = null;
-		}
-		action.onInvalidated(this,
-			world,
-			variant,
-			data,
-			action.layer,
-			this.chunkX * World.CHUNK_SIZE + action.localX,
-			this.chunkY * World.CHUNK_SIZE + action.localY);
 	}
 }

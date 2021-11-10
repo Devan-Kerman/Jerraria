@@ -16,7 +16,7 @@ import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
 
 public class ChunkLink extends TemporaryTileData {
-	public static final Type<ChunkLink> TYPE = TemporaryTileData.createAndRegister(ChunkLink::new,
+	public static final Type<ChunkLink> TYPE = UnpositionedTileData.createAndRegister(ChunkLink::new,
 		ChunkLink::new, ChunkLink::write,
 		Id.createFull("jerraria", "tempcklink"));
 
@@ -71,7 +71,7 @@ public class ChunkLink extends TemporaryTileData {
 	}
 
 	@Override
-	protected boolean isCompatible(TileVariant old, TileVariant new_) {
+	public boolean isCompatible(TileVariant old, TileData oldData, TileVariant new_, TileData newData) {
 		return false; // todo
 	}
 

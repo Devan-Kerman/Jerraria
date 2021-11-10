@@ -13,17 +13,21 @@ import net.devtech.jerraria.content.Tiles;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
+import net.devtech.jerraria.util.Func;
+import net.devtech.jerraria.util.LazyBool;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
+import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.internal.ChunkCodec;
+import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -39,6 +43,8 @@ public class Tile implements IdentifiedObject {
 		HAS_BLOCK_ENTITY.andThen(PriorityKey.DEFAULT, TileVariant::hasBlockData);
 	}
 
+	LazyBool doesTileDataTick;
+
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
@@ -53,8 +59,10 @@ public class Tile implements IdentifiedObject {
 		return cache[this.defaultIndex];
 	}
 
+	/**
+	 * @see TileLayer#scheduleTick(int, int, int)
+	 */
 	public void onScheduledTick(World world, TileVariant variant, @Nullable TileData data, TileLayers layers, int x, int y) {
-
 	}
 
 	// properties
@@ -101,6 +109,26 @@ public class Tile implements IdentifiedObject {
 	}
 
 	// block data
+	public boolean doesDataTick(World world, TileVariant variant, @NotNull TileData data, TileLayers layers, int x, int y) {
+		LazyBool dat = this.doesTileDataTick;
+		switch(dat) {
+			case UNIT -> {
+				boolean overrides = Func.get(Tile::tickData).getDeclaringClass() != Tile.class;
+				this.doesTileDataTick = overrides ? LazyBool.TRUE : LazyBool.FALSE;
+				return overrides;
+			}
+			case TRUE -> {
+				return true;
+			}
+			case FALSE -> {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public void tickData(World world, TileVariant variant, @NotNull TileData data, TileLayers layers, int x, int y) {
+	}
 
 	public final void enableBlockData() {
 		this.hasBlockEntity = true;

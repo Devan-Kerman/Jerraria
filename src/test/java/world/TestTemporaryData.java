@@ -41,7 +41,7 @@ public class TestTemporaryData extends TemporaryTileData {
 
 
 	@Override
-	protected boolean isCompatible(TileVariant old, TileVariant new_) {
+	public boolean isCompatible(TileVariant old, TileData oldData, TileVariant new_, TileData newData) {
 		return false;
 	}
 
