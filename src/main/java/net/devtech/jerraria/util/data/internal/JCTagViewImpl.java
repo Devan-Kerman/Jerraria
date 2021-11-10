@@ -81,17 +81,34 @@ public class JCTagViewImpl implements JCTagView {
 		return entry.type.convertToNative(entry.value);
 	}
 
-	static final class Entry<T, N> {
-		final JCType<T, N> type;
-		final T value;
-
-		Entry(JCType<T, N> type, T value) {
-			this.type = type;
-			this.value = value;
-		}
-
+	record Entry<T, N>(JCType<T, N> type, T value) {
 		JCElement<?> convert() {
 			return JCElement.create(type.nativeType(), type.convertToNative(value));
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof Entry e)) {
+				return false;
+			}
+			if(type instanceof NativeJCType) {
+				return e.type == type && e.value.equals(value);
+			} else if(e.type == type){
+				return e.value.equals(value);
+			} else {
+				return e.convert().equals(convert());
+			}
+		}
+
+		@Override
+		public int hashCode() {
+			if(type instanceof NativeJCType) {
+				int result = this.type.hashCode();
+				result = 31 * result + this.value.hashCode();
+				return result;
+			} else {
+				return convert().hashCode();
+			}
 		}
 	}
 

@@ -1,30 +1,37 @@
 package net.devtech.jerraria.world.internal;
 
+import static java.util.Collections.newSetFromMap;
+import static java.util.Collections.synchronizedSet;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.chunk.Chunk;
-import net.devtech.jerraria.world.chunk.ChunkGroup;
-import org.jetbrains.annotations.VisibleForTesting;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
+import net.devtech.jerraria.world.ChunkLinkingAccess;
 
 public abstract class TickingWorld extends AbstractWorld implements World {
-	final Set<ChunkGroup> groups = new HashSet<>();
+	final Set<ChunkGroup> groups = newSetFromMap(new ConcurrentHashMap<>());
 	final Set<Chunk> toRelink;
 	final Executor executor;
 	boolean maintainOrder;
 
-	protected TickingWorld(Executor executor, boolean doesMaintainOrder) {
+	protected TickingWorld(Executor executor, boolean maintainOrder) {
 		this.executor = executor;
-		this.maintainOrder = doesMaintainOrder;
-		this.toRelink = doesMaintainOrder ? new LinkedHashSet<>() : new HashSet<>();
+		this.maintainOrder = maintainOrder;
+		this.toRelink = maintainOrder ? synchronizedSet(new LinkedHashSet<>()) :
+		                newSetFromMap(new ConcurrentHashMap<>());
 	}
 
 	public void requiresRelinking(Chunk chunk) {
@@ -37,7 +44,73 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 
 	public abstract void unloadGroup(ChunkGroup group);
 
-	public void createGroups() {
+	public void tick() {
+		this.createGroups();
+		List<CompletableFuture<Void>> ticks = new ArrayList<>();
+		for(ChunkGroup group : this.groups) {
+			ticks.add(CompletableFuture.runAsync(group::tick, this.executor));
+		}
+		CompletableFuture.allOf(ticks.toArray(CompletableFuture[]::new)).join();
+
+		// execute immediate tasks
+		AtomicBoolean hasTasks = new AtomicBoolean();
+
+		do {
+			ticks.clear();
+			hasTasks.set(false);
+			this.createGroups();
+			for(ChunkGroup group : this.groups) {
+				ticks.add(CompletableFuture.runAsync(() -> {
+					boolean val = group.runTasks();
+					hasTasks.compareAndSet(false, val);
+				}, this.executor));
+			}
+			CompletableFuture.allOf(ticks.toArray(CompletableFuture[]::new)).join();
+		} while(hasTasks.get());
+
+		// autosaving and shutdown should run here, after immediate tasks
+	}
+
+	public boolean doesMaintainOrder() {
+		return this.maintainOrder;
+	}
+
+	@Override
+	public CompletableFuture<World> linkAndExecute(Consumer<ChunkLinkingAccess> access) {
+		var ref = new Object() {
+			Chunk chunk;
+		};
+		LongSet visited = new LongOpenHashSet();
+		List<Chunk> chunks = new ArrayList<>();
+		access.accept((chunkX, chunkY) -> {
+			if(!visited.add(Chunk.combineInts(chunkX, chunkY))) {
+				return;
+			}
+			Chunk chunk = this.getChunk(chunkX, chunkY);
+
+			if(ref.chunk == null) {
+				chunk.attachToGroup();
+				ref.chunk = chunk;
+			} else {
+				ref.chunk.addLink(chunk);
+				chunks.add(chunk);
+			}
+		});
+
+		return CompletableFuture.supplyAsync(() -> {
+			ChunkGroup group = ref.chunk.getGroup();
+			return (World) group.local;
+		}, ref.chunk).whenComplete((world, throwable) -> {
+			for(Chunk chunk : chunks) {
+				ref.chunk.removeLink(chunk);
+			}
+			if(throwable != null) {
+				throw Validate.rethrow(throwable);
+			}
+		});
+	}
+
+	protected void createGroups() {
 		while(!this.toRelink.isEmpty()) {
 			Chunk chunk = this.toRelink.iterator().next();
 			ChunkGroup group = new ChunkGroup(this);
@@ -47,18 +120,5 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 			}
 			this.groups.add(group);
 		}
-	}
-
-	public void tick() {
-		this.createGroups();
-		List<CompletableFuture<Void>> ticks = new ArrayList<>();
-		for(ChunkGroup group : this.groups) {
-			ticks.add(CompletableFuture.runAsync(group::tick, this.executor));
-		}
-		ticks.forEach(CompletableFuture::join);
-	}
-
-	public boolean doesMaintainOrder() {
-		return this.maintainOrder;
 	}
 }

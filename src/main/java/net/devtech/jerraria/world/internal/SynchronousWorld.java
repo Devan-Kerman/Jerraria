@@ -1,6 +1,5 @@
 package net.devtech.jerraria.world.internal;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,15 +8,14 @@ import java.nio.file.Path;
 import java.util.concurrent.Executor;
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.data.JCIO;
 import net.devtech.jerraria.util.data.NativeJCType;
-import net.devtech.jerraria.world.chunk.Chunk;
-import net.devtech.jerraria.world.chunk.ChunkGroup;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
 
 public class SynchronousWorld extends TickingWorld {
 	final Path directory;
@@ -63,10 +61,7 @@ public class SynchronousWorld extends TickingWorld {
 
 			Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");
 			if(!Files.exists(chunkFile)) {
-				Chunk chunk = new Chunk(SynchronousWorld.this, Chunk.getA(key), Chunk.getB(key));
-				ChunkGroup group = new ChunkGroup(SynchronousWorld.this);
-				chunk.appendToGroup(group);
-				return chunk;
+				return new Chunk(SynchronousWorld.this, Chunk.getA(key), Chunk.getB(key));
 			}
 
 			Chunk chunk = null;
@@ -86,6 +81,7 @@ public class SynchronousWorld extends TickingWorld {
 			} catch(IOException e) {
 				throw Validate.rethrow(e);
 			} finally {
+				groups.add(this.building);
 				this.building = null;
 				if(chunk != null) {
 					this.tempCache.remove(chunk.getId());

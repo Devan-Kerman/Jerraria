@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.chunk;
+package net.devtech.jerraria.world.internal.chunk;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +56,14 @@ public class ChunkLink extends TemporaryTileData {
 		return JCElement.create(NativeJCType.LONG_ARRAY, longs);
 	}
 
+
 	@Override
-	protected void onInvalidated(Chunk chunk, TileVariant variant, @Nullable TileData data, World world, int x,
+	protected void onInvalidated(Chunk chunk,
+		World world,
+		TileVariant variant,
+		@Nullable TileData data,
+		TileLayers layers,
+		int x,
 		int y) {
 		for(Chunk link : this.resolve(world)) {
 			chunk.removeLink(link);

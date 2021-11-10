@@ -7,8 +7,8 @@ import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.chunk.Chunk;
-import net.devtech.jerraria.world.chunk.TemporaryTileData;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
@@ -24,14 +24,21 @@ public class TestTemporaryData extends TemporaryTileData {
 		super(type, layer, localX, localY, time);
 	}
 
+	@Override
+	protected void onInvalidated(Chunk chunk,
+		World world,
+		TileVariant variant,
+		@Nullable TileData data,
+		TileLayers layers,
+		int x,
+		int y) {
+		this.ids.add(chunk.getId());
+	}
+
 	public TestTemporaryData(Type<?> type, JCElement<Long> packedData) {
 		super(type, packedData.value());
 	}
 
-	@Override
-	protected void onInvalidated(Chunk chunk, TileVariant variant, @Nullable TileData data, World world, int x, int y) {
-		this.ids.add(chunk.getId());
-	}
 
 	@Override
 	protected boolean isCompatible(TileVariant old, TileVariant new_) {

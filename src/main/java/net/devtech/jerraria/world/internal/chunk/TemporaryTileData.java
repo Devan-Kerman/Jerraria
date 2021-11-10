@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.chunk;
+package net.devtech.jerraria.world.internal.chunk;
 
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Id;
@@ -67,7 +67,7 @@ public abstract class TemporaryTileData {
 		this.counter = counter;
 	}
 
-	protected abstract void onInvalidated(Chunk chunk, TileVariant variant, @Nullable TileData data, World world, int x, int y);
+	protected abstract void onInvalidated(Chunk chunk, World world, TileVariant variant, @Nullable TileData data, TileLayers layers, int x, int y);
 
 	protected abstract boolean isCompatible(TileVariant old, TileVariant new_);
 

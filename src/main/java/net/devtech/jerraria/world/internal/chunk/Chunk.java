@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.chunk;
+package net.devtech.jerraria.world.internal.chunk;
 
 import static net.devtech.jerraria.world.tile.InternalTileAccess.getAbsX;
 import static net.devtech.jerraria.world.tile.InternalTileAccess.getAbsY;
@@ -7,6 +7,7 @@ import static net.devtech.jerraria.world.tile.InternalTileAccess.getLayer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -23,8 +24,9 @@ import net.devtech.jerraria.world.internal.ChunkCodec;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
+import org.jetbrains.annotations.NotNull;
 
-public class Chunk {
+public class Chunk implements Executor {
 	final TickingWorld world;
 	final int chunkX, chunkY;
 	/**
@@ -34,6 +36,7 @@ public class Chunk {
 	final Int2ObjectMap<TileData> data;
 	final List<TemporaryTileData> actions;
 	final Object2IntMap<Chunk> links;
+	final List<Runnable> immediateTasks = new ArrayList<>();
 	List<IntLongPair> unresolved;
 
 	int ticketCount;
@@ -54,8 +57,7 @@ public class Chunk {
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 		ChunkCodec.populateTiles(variants, tag.get("tiles", NativeJCType.POOLED_TAG_LIST));
-		this.data = ChunkCodec.deserializeData(
-			world,
+		this.data = ChunkCodec.deserializeData(world,
 			chunkX,
 			chunkY,
 			this.variants,
@@ -75,7 +77,11 @@ public class Chunk {
 	}
 
 
-	public <T extends TemporaryTileData> T schedule(TemporaryTileData.Type<T> type, TileLayers layer, int x, int y, int duration) {
+	public <T extends TemporaryTileData> T schedule(TemporaryTileData.Type<T> type,
+		TileLayers layer,
+		int x,
+		int y,
+		int duration) {
 		T data = type.create(layer, x, y, duration);
 		this.actions.add(data);
 		return data;
@@ -120,6 +126,9 @@ public class Chunk {
 		}
 	}
 
+	/**
+	 * can only be called synchronously by world
+	 */
 	public void appendToGroup(ChunkGroup group) {
 		if(!group.contains(this)) {
 			group.add(this);
@@ -148,6 +157,18 @@ public class Chunk {
 				}
 			}
 		} while(this.actions.size() > originals);
+
+	}
+
+	/**
+	 * @return if there are more tasks to execute
+	 */
+	public boolean runTasks() {
+		for(int i = this.immediateTasks.size() - 1; i >= 0; i--) {
+			Runnable runnable = this.immediateTasks.remove(i);
+			runnable.run();
+		}
+		return !this.immediateTasks.isEmpty();
 	}
 
 	public long getId() {
@@ -211,6 +232,21 @@ public class Chunk {
 		return this.data.put(getIndex(layers, x, y), data);
 	}
 
+	@Override
+	public void execute(@NotNull Runnable command) {
+		this.immediateTasks.add(command);
+	}
+
+	public ChunkGroup getGroup() {
+		return this.group;
+	}
+
+	public void attachToGroup() {
+		if(this.group == null) {
+			this.world.requiresRelinking(this);
+		}
+	}
+
 	private static int getIndex(TileLayers layer, int x, int y) {
 		return layer.ordinal() + TileLayers.COUNT * x + TileLayers.COUNT * World.CHUNK_SIZE * y;
 	}
@@ -218,7 +254,7 @@ public class Chunk {
 	private boolean execute(List<TemporaryTileData> tileActions, int index) {
 		TemporaryTileData action = tileActions.get(index);
 		if(action.counter <= 0 || (action.counter != Integer.MAX_VALUE && --action.counter == 0)) {
-			this.runAction(this.world, action);
+			this.runAction(this.group.local, action);
 			tileActions.remove(index);
 			return false;
 		}
@@ -227,12 +263,17 @@ public class Chunk {
 
 	private void runAction(World world, TemporaryTileData action) {
 		TileVariant variant = this.get(action.layer, action.localX, action.localY);
-		TileData data = this.getData(action.layer, action.localX, action.localY);
-		action.onInvalidated(
-			this,
+		TileData data;
+		if(variant.hasBlockData()) {
+			data = this.getData(action.layer, action.localX, action.localY);
+		} else {
+			data = null;
+		}
+		action.onInvalidated(this,
+			world,
 			variant,
 			data,
-			world,
+			action.layer,
 			this.chunkX * World.CHUNK_SIZE + action.localX,
 			this.chunkY * World.CHUNK_SIZE + action.localY);
 	}

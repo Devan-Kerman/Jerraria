@@ -6,7 +6,7 @@ import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class AbstractWorld implements World {
 	final ChunkAccessTileLayer[] tileLayers = new ChunkAccessTileLayer[TileLayers.COUNT];

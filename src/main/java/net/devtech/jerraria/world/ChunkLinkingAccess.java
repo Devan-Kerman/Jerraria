@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.chunk;
+package net.devtech.jerraria.world;
 
 import net.devtech.jerraria.world.World;
 

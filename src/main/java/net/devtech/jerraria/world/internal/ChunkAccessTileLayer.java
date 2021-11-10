@@ -3,7 +3,8 @@ package net.devtech.jerraria.world.internal;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.tile.VariantConvertable;
@@ -16,6 +17,18 @@ public class ChunkAccessTileLayer implements TileLayer {
 	public ChunkAccessTileLayer(TileLayers layers, ChunkGetter getter) {
 		this.layers = layers;
 		this.getter = getter;
+	}
+
+	@Override
+	public void scheduleTick(int x, int y, int delay) {
+
+	}
+
+	@Override
+	public <T extends TemporaryTileData> T addTemporaryTileData(TemporaryTileData.Type<T> type, int x, int y, int delay) {
+		return this.get((layer, chunk, localX, localY) -> {
+			return chunk.schedule(type, layer, localX, localY, delay);
+		}, x, y);
 	}
 
 	@Override

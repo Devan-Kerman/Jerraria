@@ -19,6 +19,8 @@ import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
+import net.devtech.jerraria.world.TileLayers;
+import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.ChunkCodec;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
@@ -51,6 +53,10 @@ public class Tile implements IdentifiedObject {
 		return cache[this.defaultIndex];
 	}
 
+	public void onScheduledTick(World world, TileVariant variant, @Nullable TileData data, TileLayers layers, int x, int y) {
+
+	}
+
 	// properties
 
 	public <E extends Enum<E>> EnumProperty<E> enumProperty(String name, E defaultValue) {
@@ -72,10 +78,11 @@ public class Tile implements IdentifiedObject {
 
 	public <P extends Property<?, ?>> P addProperty(P property) {
 		if(this.cache != null) {
-			throw new IllegalStateException("""
-				Cannot add property after blockstate cache has been initialized,
-				\tdo not call getDefaultState/getProperties before addProperty
-				\tand only call addProperty in your constructor (or field init)""",
+			throw new IllegalStateException(
+				"""
+					Cannot add property after blockstate cache has been initialized,
+					\tdo not call getDefaultState/getProperties before addProperty
+					\tand only call addProperty in your constructor (or field init)""",
 				this.variantTableInitializationStacktrace);
 		}
 		String name = property.getName();
@@ -97,6 +104,16 @@ public class Tile implements IdentifiedObject {
 
 	public final void enableBlockData() {
 		this.hasBlockEntity = true;
+	}
+
+	public boolean isCompatible(TileVariant variant, TileData data) {
+		if(this.hasBlockEntity) {
+			return variant.owner == this;
+		} else if(this.hasBlockData(variant)) {
+			return !(data instanceof GenericTileData);
+		} else {
+			return false;
+		}
 	}
 
 	@ApiStatus.OverrideOnly
@@ -135,28 +152,6 @@ public class Tile implements IdentifiedObject {
 		return null;
 	}
 
-	public boolean isCompatible(TileVariant variant, TileData data) {
-		if(this.hasBlockEntity) {
-			return variant.owner == this;
-		} else if(this.hasBlockData(variant)) {
-			return !(data instanceof GenericTileData);
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * todo implement + granular control
-	 * The range relative to the tile in which the tile can modify blocks
-	 */
-	public void setInfluenceRange(int linkFromX, int linkToX, int linkFromY, int linkToY) {
-		this.linkFromX = linkFromX;
-		this.linkToX = linkToX;
-		this.linkFromY = linkFromY;
-		this.linkToY = linkToY;
-	}
-
-
 	// this can be optimized via a map from Property -> int and a table for dimensions maybe
 	<T> TileVariant withSub(TileVariant current, Property<T, ?> substitute, T value, boolean notCached) {
 		Object2IntOpenHashMap<Property<?, ?>> properties = notCached ? new Object2IntOpenHashMap<>() : null;
@@ -179,17 +174,14 @@ public class Tile implements IdentifiedObject {
 					this.addProperty(current, properties, property);
 				}
 			}
-			this.cache[cacheIndex] = variant = new TileVariant(this, properties);
+			this.cache[cacheIndex] = variant = new TileVariant(this, properties, cacheIndex);
 		}
 		return variant;
 	}
 
-	private void addProperty(TileVariant current,
-		Object2IntOpenHashMap<Property<?, ?>> properties,
-		Property<?, ?> property) {
+	void addProperty(TileVariant current, Object2IntOpenHashMap<Property<?, ?>> properties, Property<?, ?> property) {
 		properties.put(property, current == null ? property.defaultIndex() : current.values.getInt(property));
 	}
-
 
 	TileVariant[] initializeCache(String apiName) {
 		TileVariant[] cache = this.cache;
@@ -200,6 +192,12 @@ public class Tile implements IdentifiedObject {
 			this.properties = List.copyOf(this.properties);
 		}
 		return cache;
+	}
+
+	static final class TileVariantCacheInitializationStackTrace extends RuntimeException {
+		public TileVariantCacheInitializationStackTrace(String methodName) {
+			super("call to method " + methodName + " forced initialization of TileVariant table");
+		}
 	}
 
 	@Override
@@ -219,12 +217,6 @@ public class Tile implements IdentifiedObject {
 			this.id = id;
 		} else {
 			throw new UnsupportedOperationException("Cannot use custom FastRegistry on Tile!");
-		}
-	}
-
-	static final class TileVariantCacheInitializationStackTrace extends RuntimeException {
-		public TileVariantCacheInitializationStackTrace(String methodName) {
-			super("call to method " + methodName + " forced initialization of TileVariant table");
 		}
 	}
 

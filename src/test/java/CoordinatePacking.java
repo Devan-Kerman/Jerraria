@@ -1,5 +1,4 @@
-import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.world.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

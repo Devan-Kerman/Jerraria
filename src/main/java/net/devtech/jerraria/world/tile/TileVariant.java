@@ -7,15 +7,17 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 public final class TileVariant implements VariantConvertable {
 	final Tile owner;
 	final Object2IntMap<Property<?, ?>> values;
+	final int cacheIndex;
 	int linkFromX, linkToX, linkFromY, linkToY;
 
-	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values) {
+	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values, int index) {
 		this.owner = owner;
 		this.values = values;
 		this.linkFromX = owner.linkFromX;
 		this.linkToX = owner.linkToX;
 		this.linkFromY = owner.linkFromY;
 		this.linkToY = owner.linkToY;
+		this.cacheIndex = index;
 	}
 
 	public boolean isCompatible(TileData data) {

@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.content.Tiles;
+import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.world.TileLayers;
-import net.devtech.jerraria.world.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.SynchronousWorld;
 import net.devtech.jerraria.world.tile.TileVariant;
 import org.junit.jupiter.api.Assertions;
@@ -74,5 +78,30 @@ public class WorldTest {
 		System.out.println("World tick took " + (end - start) + "ms");
 		// hope a race condition happens, if it doesn't, idk try running it again it works on my machine
 		Assertions.assertNotEquals(a, longs);
+	}
+
+	@Test
+	public void syncTasks() throws IOException, InterruptedException {
+		SynchronousWorld world = this.setupServer(true);
+		boolean didNotRun = false;
+		try {
+			world.executeAt(0, 0).get(1, TimeUnit.SECONDS);
+		} catch(InterruptedException | ExecutionException e) {
+			throw Validate.rethrow(e);
+		} catch(TimeoutException e) {
+			didNotRun = true;
+		}
+
+		Assertions.assertTrue(didNotRun, "executor was run!");
+
+		var ref = new Object() {
+			int val;
+		};
+		world.executeAt(10, 10).thenAccept(group -> {
+			ref.val = 1;
+		});
+		Assertions.assertEquals(0, ref.val, "task was run before tick!");
+		world.tick();
+		Assertions.assertEquals(1, ref.val, "task was not run!");
 	}
 }
