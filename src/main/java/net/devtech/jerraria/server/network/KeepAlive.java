@@ -17,11 +17,4 @@ public class KeepAlive extends ChannelDuplexHandler {
 			ctx.writeAndFlush(new PingWebSocketFrame());
 		}, 0, 10, TimeUnit.SECONDS);
 	}
-
-	@Override
-	public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) {
-		if (!(msg instanceof PingWebSocketFrame)) {
-			ctx.fireChannelRead(msg);
-		}
-	}
 }

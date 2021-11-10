@@ -95,16 +95,18 @@ public class TestClient {
 
 								@Override
 								public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) {
-									byte[] received = new byte[data.length];
-									((PacketCodec.Packet) msg).data().readBytes(received, 0, data.length);
+									if (msg instanceof PacketCodec.Packet packet) {
+										byte[] received = new byte[data.length];
+										packet.data().readBytes(received, 0, data.length);
 
-									if (Arrays.equals(data, received)) {
-										System.out.println("Data sent and received successfully");
-									} else {
-										System.err.println("Data mismatch through echo server");
+										if (Arrays.equals(data, received)) {
+											System.out.println("Data sent and received successfully");
+										} else {
+											System.err.println("Data mismatch through echo server");
+										}
+
+										ctx.close();
 									}
-
-									ctx.close();
 								}
 							});
 					}
