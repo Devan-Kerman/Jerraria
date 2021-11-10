@@ -4,6 +4,7 @@ import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
+import net.devtech.jerraria.world.internal.chunk.ScheduledTick;
 import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -21,7 +22,7 @@ public class ChunkAccessTileLayer implements TileLayer {
 
 	@Override
 	public void scheduleTick(int x, int y, int delay) {
-
+		this.addTemporaryTileData(ScheduledTick.TYPE, x, y, delay);
 	}
 
 	@Override
