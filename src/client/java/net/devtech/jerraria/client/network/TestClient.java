@@ -24,6 +24,7 @@ import net.devtech.jerraria.server.network.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
@@ -31,7 +32,9 @@ import java.util.function.Supplier;
 
 public class TestClient {
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, URISyntaxException {
+		URI server = new URI("ws://localhost:8008/websocket");
+
 		byte[] data = new byte[65536];
 		ThreadLocalRandom.current().nextBytes(data);
 
@@ -59,14 +62,14 @@ public class TestClient {
 							channel.pipeline().addLast("ssl", SslContextBuilder.forClient()
 								.trustManager(isSecure ? null : InsecureTrustManagerFactory.INSTANCE)
 								.build()
-								.newHandler(channel.alloc(), "localhost", 8008, channel.eventLoop()));
+								.newHandler(channel.alloc(), server.getHost(), server.getPort(), channel.eventLoop()));
 						}
 
 						channel.pipeline()
 							.addLast("http", new HttpClientCodec())
 							.addLast("http_aggregator", new HttpObjectAggregator(65536))
 							.addLast("compression", WebSocketClientCompressionHandler.INSTANCE)
-							.addLast("websocket_protocol", new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(new URI("ws://localhost:8008/websocket"), WebSocketVersion.V13, null, true, new DefaultHttpHeaders())))
+							.addLast("websocket_protocol", new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(server, WebSocketVersion.V13, null, true, new DefaultHttpHeaders())))
 							.addLast("heartbeat", new KeepAlive())
 							.addLast("websocket_codec", new WebSocketFrameCodec())
 							.addLast("codec", new PacketCodec())
@@ -111,7 +114,7 @@ public class TestClient {
 							});
 					}
 				})
-				.connect("localhost", 8008)
+				.connect(server.getHost(), server.getPort())
 				.sync()
 				.channel();
 			channel.closeFuture().sync();
