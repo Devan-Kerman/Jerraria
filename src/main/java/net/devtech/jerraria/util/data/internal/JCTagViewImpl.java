@@ -91,9 +91,7 @@ public class JCTagViewImpl implements JCTagView {
 			if(!(o instanceof Entry e)) {
 				return false;
 			}
-			if(type instanceof NativeJCType) {
-				return e.type == type && e.value.equals(value);
-			} else if(e.type == type){
+			if(e.type == type){
 				return e.value.equals(value);
 			} else {
 				return e.convert().equals(convert());

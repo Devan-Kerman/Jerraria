@@ -44,6 +44,8 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 
 	public abstract void unloadGroup(ChunkGroup group);
 
+	public abstract void unloadIndividualChunk(Chunk chunk);
+
 	public void tick() {
 		this.createGroups();
 		List<CompletableFuture<Void>> ticks = new ArrayList<>();

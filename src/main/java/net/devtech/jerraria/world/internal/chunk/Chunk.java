@@ -106,6 +106,8 @@ public class Chunk implements Executor {
 		this.ticketCount--;
 		if(this.group != null) {
 			this.group.unticket();
+		} else if(this.ticketCount == 0) {
+			this.world.unloadIndividualChunk(this);
 		}
 	}
 

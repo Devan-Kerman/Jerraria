@@ -32,15 +32,24 @@ public class SynchronousWorld extends TickingWorld {
 	public void unloadGroup(ChunkGroup group) {
 		for(var entry : group.chunks.long2ObjectEntrySet()) {
 			long key = entry.getLongKey();
-			this.loadedChunkCache.remove(key);
-			Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");
-			// output doesn't need buffering cus it's already buffered
-			try(DataOutputStream stream = new DataOutputStream(Files.newOutputStream(chunkFile))) {
-				JCIO.write(NativeJCType.TAG, entry.getValue().write(), stream);
-			} catch(IOException e) {
-				throw Validate.rethrow(e);
-			}
+			this.unloadChunk(entry.getValue(), key);
 		}
+	}
+
+	private void unloadChunk(Chunk entry, long key) {
+		this.loadedChunkCache.remove(key);
+		Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");
+		// output doesn't need buffering cus it's already buffered
+		try(DataOutputStream stream = new DataOutputStream(Files.newOutputStream(chunkFile))) {
+			JCIO.write(NativeJCType.TAG, entry.write(), stream);
+		} catch(IOException e) {
+			throw Validate.rethrow(e);
+		}
+	}
+
+	@Override
+	public void unloadIndividualChunk(Chunk chunk) {
+		this.unloadChunk(chunk, chunk.getId());
 	}
 
 	@Override

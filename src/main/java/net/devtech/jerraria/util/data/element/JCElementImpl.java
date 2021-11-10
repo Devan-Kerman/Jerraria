@@ -1,11 +1,9 @@
 package net.devtech.jerraria.util.data.element;
 
-import java.util.function.BiConsumer;
-
 import net.devtech.jerraria.util.data.JCType;
 import net.devtech.jerraria.util.data.NativeJCType;
 
-public class JCElementImpl<T> implements JCElement<T> {
+public class JCElementImpl<T> extends AbstractJCElementImpl<T> {
 	private final NativeJCType<T> type;
 	private final T value;
 

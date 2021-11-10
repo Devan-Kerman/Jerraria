@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 public class WorldTest {
 	SynchronousWorld setupServer(boolean maintainOrder) throws IOException {
 		Path dir = Files.createTempDirectory("jerraria_test");
+		System.out.println(dir.toAbsolutePath());
 		Executor executor = ForkJoinPool.commonPool();
 		return new SynchronousWorld(dir, executor, maintainOrder);
 	}
