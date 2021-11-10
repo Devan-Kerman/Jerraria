@@ -11,6 +11,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import net.devtech.jerraria.server.network.*;
@@ -62,21 +63,21 @@ public abstract class JServer {
 					channel.pipeline()
 						.addLast("timeout", new ReadTimeoutHandler(30))
 						.addLast("http", new HttpServerCodec())
-						.addLast("http_aggregator", new HttpObjectAggregator(8192))
+						.addLast("http_aggregator", new HttpObjectAggregator(65536))
 						// this should be toggleable in case a reverse proxy wants to compress instead
 						.addLast("compression", new WebSocketServerCompressionHandler())
-						.addLast("handshake", new WebSocketServerHandshakeHandler(uri))
+						.addLast("websocket_protocol", new WebSocketServerProtocolHandler(uri.getPath(), null, true))
 						.addLast("websocket_codec", new WebSocketFrameCodec())
 						.addLast("codec", new PacketCodec())
 						.addLast("splitter", new Pagination())
-						.addLast("connection", createClientConnection());
+						.addLast("connection", JServer.this.createClientConnection());
 				}
 			})
 			.childOption(ChannelOption.TCP_NODELAY, true)
 			.localAddress(address)
 			.bind();
 
-		listeners.add(new Listener(parent, child, future.channel()));
+		this.listeners.add(new Listener(parent, child, future.channel()));
 		return future;
 	}
 
@@ -85,7 +86,7 @@ public abstract class JServer {
 	}
 
 	public void closeConnections() {
-		Iterator<Listener> iterator = listeners.iterator();
+		Iterator<Listener> iterator = this.listeners.iterator();
 
 		while (iterator.hasNext()) {
 			Listener listener = iterator.next();

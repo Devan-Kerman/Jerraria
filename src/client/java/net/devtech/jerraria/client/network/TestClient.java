@@ -9,10 +9,11 @@ import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -43,8 +44,6 @@ public class TestClient {
 		// Certificate validation to verify server's identity
 		boolean isSecure = false;
 
-		WebSocketClientHandshakeHandler handler = new WebSocketClientHandshakeHandler(WebSocketClientHandshakerFactory.newHandshaker(URI.create("ws://localhost:8008/help_me"), WebSocketVersion.V13, null, true, EmptyHttpHeaders.INSTANCE));
-
 		try {
 			Channel channel = new Bootstrap()
 				.group(group)
@@ -65,16 +64,24 @@ public class TestClient {
 
 						channel.pipeline()
 							.addLast("http", new HttpClientCodec())
-							.addLast("http_aggregator", new HttpObjectAggregator(8192))
+							.addLast("http_aggregator", new HttpObjectAggregator(65536))
 							.addLast("compression", WebSocketClientCompressionHandler.INSTANCE)
-							.addLast("handshake", handler)
+							.addLast("websocket_protocol", new WebSocketClientProtocolHandler(WebSocketClientHandshakerFactory.newHandshaker(new URI("ws://localhost:8008/websocket"), WebSocketVersion.V13, null, true, new DefaultHttpHeaders())))
 							.addLast("heartbeat", new KeepAlive())
 							.addLast("websocket_codec", new WebSocketFrameCodec())
 							.addLast("codec", new PacketCodec())
 							.addLast("splitter", new Pagination())
 							.addLast("connection", new ChannelInboundHandlerAdapter() {
 								@Override
-								public void channelActive(@NotNull ChannelHandlerContext ctx) throws Exception {
+								public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+									if (evt == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+										this.active(ctx);
+									}
+
+									ctx.fireUserEventTriggered(evt);
+								}
+
+								public void active(@NotNull ChannelHandlerContext ctx) throws Exception {
 									if (ctx.pipeline().get("ssl") instanceof SslHandler ssl) {
 										Certificate[] certificates = ssl.engine().getSession().getPeerCertificates();
 										Certificate certificate = certificates[certificates.length - 1];
