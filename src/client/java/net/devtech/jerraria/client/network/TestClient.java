@@ -42,7 +42,7 @@ public class TestClient {
 		EventLoopGroup group = supplier.get();
 
 		// TLS encryption
-		boolean isEncrypted = false;
+		boolean isEncrypted = "wss".equalsIgnoreCase(server.getScheme());
 
 		// Certificate validation to verify server's identity
 		boolean isSecure = false;
