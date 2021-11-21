@@ -64,7 +64,7 @@ public abstract class JServer {
 						.addLast("timeout", new ReadTimeoutHandler(30))
 						.addLast("http", new HttpServerCodec())
 						.addLast("http_aggregator", new HttpObjectAggregator(65536))
-						// this should be toggleable in case a reverse proxy wants to compress instead
+						// this should be toggleable in case stack reverse proxy wants to compress instead
 						.addLast("compression", new WebSocketServerCompressionHandler())
 						.addLast("websocket_protocol", new WebSocketServerProtocolHandler(uri.getPath(), null, true))
 						.addLast("websocket_codec", new WebSocketFrameCodec())

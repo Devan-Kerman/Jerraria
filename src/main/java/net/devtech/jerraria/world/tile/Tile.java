@@ -48,7 +48,7 @@ public class Tile implements IdentifiedObject {
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
 	int defaultIndex;
-	List<Property<?, ?>> properties = new ArrayList<>();
+	List<EnumerableProperty<?, ?>> properties = new ArrayList<>();
 	int cacheSize = 1;
 	boolean hasBlockEntity;
 	Id.Full id;
@@ -79,12 +79,12 @@ public class Tile implements IdentifiedObject {
 		return this.rangeProperty(name, from, to, from);
 	}
 
-	public List<Property<?, ?>> getProperties() {
+	public List<EnumerableProperty<?, ?>> getProperties() {
 		this.initializeCache("getProperties");
 		return this.properties;
 	}
 
-	public <P extends Property<?, ?>> P addProperty(P property) {
+	public <P extends EnumerableProperty<?, ?>> P addProperty(P property) {
 		if(this.cache != null) {
 			throw new IllegalStateException(
 				"""
@@ -127,6 +127,7 @@ public class Tile implements IdentifiedObject {
 		return false;
 	}
 
+	@ApiStatus.OverrideOnly
 	public void tickData(World world, TileVariant variant, @NotNull TileData data, TileLayers layers, int x, int y) {
 	}
 
@@ -180,12 +181,12 @@ public class Tile implements IdentifiedObject {
 		return null;
 	}
 
-	// this can be optimized via a map from Property -> int and a table for dimensions maybe
-	<T> TileVariant withSub(TileVariant current, Property<T, ?> substitute, T value, boolean notCached) {
-		Object2IntOpenHashMap<Property<?, ?>> properties = notCached ? new Object2IntOpenHashMap<>() : null;
+	// this can be optimized via stack map from Property -> int and stack table for dimensions maybe
+	<T> TileVariant withSub(TileVariant current, EnumerableProperty<T, ?> substitute, T value, boolean notCached) {
+		Object2IntOpenHashMap<EnumerableProperty<?, ?>> properties = notCached ? new Object2IntOpenHashMap<>() : null;
 		int cacheIndex = 0;
 		int mul = 1;
-		for(Property<?, ?> property : this.properties) {
+		for(EnumerableProperty<?, ?> property : this.properties) {
 			int index = property == substitute ? substitute.indexOfValue(value) : current.values.getInt(property);
 			List<?> values = property.values();
 			cacheIndex += index * mul;
@@ -198,7 +199,7 @@ public class Tile implements IdentifiedObject {
 		if(variant == null) {
 			if(properties == null) {
 				properties = new Object2IntOpenHashMap<>();
-				for(Property<?, ?> property : this.properties) {
+				for(EnumerableProperty<?, ?> property : this.properties) {
 					this.addProperty(current, properties, property);
 				}
 			}
@@ -207,7 +208,7 @@ public class Tile implements IdentifiedObject {
 		return variant;
 	}
 
-	void addProperty(TileVariant current, Object2IntOpenHashMap<Property<?, ?>> properties, Property<?, ?> property) {
+	void addProperty(TileVariant current, Object2IntOpenHashMap<EnumerableProperty<?, ?>> properties, EnumerableProperty<?, ?> property) {
 		properties.put(property, current == null ? property.defaultIndex() : current.values.getInt(property));
 	}
 

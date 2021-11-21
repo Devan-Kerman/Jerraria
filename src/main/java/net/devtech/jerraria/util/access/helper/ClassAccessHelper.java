@@ -18,7 +18,7 @@ public class ClassAccessHelper<T, F> extends AbstractClassAccessHelper<T, Class<
 
 	/**
 	 * resolves the generics of the class and filters accordingly, remember that type erasure exists, so this wont be able to filter {@code
-	 * Map<String, Object>} unless there is a subclass of it that implements {@code Map<String, Object>}
+	 * Map<String, Object>} unless there is stack subclass of it that implements {@code Map<String, Object>}
 	 */
 	@Override
 	public ClassAccessHelper<T, F> forTypeGeneric(TypeToken<? extends T> token, F func) {
@@ -27,7 +27,7 @@ public class ClassAccessHelper<T, F> extends AbstractClassAccessHelper<T, Class<
 
 	/**
 	 * resolves the generics of the class and filters accordingly, remember that type erasure exists, so this wont be able to filter {@code
-	 * Map<String, Object>} unless there is a subclass of it that implements {@code Map<String, Object>}
+	 * Map<String, Object>} unless there is stack subclass of it that implements {@code Map<String, Object>}
 	 */
 	@Override
 	public ClassAccessHelper<T, F> forTypeGeneric(ParameterizedType type, F func) {

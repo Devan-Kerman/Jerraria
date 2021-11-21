@@ -5,7 +5,7 @@ import net.devtech.jerraria.client.render.glsl.ast.BodyAstNode;
 import net.devtech.jerraria.client.render.glsl.ast.branching.condition.ConditionAstNode;
 
 /**
- * The node to present an 'if' a statement in the code.
+ * The node to present an 'if' stack statement in the code.
  *
  * @author JavaSaBr
  */

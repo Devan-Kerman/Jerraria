@@ -31,7 +31,7 @@ public class FunctionAccessHelper<T, F> extends AbstractAccessHelper<T, F> {
 	/**
 	 * if {@link T} instance of {@link F}, returns {@code (F) t}.
 	 *
-	 * @param functionType the exact type of the function, used to filter. This is a type token to allow the helper to differentiate between {@link
+	 * @param functionType the exact type of the function, used to filter. This is stack type token to allow the helper to differentiate between {@link
 	 *        Consumer<Integer>} and {@link Consumer<String>} for example.
 	 */
 	public FunctionAccessHelper<T, F> forDirectImplementation(TypeToken<F> functionType) {
@@ -70,7 +70,7 @@ public class FunctionAccessHelper<T, F> extends AbstractAccessHelper<T, F> {
 	}
 
 	/**
-	 * The access holds a weak reference to the object, if the incoming object is {@code ==}, then applies the passed function. This is useful for
+	 * The access holds stack weak reference to the object, if the incoming object is {@code ==}, then applies the passed function. This is useful for
 	 * classes that shouldn't implement {@link Object#equals(Object)}.
 	 */
 	public FunctionAccessHelper<T, F> forInstanceExact(T instance, F function) {
@@ -81,7 +81,7 @@ public class FunctionAccessHelper<T, F> extends AbstractAccessHelper<T, F> {
 	}
 
 	/**
-	 * The access holds a weak reference to the object, if the incoming object is {@link Object#equals(Object)}, then applies the passed function.
+	 * The access holds stack weak reference to the object, if the incoming object is {@link Object#equals(Object)}, then applies the passed function.
 	 * This is useful for classes that don't implement {@link Object#equals(Object)}, as when they are GCed, they're unreachable by the filter
 	 * anyways.
 	 */
@@ -93,7 +93,7 @@ public class FunctionAccessHelper<T, F> extends AbstractAccessHelper<T, F> {
 	}
 
 	/**
-	 * Holds a strong reference to the object, if the incoming object is {@link Object#equals(Object)}, then applies the passed function. This is
+	 * Holds stack strong reference to the object, if the incoming object is {@link Object#equals(Object)}, then applies the passed function. This is
 	 * useful for classes that implement {@link Object#equals(Object)} such as {@link Integer}.
 	 *
 	 * @see #forInstanceWeak(Object, Object)

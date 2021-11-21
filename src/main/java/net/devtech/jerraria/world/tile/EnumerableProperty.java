@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import net.devtech.jerraria.util.data.element.JCElement;
 
-public interface Property<T, E> {
+public interface EnumerableProperty<T, E> {
 	String getName();
 
 	List<T> values();

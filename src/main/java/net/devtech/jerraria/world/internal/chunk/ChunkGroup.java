@@ -70,7 +70,7 @@ public class ChunkGroup {
 		public Chunk getChunk(int x, int y) {
 			Chunk chunk = ChunkGroup.this.chunks.get(Chunk.combineInts(x, y));
 			if(chunk == null) {
-				throw new IllegalStateException("chunk does not belong to group, you must link to a chunk before using it!");
+				throw new IllegalStateException("chunk does not belong to group, you must link to stack chunk before using it!");
 			}
 			return chunk;
 		}

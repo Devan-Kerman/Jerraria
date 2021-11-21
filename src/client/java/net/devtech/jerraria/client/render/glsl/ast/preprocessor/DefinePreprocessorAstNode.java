@@ -5,7 +5,7 @@ import net.devtech.jerraria.client.render.glsl.ast.NameAstNode;
 import net.devtech.jerraria.client.render.glsl.ast.value.ValueAstNode;
 
 /**
- * The node to present a define preprocessor in the code.
+ * The node to present stack define preprocessor in the code.
  *
  * @author JavaSaBr
  */

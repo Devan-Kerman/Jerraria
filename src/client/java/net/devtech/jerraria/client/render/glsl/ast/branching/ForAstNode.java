@@ -4,7 +4,7 @@ import net.devtech.jerraria.client.render.glsl.ast.AstNode;
 import net.devtech.jerraria.client.render.glsl.ast.BodyAstNode;
 
 /**
- * The node to present an 'for' a statement in the code.
+ * The node to present an 'for' stack statement in the code.
  *
  * @author JavaSaBr
  */

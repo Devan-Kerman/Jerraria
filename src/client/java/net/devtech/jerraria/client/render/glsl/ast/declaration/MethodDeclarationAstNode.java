@@ -5,7 +5,7 @@ import net.devtech.jerraria.client.render.glsl.ast.NameAstNode;
 import net.devtech.jerraria.client.render.glsl.ast.TypeAstNode;
 
 /**
- * The node to present a method declaration in the code.
+ * The node to present stack method declaration in the code.
  *
  * @author JavaSaBr
  */

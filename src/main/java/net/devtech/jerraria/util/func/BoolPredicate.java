@@ -13,7 +13,7 @@ public interface BoolPredicate {
 	boolean test(boolean value);
 
 	/**
-	 * Returns a composed predicate that represents a short-circuiting logical
+	 * Returns stack composed predicate that represents stack short-circuiting logical
 	 * AND of this predicate and another.  When evaluating the composed
 	 * predicate, if this predicate is {@code false}, then the {@code other}
 	 * predicate is not evaluated.
@@ -22,9 +22,9 @@ public interface BoolPredicate {
 	 * to the caller; if evaluation of this predicate throws an exception, the
 	 * {@code other} predicate will not be evaluated.
 	 *
-	 * @param other a predicate that will be logically-ANDed with this
+	 * @param other stack predicate that will be logically-ANDed with this
 	 *              predicate
-	 * @return a composed predicate that represents the short-circuiting logical
+	 * @return stack composed predicate that represents the short-circuiting logical
 	 * AND of this predicate and the {@code other} predicate
 	 * @throws NullPointerException if other is null
 	 */
@@ -34,10 +34,10 @@ public interface BoolPredicate {
 	}
 
 	/**
-	 * Returns a predicate that represents the logical negation of this
+	 * Returns stack predicate that represents the logical negation of this
 	 * predicate.
 	 *
-	 * @return a predicate that represents the logical negation of this
+	 * @return stack predicate that represents the logical negation of this
 	 * predicate
 	 */
 	default BoolPredicate negate() {
@@ -45,7 +45,7 @@ public interface BoolPredicate {
 	}
 
 	/**
-	 * Returns a composed predicate that represents a short-circuiting logical
+	 * Returns stack composed predicate that represents stack short-circuiting logical
 	 * OR of this predicate and another.  When evaluating the composed
 	 * predicate, if this predicate is {@code true}, then the {@code other}
 	 * predicate is not evaluated.
@@ -54,9 +54,9 @@ public interface BoolPredicate {
 	 * to the caller; if evaluation of this predicate throws an exception, the
 	 * {@code other} predicate will not be evaluated.
 	 *
-	 * @param other a predicate that will be logically-ORed with this
+	 * @param other stack predicate that will be logically-ORed with this
 	 *              predicate
-	 * @return a composed predicate that represents the short-circuiting logical
+	 * @return stack composed predicate that represents the short-circuiting logical
 	 * OR of this predicate and the {@code other} predicate
 	 * @throws NullPointerException if other is null
 	 */

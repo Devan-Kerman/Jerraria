@@ -31,7 +31,7 @@ public interface World {
 
 	/**
 	 * Executes the given action on the given chunk's group/thread.
-	 *  If the current world contains the given chunk (eg. if the World represents a ChunkGroup)
+	 *  If the current world contains the given chunk (eg. if the World represents stack ChunkGroup)
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick
 	 */
 	default CompletableFuture<World> executeAt(int x, int y) {
@@ -41,7 +41,7 @@ public interface World {
 	/**
 	 * Links the chunk at the given location to the chunk at the other location, and executes the given action on the new group's thread.
 	 *  this method is preferable to {@link World#executeAt(int, int)} when synchronous to both the current and targeted chunk are necessary
-	 *  If the current world contains the given chunk (eg. if the World represents a ChunkGroup)
+	 *  If the current world contains the given chunk (eg. if the World represents stack ChunkGroup)
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick
 	 */
 	default CompletableFuture<World> linkAndExecute(int fromX, int fromY, int x, int y) {

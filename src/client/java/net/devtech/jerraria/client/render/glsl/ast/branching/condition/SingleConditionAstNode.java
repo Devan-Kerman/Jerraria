@@ -3,7 +3,7 @@ package net.devtech.jerraria.client.render.glsl.ast.branching.condition;
 import net.devtech.jerraria.client.render.glsl.ast.AstNode;
 
 /**
- * The node to present a single condition.
+ * The node to present stack single condition.
  *
  * @author JavaSaBr
  */

@@ -22,11 +22,13 @@ public final class PriorityKey {
 	/**
 	 * The default apis in the access
 	 */
-	public static final PriorityKey DEFAULT = new Builder().build("default");
+	public static final PriorityKey DEFAULT = builder().build("default");
 	/**
 	 * What the {@link RegisterOnlyAccess#andThen(Object)} uses by default
 	 */
-	public static final PriorityKey STANDARD = new Builder().after(DEFAULT).build("standard");
+	public static final PriorityKey STANDARD = builder().after(DEFAULT).build("standard");
+
+	public static final PriorityKey PRE = builder().before(STANDARD).after(DEFAULT).build("pre");
 
 	public static Builder builder() {
 		return new Builder();
@@ -35,6 +37,7 @@ public final class PriorityKey {
 	PriorityKey(String name) {
 		this.name = name;
 	}
+
 
 	public static List<PriorityKey> sort(Iterable<PriorityKey> keys) {
 		return sort(keys, key -> {

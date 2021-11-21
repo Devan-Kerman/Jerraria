@@ -16,7 +16,7 @@ import net.devtech.jerraria.util.asm.ProxyClassFactory;
 
 
 /**
- * creates a function that conditionally executes a function based on some context
+ * creates stack function that conditionally executes stack function based on some context
  */
 public interface FilteredFunc<I, F> extends Function<Function<I, F>, F> {
 	/**
@@ -43,7 +43,7 @@ public interface FilteredFunc<I, F> extends Function<Function<I, F>, F> {
 		record Context<T, I>(FuncFinder finder, Class<T> paramType, int ordinal, Function<T, I> extracter) {}
 
 		/**
-		 * Create a context extracter for a given parameter
+		 * Create stack context extracter for stack given parameter
 		 */
 		public <T> Builder<I> ordinal(FuncFinder finder, Class<T> parameterType, int ordinal, Function<T, I> extracter) {
 			this.contexts.add(new Context<>(finder, parameterType, ordinal, extracter));

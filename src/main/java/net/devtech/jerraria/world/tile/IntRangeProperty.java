@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.AbstractIntList;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.NativeJCType;
 
-public class IntRangeProperty extends AbstractIntList implements Property<Integer, Integer> {
+public class IntRangeProperty extends AbstractIntList implements EnumerableProperty<Integer, Integer> {
 	final int from, length, defaultValue;
 	final String name;
 
@@ -43,7 +43,7 @@ public class IntRangeProperty extends AbstractIntList implements Property<Intege
 
 	@Override
 	public int indexOfValue(Integer value) {
-		return Property.super.indexOfValue(value);
+		return EnumerableProperty.super.indexOfValue(value);
 	}
 
 	@Override

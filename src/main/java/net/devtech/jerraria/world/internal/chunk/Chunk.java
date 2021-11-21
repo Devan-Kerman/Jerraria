@@ -71,7 +71,6 @@ public class Chunk implements Executor {
 		return tag;
 	}
 
-
 	public <T extends UnpositionedTileData> T schedule(TemporaryTileData.Type<T> type,
 		TileLayers layer,
 		int x,
@@ -189,7 +188,7 @@ public class Chunk implements Executor {
 		TileVariant old = this.variants[index];
 		TileData oldData = this.data.get(index);
 		TileData replacement;
-		// todo when attach api is added, add a 'onReplace' with TileData so mods can choose on an individual basis
+		// todo when attach api is added, add stack 'onReplace' with TileData so mods can choose on an individual basis
 		//  whether or not
 		//  their data is compatible with the new block
 		if(value.isCompatible(oldData)) {
@@ -216,7 +215,7 @@ public class Chunk implements Executor {
 		}
 
 		if(replacement != oldData && replacement != null) {
-			if(value.doesTick(world, oldData, layer, InternalTileDataAccess.getAbsX(replacement), InternalTileDataAccess.getAbsY(replacement))) {
+			if(value.doesTick(world, oldData, layer, ((InternalTileData)replacement).absX, ((InternalTileData)replacement).absY)) {
 				this.actions.add(replacement);
 			}
 		}

@@ -6,7 +6,7 @@ import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.util.func.FilteredFunc;
 
 /**
- * You don't have to extend this class to make a helper, it's just a utility class
+ * You don't have to extend this class to make stack helper, it's just stack utility class
  */
 public abstract class AbstractAccessHelper<I, F> implements HelperContext<I, F> {
 	public final HelperContext<I, F> helper;

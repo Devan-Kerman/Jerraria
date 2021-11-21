@@ -30,7 +30,7 @@ public interface TileLayer {
 	}
 
 	/**
-	 * puts the block at the given location, creates a tile data for that location if the TileVariant has data
+	 * puts the block at the given location, creates stack tile data for that location if the TileVariant has data
 	 */
 	@Nullable
 	TileData putBlock(TileVariant variant, int x, int y, int flags);

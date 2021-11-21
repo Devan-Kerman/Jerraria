@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The node to present a multi expressions condition in the code.
+ * The node to present stack multi expressions condition in the code.
  *
  * @author JavaSaBr
  */

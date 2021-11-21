@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl;
 
 /**
- * The class to present a some logic text token.
+ * The class to present stack some logic text token.
  *
  * @author JavaSaBr
  */

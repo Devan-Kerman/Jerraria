@@ -3,7 +3,7 @@ package net.devtech.jerraria.client.render.glsl.ast.value;
 import net.devtech.jerraria.client.render.glsl.ast.AstNode;
 
 /**
- * The node to present a value of something.
+ * The node to present stack value of something.
  *
  * @author JavaSaBr
  */

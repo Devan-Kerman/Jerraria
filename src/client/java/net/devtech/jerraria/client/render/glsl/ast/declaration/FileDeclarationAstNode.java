@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl.ast.declaration;
 
 /**
- * The AST node to present a file.
+ * The AST node to present stack file.
  *
  * @author JavaSaBr
  */

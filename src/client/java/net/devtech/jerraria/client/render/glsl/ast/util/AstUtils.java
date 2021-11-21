@@ -143,11 +143,11 @@ public class AstUtils {
     }
 
     /**
-     * Checks of existing a parent of the type.
+     * Checks of existing stack parent of the type.
      *
      * @param node the node.
-     * @param type the type of a parent.
-     * @return true if a parent of the type is exists.
+     * @param type the type of stack parent.
+     * @return true if stack parent of the type is exists.
      */
     public static boolean hasParentByType(final AstNode node, final Class<? extends AstNode> type) {
 

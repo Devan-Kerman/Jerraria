@@ -5,15 +5,14 @@ import java.util.Iterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import org.jetbrains.annotations.Nullable;
 
 public final class TileVariant implements VariantConvertable {
 	final Tile owner;
-	final Object2IntMap<Property<?, ?>> values;
+	final Object2IntMap<EnumerableProperty<?, ?>> values;
 	final int cacheIndex;
 	int linkFromX, linkToX, linkFromY, linkToY;
 
-	TileVariant(Tile owner, Object2IntMap<Property<?, ?>> values, int index) {
+	TileVariant(Tile owner, Object2IntMap<EnumerableProperty<?, ?>> values, int index) {
 		this.owner = owner;
 		this.values = values;
 		this.linkFromX = owner.linkFromX;
@@ -51,11 +50,11 @@ public final class TileVariant implements VariantConvertable {
 	/**
 	 * @param property if the property does not belong to the variant, null is returned
 	 */
-	public <T> T get(Property<T, ?> property) {
+	public <T> T get(EnumerableProperty<T, ?> property) {
 		return this.getOrDefault(property, null);
 	}
 
-	public <T> T getOrDefault(Property<T, ?> property, T value) {
+	public <T> T getOrDefault(EnumerableProperty<T, ?> property, T value) {
 		int index = this.values.getOrDefault(property, -1);
 		if(index == -1) {
 			return value;
@@ -64,11 +63,11 @@ public final class TileVariant implements VariantConvertable {
 		}
 	}
 
-	public <T> TileVariant with(Property<T, ?> property, T value) {
+	public <T> TileVariant with(EnumerableProperty<T, ?> property, T value) {
 		return this.owner.withSub(this, property, value, false);
 	}
 
-	public <T> T getOrDefault(Property<T, ?> property) {
+	public <T> T getOrDefault(EnumerableProperty<T, ?> property) {
 		return this.getOrDefault(property, property.defaultValue());
 	}
 
@@ -82,9 +81,9 @@ public final class TileVariant implements VariantConvertable {
 		StringBuilder builder = new StringBuilder();
 		builder.append(this.owner);
 		builder.append('[');
-		Iterator<Property<?, ?>> iterator = this.owner.getProperties().iterator();
+		Iterator<EnumerableProperty<?, ?>> iterator = this.owner.getProperties().iterator();
 		while(iterator.hasNext()) {
-			Property<?, ?> property = iterator.next();
+			EnumerableProperty<?, ?> property = iterator.next();
 			builder.append(property.getName());
 			builder.append('=');
 			builder.append(this.get(property));

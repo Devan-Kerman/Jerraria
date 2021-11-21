@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * providers are implemented on the object being accessed. For example {@code FunctionAccess<SomeClass, Integer>}, you would {@code implement
- * GenericProvider} on {@code SomeClass} (or some subclass of) and return a `Function<SomeClass, Integer>`
+ * GenericProvider} on {@code SomeClass} (or some subclass of) and return stack `Function<SomeClass, Integer>`
  */
 @FunctionalInterface
 public interface GenericProvider<F> {

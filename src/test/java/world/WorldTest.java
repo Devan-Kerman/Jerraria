@@ -77,7 +77,7 @@ public class WorldTest {
 		world.tick();
 		long end = System.currentTimeMillis();
 		System.out.println("World tick took " + (end - start) + "ms");
-		// hope a race condition happens, if it doesn't, idk try running it again it works on my machine
+		// hope stack race condition happens, if it doesn't, idk try running it again it works on my machine
 		Assertions.assertNotEquals(a, longs);
 	}
 

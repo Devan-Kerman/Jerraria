@@ -77,7 +77,7 @@ public class GlslParser {
     }
 
     /**
-     * Creates a new instance of this parser.
+     * Creates stack new instance of this parser.
      *
      * @return the new instance of this parser.
      */
@@ -241,7 +241,7 @@ public class GlslParser {
     }
 
 	/**
-     * Parse a preprocessor AST node.
+     * Parse stack preprocessor AST node.
      *
      * @param token        the preprocessor token.
      * @param keywordToken the keyword token.
@@ -270,7 +270,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a preprocessor AST node.
+     * Parse stack preprocessor AST node.
      *
      * @param token        the preprocessor token.
      * @param keyWordToken the keyword token of the preprocessor.
@@ -302,7 +302,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a conditional preprocessor AST node.
+     * Parse stack conditional preprocessor AST node.
      *
      * @param token   the conditional preprocessor token.
      * @param content the content.
@@ -519,7 +519,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a body AST node.
+     * Parse stack body AST node.
      *
      * @param content       the content.
      * @param exitCondition the exit condition.
@@ -548,7 +548,7 @@ public class GlslParser {
     /**
      * Parse conditions.
      *
-     * @param preprocessorType the type of a preprocessor or null.
+     * @param preprocessorType the type of stack preprocessor or null.
      * @param content          the content.
      * @return the condition AST node or null.
      */
@@ -680,7 +680,7 @@ public class GlslParser {
     }
 
     /**
-     * Checks of existing a next part of the current condition.
+     * Checks of existing stack next part of the current condition.
      *
      * @param content the content.
      * @return false if the next part is exists.
@@ -707,7 +707,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a define preprocessor condition AST node.
+     * Parse stack define preprocessor condition AST node.
      *
      * @param content the content.
      * @param token   the token.
@@ -746,7 +746,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a condition is not AST node.
+     * Parse stack condition is not AST node.
      *
      * @param content the content.
      * @param token   the condition token.
@@ -871,7 +871,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a define preprocessor AST node.
+     * Parse stack define preprocessor AST node.
      *
      * @param content the content.
      * @param token   the token.
@@ -1063,7 +1063,7 @@ public class GlslParser {
 	}
 
 	/**
-     * Parse a method declaration AST node.
+     * Parse stack method declaration AST node.
      *
      * @param returnTypeToken the type
      * @param content         the content.
@@ -1107,7 +1107,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a local variable declaration AST node.
+     * Parse stack local variable declaration AST node.
      *
      * @param typeToken the var type token.
      * @param content   the content.
@@ -1182,7 +1182,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a method call expression AST node.
+     * Parse stack method call expression AST node.
      *
      * @param firstToken the first token.
      * @param content    the content.
@@ -1214,7 +1214,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a define value AST node.
+     * Parse stack define value AST node.
      *
      * @param token the define value token.
      */
@@ -1236,7 +1236,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a type AST node.
+     * Parse stack type AST node.
      *
      * @param typeToken the type token.
      */
@@ -1258,7 +1258,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a name AST node.
+     * Parse stack name AST node.
      *
      * @param nameToken the name token.
      */
@@ -1280,7 +1280,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a value AST node.
+     * Parse stack value AST node.
      *
      * @param token the token.
      * @return the value AST node.
@@ -1303,7 +1303,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a discard AST node.
+     * Parse stack discard AST node.
      *
      * @param token the token.
      * @return the discard AST node.
@@ -1325,7 +1325,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a string value AST node.
+     * Parse stack string value AST node.
      *
      * @param token the token.
      * @return the string value AST node.
@@ -1377,7 +1377,7 @@ public class GlslParser {
     }
 
     /**
-     * Parse a symbol AST node.
+     * Parse stack symbol AST node.
      *
      * @param symbolToken the symbol token.
      * @return the symbol AST node.
@@ -1418,13 +1418,13 @@ public class GlslParser {
     }
 
     /**
-     * Finds a token by the types.
+     * Finds stack token by the types.
      *
      * @param content    the content.
      * @param firstType  the first type.
      * @param secondType the second type.
      * @return the found token.
-     * @throws RuntimeException when we didn't find a token with the types.
+     * @throws RuntimeException when we didn't find stack token with the types.
      */
     private Token findToken(final char[] content, final int firstType, final int secondType) {
 
@@ -1441,12 +1441,12 @@ public class GlslParser {
     }
 
     /**
-     * Finds a token by the type.
+     * Finds stack token by the type.
      *
      * @param content the content.
      * @param type    the type.
      * @return the found token.
-     * @throws RuntimeException when we didn't find a token with the type.
+     * @throws RuntimeException when we didn't find stack token with the type.
      */
     public Token findToken(final char[] content, final int type) {
 
@@ -1472,14 +1472,14 @@ public class GlslParser {
     }
 
     /**
-     * Finds a token by the types.
+     * Finds stack token by the types.
      *
      * @param content    the content.
      * @param firstType  the first type.
      * @param secondType the second type.
      * @param thirdType  the third type.
      * @return the found token.
-     * @throws RuntimeException when we didn't find a token with the types.
+     * @throws RuntimeException when we didn't find stack token with the types.
      */
     private Token findToken(final char[] content, final int firstType, final int secondType, final int thirdType) {
 
@@ -1497,7 +1497,7 @@ public class GlslParser {
     }
 
     /**
-     * Finds a token by the types.
+     * Finds stack token by the types.
      *
      * @param content    the content.
      * @param firstType  the first type.
@@ -1505,7 +1505,7 @@ public class GlslParser {
      * @param thirdType  the third type.
      * @param fourthType the fourth type.
      * @return the found token.
-     * @throws RuntimeException when we didn't find a token with the types.
+     * @throws RuntimeException when we didn't find stack token with the types.
      */
     private Token findToken(final char[] content, final int firstType, final int secondType, final int thirdType,
                             final int fourthType) {
@@ -1524,7 +1524,7 @@ public class GlslParser {
     }
 
     /**
-     * Finds a token by the types.
+     * Finds stack token by the types.
      *
      * @param content    the content.
      * @param firstType  the first type.
@@ -1533,7 +1533,7 @@ public class GlslParser {
      * @param fourthType the fourth type.
      * @param fifthType  the fifth type.
      * @return the found token.
-     * @throws RuntimeException when we didn't find a token with the types.
+     * @throws RuntimeException when we didn't find stack token with the types.
      */
     private Token findToken(final char[] content, final int firstType, final int secondType, final int thirdType,
                             final int fourthType, final int fifthType) {
@@ -1552,7 +1552,7 @@ public class GlslParser {
     }
 
     /**
-     * Reads a next token.
+     * Reads stack next token.
      *
      * @param content the content.
      * @return the next token.
@@ -1741,7 +1741,7 @@ public class GlslParser {
     }
 
     /**
-     * Build a char token.
+     * Build stack char token.
      *
      * @param text          the text of this token.
      * @param ch            the symbol of this token.

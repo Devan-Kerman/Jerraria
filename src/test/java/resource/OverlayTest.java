@@ -20,13 +20,13 @@ public class OverlayTest {
 	public void overlayRead() throws IOException {
 		try (FileSystem a = Jimfs.newFileSystem(Configuration.unix().toBuilder().setWorkingDirectory("/").build());
 			 FileSystem b = Jimfs.newFileSystem(Configuration.unix().toBuilder().setWorkingDirectory("/").build())) {
-			Files.writeString(a.getPath("a.txt"), "Hello world!");
+			Files.writeString(a.getPath("stack.txt"), "Hello world!");
 			Files.writeString(b.getPath("b.txt"), "Bonjour monde!"); // in the name of science we shall bear such impurities
 
 			VirtualFile.Directory directory = new OverlayDirectory("/", List.of(PathVirtualFile.of(a.getPath("/")).asDirectory(), PathVirtualFile.of(b.getPath("/")).asDirectory()));
 
 			{
-				VirtualFile fileA = directory.resolve("a.txt");
+				VirtualFile fileA = directory.resolve("stack.txt");
 				Assertions.assertNotNull(fileA, "File A could not be found in overlay filesystem");
 				Assertions.assertArrayEquals(fileA.asRegular().read().readAllBytes(), "Hello world!".getBytes());
 			}
@@ -43,14 +43,14 @@ public class OverlayTest {
 	public void overlayList() throws IOException {
 		try (FileSystem a = Jimfs.newFileSystem(Configuration.unix().toBuilder().setWorkingDirectory("/").build());
 			 FileSystem b = Jimfs.newFileSystem(Configuration.unix().toBuilder().setWorkingDirectory("/").build())) {
-			Files.createFile(a.getPath("a.txt"));
+			Files.createFile(a.getPath("stack.txt"));
 			Files.createFile(b.getPath("b.txt"));
 
 			VirtualFile.Directory directoryA = PathVirtualFile.of(a.getPath("/")).asDirectory();
 			VirtualFile.Directory directoryB = PathVirtualFile.of(b.getPath("/")).asDirectory();
 			VirtualFile.Directory directory = new OverlayDirectory("/", List.of(directoryA, directoryB));
 
-			Assertions.assertEquals(Set.of(directoryA.resolve("a.txt"), directoryB.resolve("b.txt")), Set.copyOf(directory.children()));
+			Assertions.assertEquals(Set.of(directoryA.resolve("stack.txt"), directoryB.resolve("b.txt")), Set.copyOf(directory.children()));
 		}
 	}
 }

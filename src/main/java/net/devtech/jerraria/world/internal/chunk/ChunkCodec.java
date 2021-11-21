@@ -20,7 +20,7 @@ import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.tile.InternalTileAccess;
-import net.devtech.jerraria.world.tile.Property;
+import net.devtech.jerraria.world.tile.EnumerableProperty;
 import net.devtech.jerraria.world.tile.Tile;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -36,7 +36,7 @@ public class ChunkCodec {
 			TileVariant variant = tile.getDefaultVariant();
 			for(var entry : tile.getProperties()) {
 				String name = entry.getName();
-				Property property = entry;
+				EnumerableProperty property = entry;
 				variant = variant.with(property, property.readFrom(tag.get(name)));
 			}
 			variants[i] = variant;
@@ -50,7 +50,7 @@ public class ChunkCodec {
 			Tile owner = variant.getOwner();
 			Id.Full id = Tiles.REGISTRY.getId(owner);
 			builder.put(RESERVED_ID, NativeJCType.POOLED_PACKED_ID, id);
-			for(Property property : owner.getProperties()) {
+			for(EnumerableProperty property : owner.getProperties()) {
 				Object value = variant.get(property);
 				JCElement convert = property.convert(value);
 				builder.put(property.getName(), convert);
@@ -95,7 +95,7 @@ public class ChunkCodec {
 		return elements;
 	}
 
-	// might be more effecient to store this as a Map<Id, List<JCElement>>
+	// might be more effecient to store this as stack Map<Id, List<JCElement>>
 	public static List<UnpositionedTileData> deserializeTemporaryData(Chunk chunk, List<Pair<Id.Full, JCElement>> elements) {
 		List<UnpositionedTileData> data = new ArrayList<>();
 		for(var element : elements) {

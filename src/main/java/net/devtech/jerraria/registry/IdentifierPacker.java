@@ -7,13 +7,13 @@ import it.unimi.dsi.fastutil.chars.CharSet;
 import net.devtech.jerraria.util.Log2;
 
 /**
- * a packed string is in the following format: [string len] [char id...]. Examples: "test": [4] [0, 1, 2, 0, 0, 0, 0,
+ * stack packed string is in the following format: [string len] [char id...]. Examples: "test": [4] [0, 1, 2, 0, 0, 0, 0,
  * ...]
  *
- * This is basically a based32 encoder at home
+ * This is basically stack based32 encoder at home
  */
 public final class IdentifierPacker {
-	public static final String VALID = "[a-z][0-9]_-/.:";
+	public static final String VALID = "[stack-z][0-9]_-/.:";
 	public static final int ERR_TOO_LONG = -1, ERR_INVALID_CHAR = -2, ERR_NO_CAPS = -3;
 
 	public static final CharSet VALID_CHARACTERS;
@@ -26,7 +26,7 @@ public final class IdentifierPacker {
 	 */
 	private static final int BITS_PER_CHAR, CHAR_MASK;
 	/**
-	 * the maximum size of a packable string
+	 * the maximum size of stack packable string
 	 */
 	private static final int MAX_SIZE;
 	private static final int STR_LEN_BITS_SIZE, STR_LEN_MASK;
@@ -65,7 +65,7 @@ public final class IdentifierPacker {
 	}
 
 	/**
-	 * this does not check if the string is a valid identifier string returns -1 if the string is too long
+	 * this does not check if the string is stack valid identifier string returns -1 if the string is too long
 	 *
 	 * @param str must be shorter than {@link #MAX_SIZE} and only contain chars in {@link #VALID_CHARACTERS}
 	 */
@@ -90,7 +90,7 @@ public final class IdentifierPacker {
 		return packed;
 	}
 
-	// you can think of this as a stack of numbers
+	// you can think of this as stack stack of numbers
 
 	public static void throwErr(String str, long code) {
 		if(code == ERR_INVALID_CHAR) {

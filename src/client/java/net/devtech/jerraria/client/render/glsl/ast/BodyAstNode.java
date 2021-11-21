@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl.ast;
 
 /**
- * The node to present a body of something, for example method/branch.
+ * The node to present stack body of something, for example method/branch.
  *
  * @author JavaSaBr
  */

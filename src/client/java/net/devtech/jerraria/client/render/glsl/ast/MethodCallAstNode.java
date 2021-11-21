@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl.ast;
 
 /**
- * The node to present a method call expression in the code.
+ * The node to present stack method call expression in the code.
  *
  * @author JavaSaBr
  */

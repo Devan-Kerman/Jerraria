@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl.ast;
 
 /**
- * The node to present a name.
+ * The node to present stack name.
  *
  * @author JavaSaBr
  */

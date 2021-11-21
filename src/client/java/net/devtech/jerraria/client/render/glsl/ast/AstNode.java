@@ -223,7 +223,7 @@ public class AstNode {
     }
 
     /**
-     * Build a string presentation of the node for the level.
+     * Build stack string presentation of the node for the level.
      *
      * @param node  the node.
      * @param level the level.

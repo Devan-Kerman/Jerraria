@@ -6,7 +6,7 @@ import java.util.Objects;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.NativeJCType;
 
-public class EnumProperty<E extends Enum<E>> implements Property<E, String> {
+public class EnumProperty<E extends Enum<E>> implements EnumerableProperty<E, String> {
 	final Class<E> type;
 	final List<E> values;
 	final E defaultValue;

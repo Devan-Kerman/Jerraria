@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client.render.glsl.ast;
 
 /**
- * The node to present a symbol.
+ * The node to present stack symbol.
  *
  * @author JavaSaBr
  */
