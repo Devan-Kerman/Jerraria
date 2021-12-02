@@ -36,6 +36,16 @@ public class SynchronousWorld extends TickingWorld {
 		}
 	}
 
+	@Override
+	public boolean isLoaded(int x, int y) {
+		return this.loadedChunkCache.containsKey(Chunk.combineInts(x, y));
+	}
+
+	@Override
+	public boolean canAccessImmediately(int x, int y) {
+		return true;
+	}
+
 	private void unloadChunk(Chunk entry, long key) {
 		this.loadedChunkCache.remove(key);
 		Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");

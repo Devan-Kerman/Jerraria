@@ -8,6 +8,7 @@ import net.devtech.jerraria.world.item.Item;
 
 public interface Items {
 	IdentityItem AIR = AirItem.INSTANCE;
+
 	Registry<Item.Type<?>> REGISTRY = new Registry.Fast<>(AIR);
 
 	Void __CLINIT__ = Validate.create(() -> {

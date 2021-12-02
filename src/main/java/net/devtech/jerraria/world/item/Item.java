@@ -99,7 +99,7 @@ public abstract class Item {
 		}
 	}
 
-	static <T> Type<T> createType(Function<Item, JCElement<T>> serializer, Function<JCElement<T>, Item> deserializer) {
+	public static <T> Type<T> createType(Function<Item, JCElement<T>> serializer, Function<JCElement<T>, Item> deserializer) {
 		return new TypeImpl<>(serializer, deserializer);
 	}
 

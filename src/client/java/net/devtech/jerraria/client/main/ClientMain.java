@@ -1,15 +1,24 @@
 package net.devtech.jerraria.client.main;
 
-import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL20.glUniform1iv;
+import static org.lwjgl.opengl.GL31.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL31.glBufferData;
+import static org.lwjgl.opengl.GL31.glGenBuffers;
+import static org.lwjgl.opengl.GL31.glGetActiveUniformBlockName;
+import static org.lwjgl.opengl.GL31.glGetActiveUniformName;
+import static org.lwjgl.opengl.GL31.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL31.glGetProgramiv;
+import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
+import static org.lwjgl.opengl.GL31.glGetUniformIndices;
+import static org.lwjgl.opengl.GL31.glShaderSource;
 
-import java.nio.ByteBuffer;
-import java.util.Map;
+import java.util.List;
 
-import io.netty.buffer.ByteBuf;
-import net.devtech.jerraria.client.render.VAO;
-import net.devtech.jerraria.client.render.ShaderParser;
-import net.devtech.jerraria.client.render.glsl.ast.declaration.ExternalFieldDeclarationAstNode;
-import net.devtech.jerraria.client.render.types.DataType;
+import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.render.internal.DataType;
+import net.devtech.jerraria.render.internal.Shader;
+import net.devtech.jerraria.render.internal.UniformData;
+import net.devtech.jerraria.render.internal.VAO;
 import org.intellij.lang.annotations.Language;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -39,19 +48,18 @@ public class ClientMain {
 			GL11.glViewport(0, 0, width, height);
 		});
 
-
 		@Language("GLSL")
 		String vertexSrc = """
 			#version 330 core
+
+			uniform Uniform { vec3 color; };
+			uniform float w;
+
 			in vec3 aPos;
-			uniform Light {
-				vec4 color;
-				vec4 test;
-			};
-			out vec4 vertexColor;
+			out vec3 vertexColor;
 
 			void main() {
-			    gl_Position = vec4(aPos, 1.0);
+			    gl_Position = vec4(aPos, w);
 			    vertexColor = color;
 			}
 			""".stripLeading();
@@ -67,58 +75,36 @@ public class ClientMain {
 			}
 			""".stripLeading();
 
-		ShaderParser parser = new ShaderParser(vertexSrc);
+		Id id = Id.create("bruh", "test");
+		Shader shader = Shader.compileShaders(i -> fragmentSrc, i -> vertexSrc, List.of(
+			new Shader.Uncompiled(
+				id,
+				id,
+				id)
+				.vert(DataType.F32_VEC3, "aPos")
+				.uniform(DataType.F32_VEC3, "color", "Uniform")
+				.uniform(DataType.F32, "w")
+		)).get(id);
 
-		int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertexShader, vertexSrc);
-		glCompileShader(vertexShader);
-		int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragShader, fragmentSrc);
-		glCompileShader(fragShader);
-		int program = glCreateProgram();
-		glAttachShader(program, vertexShader);
-		glAttachShader(program, fragShader);
-		glLinkProgram(program);
-
-		int[] input = {0};
-		glGetProgramiv(program, GL_LINK_STATUS, input);
-		if(input[0] == 0) {
-			System.err.println(glGetProgramInfoLog(program));
-		}
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragShader);
-
-		ByteBuffer liberal = ByteBuffer.allocateDirect(4);
-		liberal.putInt(0xFFFFFFFF);
-		int buffer = glGenBuffers();
-		glBindBuffer(GL_UNIFORM_BUFFER, buffer);
-		glBufferData(GL_UNIFORM_BUFFER, liberal, GL_STATIC_DRAW);
-		int lightsIndex = glGetUniformBlockIndex(program, "Light");
-		glUniformBlockBinding(program, lightsIndex, 0);
-		System.out.println(glGetUniformIndices(program, "color"));
-		System.out.println(glGetUniformIndices(program, "test"));
-
-		System.out.println(parser.getFields(ExternalFieldDeclarationAstNode.ExternalFieldType.UNIFORM));
-
-		VAO vao = VAO.getOrCreateDefaultGroup(Map.of("aPos", DataType.NORMALIZED_F8_VEC3), parser, program);
-		VAO.Element pos = vao.elements().get("aPos"); //, color = vao.quick().color();
-		byte zero = 0, max = -1;
+		VAO vao = shader.vao;
 		vao.start();
-		vao.element(pos).put(zero).put(zero).put(zero);
-		//vao.element(color).putInt(0xFFFFFF00);
+		var pos = vao.getElement("aPos");
+		vao.element(pos).f(0).f(0).f(0);
 		vao.next();
-		vao.element(pos).put(max).put(zero).put(zero);
-		//vao.element(color).putInt(0xFFFFFF00);
+		vao.element(pos).f(1).f(0).f(0);
 		vao.next();
-		vao.element(pos).put(max).put(max).put(zero);
-		//vao.element(color).putInt(0xFFFFFF00);
+		vao.element(pos).f(0).f(1).f(0);
 		vao.next();
 
 		while(!GLFW.glfwWindowShouldClose(window)) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-			glUseProgram(program);
-			vao.bindAndDraw(GL_TRIANGLES);
+			UniformData uniforms = shader.uniforms;
+			uniforms.start();
+			uniforms.element("color").f(1.0f).f(0.5f).f(1.0f);
+			uniforms.element("w").f(1.0f);
+
+			shader.draw(GL_TRIANGLES);
 
 			GLFW.glfwSwapBuffers(window);
 			GLFW.glfwPollEvents();

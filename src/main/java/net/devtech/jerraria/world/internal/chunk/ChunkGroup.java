@@ -84,6 +84,16 @@ public class ChunkGroup {
 		}
 
 		@Override
+		public boolean isLoaded(int x, int y) {
+			return ChunkGroup.this.chunks.containsKey(Chunk.combineInts(x, y));
+		}
+
+		@Override
+		public boolean canAccessImmediately(int x, int y) {
+			return this.isLoaded(x, y);
+		}
+
+		@Override
 		public CompletableFuture<World> linkAndExecute(Consumer<ChunkLinkingAccess> access) {
 			LongSet list = new LongOpenHashSet();
 			var containsAll = new Object() {

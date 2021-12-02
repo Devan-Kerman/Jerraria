@@ -85,7 +85,8 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 		LongSet visited = new LongOpenHashSet();
 		List<Chunk> chunks = new ArrayList<>();
 		access.accept((chunkX, chunkY) -> {
-			if(!visited.add(Chunk.combineInts(chunkX, chunkY))) {
+			long key = Chunk.combineInts(chunkX, chunkY);
+			if(!visited.add(key) || (ref.chunk != null && ref.chunk.getId() == key)) {
 				return;
 			}
 			Chunk chunk = this.getChunk(chunkX, chunkY);

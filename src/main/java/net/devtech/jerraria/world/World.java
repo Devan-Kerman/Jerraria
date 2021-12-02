@@ -30,6 +30,16 @@ public interface World {
 	EntityLayer entityLayer();
 
 	/**
+	 * Whether the world has a chunk for the given block position
+	 */
+	boolean isLoaded(int x, int y);
+
+	/**
+	 * Whether the world has a chunk for the given block position, or can load one for the given position on demand
+	 */
+	boolean canAccessImmediately(int x, int y);
+
+	/**
 	 * Executes the given action on the given chunk's group/thread.
 	 *  If the current world contains the given chunk (eg. if the World represents stack ChunkGroup)
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick

@@ -2,7 +2,9 @@ package net.devtech.jerraria.world.internal.chunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -16,6 +18,8 @@ import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.Entity;
+import net.devtech.jerraria.world.entity.EntityInternal;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
@@ -32,6 +36,8 @@ public class Chunk implements Executor {
 	final List<UnpositionedTileData> actions;
 	final Object2IntMap<Chunk> links;
 	final List<Runnable> immediateTasks = new ArrayList<>();
+	final Set<Entity> entities;
+
 	List<IntLongPair> unresolved;
 
 	int ticketCount;
@@ -45,6 +51,7 @@ public class Chunk implements Executor {
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
+		this.entities = new HashSet<>();
 	}
 
 	public Chunk(TickingWorld world, int chunkX, int chunkY, JCTagView tag) {
@@ -60,6 +67,15 @@ public class Chunk implements Executor {
 		this.unresolved = tag.get("links", NativeJCType.INT_LONG_LIST);
 		this.links = new Object2IntOpenHashMap<>(unresolved.size());
 		this.actions = ChunkCodec.deserializeTemporaryData(this, tag.get("actions", NativeJCType.ID_ANY_LIST));
+		this.entities = ChunkCodec.deserializeEntities(world, tag.get("entities", NativeJCType.ENTITIES));
+	}
+
+	public void addEntity(Entity entity) {
+		this.entities.add(entity);
+	}
+
+	public void removeEntity(Entity entity) {
+		this.entities.remove(entity);
 	}
 
 	public JCTagView write() {
@@ -68,6 +84,7 @@ public class Chunk implements Executor {
 		tag.put("data", NativeJCType.INT_ANY_LIST, ChunkCodec.serializeData(this.variants, this.data));
 		tag.put("actions", NativeJCType.ID_ANY_LIST, ChunkCodec.serializeTemporaryData(this.actions));
 		tag.put("links", NativeJCType.INT_LONG_LIST, ChunkCodec.serializeLinks(this.links));
+		tag.put("entities", NativeJCType.ENTITIES, ChunkCodec.serializeEntities(this.entities));
 		return tag;
 	}
 
@@ -108,6 +125,7 @@ public class Chunk implements Executor {
 	// todo less memory intensive linking system?
 
 	public void removeLink(Chunk chunk) {
+		if(chunk == this) return;
 		chunk.links.computeIntIfPresent(this, (c, i) -> i - 1);
 		if(this.links.computeIntIfPresent(chunk, (c, i) -> i - 1) <= 0) {
 			this.world.requiresRelinking(this);
@@ -116,6 +134,7 @@ public class Chunk implements Executor {
 	}
 
 	public void addLink(Chunk chunk) {
+		if(chunk == this) return;
 		chunk.links.mergeInt(this, 1, (c, i) -> i + 1);
 		if(this.links.mergeInt(chunk, 1, (c, i) -> i + 1) == 1) {
 			this.world.requiresRelinking(this);
@@ -135,9 +154,11 @@ public class Chunk implements Executor {
 				this.group.remove(this);
 			}
 			this.group = group;
+			for(Entity entity : this.entities) {
+				EntityInternal.setWorld(entity, group.local);
+			}
 		}
 	}
-
 
 	public void tick() {
 		var data = this.actions;
@@ -150,6 +171,9 @@ public class Chunk implements Executor {
 			}
 		} while(this.actions.size() > originals);
 
+		for(Entity entity : this.entities) {
+			EntityInternal.tickPos(entity);
+		}
 	}
 
 	/**
@@ -215,12 +239,16 @@ public class Chunk implements Executor {
 		}
 
 		if(replacement != oldData && replacement != null) {
-			if(value.doesTick(world, oldData, layer, ((InternalTileData)replacement).absX, ((InternalTileData)replacement).absY)) {
+			if(value.doesTick(this.getWorld(), oldData, layer, ((InternalTileData)replacement).absX, ((InternalTileData)replacement).absY)) {
 				this.actions.add(replacement);
 			}
 		}
 
 		return replacement;
+	}
+
+	public World getWorld() {
+		return this.group == null ? this.world : this.group.local;
 	}
 
 	public TileData getData(TileLayers layers, int x, int y) {
