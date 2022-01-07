@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.entity;
+package net.devtech.jerraria.entity;
 
 import net.devtech.jerraria.content.Entities;
 import net.devtech.jerraria.registry.Id;

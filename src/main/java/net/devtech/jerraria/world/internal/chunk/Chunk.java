@@ -18,11 +18,11 @@ import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.Entity;
-import net.devtech.jerraria.world.entity.EntityInternal;
+import net.devtech.jerraria.entity.Entity;
+import net.devtech.jerraria.entity.EntityInternal;
 import net.devtech.jerraria.world.internal.TickingWorld;
-import net.devtech.jerraria.world.tile.TileData;
-import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.tile.TileData;
+import net.devtech.jerraria.tile.TileVariant;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {
@@ -311,5 +311,17 @@ public class Chunk implements Executor {
 			return false;
 		}
 		return true;
+	}
+
+	public int getChunkX() {
+		return this.chunkX;
+	}
+
+	public int getChunkY() {
+		return this.chunkY;
+	}
+
+	public Set<Entity> getEntities() {
+		return this.entities;
 	}
 }

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.tile;
+package net.devtech.jerraria.tile;
 
 import java.util.List;
 

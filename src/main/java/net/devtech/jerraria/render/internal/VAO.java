@@ -19,11 +19,11 @@ public class VAO extends GlData {
 	final List<ElementGroup> groups;
 	final ElementGroup last;
 
-	public VAO(Map<String, Shader.Field> fields, int program) {
+	public VAO(Map<String, BareShader.Field> fields, int program) {
 		Map<String, Element> elements = new HashMap<>();
 		Map<String, ElementGroup> groups = new LinkedHashMap<>();
 		ElementGroup last = null;
-		for(Shader.Field field : fields.values()) {
+		for(BareShader.Field field : fields.values()) {
 			int location = glGetAttribLocation(program, field.name());
 			if(location == -1) {
 				throw new IllegalArgumentException("Could not find field by name " + field.name());
@@ -60,23 +60,12 @@ public class VAO extends GlData {
 		this.init_();
 	}
 
-	protected VAO(int glId,
-		Map<String, Element> elements,
-		List<ElementGroup> groups,
-		ElementGroup last) {
-		this.glId = glId;
-		this.elements = elements;
-		this.groups = groups;
-		this.last = last;
-	}
-
 	public VAO(VAO vao) {
 		this.glId = vao.glId;
 		List<ElementGroup> groups = new ArrayList<>();
 		ElementGroup last = null;
 		for(ElementGroup group : vao.groups) {
-			last = group;
-			groups.add(new ElementGroup(group));
+			groups.add(last = new ElementGroup(group));
 		}
 		this.groups = groups;
 		this.elements = vao.elements;
@@ -154,6 +143,7 @@ public class VAO extends GlData {
 			this.elements = group.elements;
 			this.len = group.len;
 			this.buffer = new BufferBuilder(group.len);
+			this.glId = group.glId;
 		}
 
 		void upload() {

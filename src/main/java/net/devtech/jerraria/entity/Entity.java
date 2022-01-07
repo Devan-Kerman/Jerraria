@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.entity;
+package net.devtech.jerraria.entity;
 
 import java.util.function.Function;
 
@@ -7,6 +7,7 @@ import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Pos;
 import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
@@ -24,7 +25,7 @@ public class Entity {
 	// it's actually impossible for -int_max to be a valid chunk coordinate
 	int oldChunkX = HOMELESS_CHUNK_COORD, oldChunkY;
 	Type<?> type;
-	double x, y;
+	double x, y, dx, dy;
 	World world;
 
 	public Entity(Type<?> type) {
@@ -60,6 +61,19 @@ public class Entity {
 		if(this.oldChunkX == HOMELESS_CHUNK_COORD) {
 			this.tickPosition(false);
 		}
+	}
+
+	public void setVelocity(double dx, double dy) {
+		this.dx = dx;
+		this.dy = dy;
+	}
+
+	public double getDx() {
+		return this.dx;
+	}
+
+	public double getDy() {
+		return this.dy;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.entity;
+package net.devtech.jerraria.entity;
 
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.util.Pos;

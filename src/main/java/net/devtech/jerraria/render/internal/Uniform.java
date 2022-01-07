@@ -21,7 +21,8 @@ public abstract class Uniform implements GlData.Buf {
 	final DataType type;
 	final int location;
 
-	protected Uniform(DataType type, int location) {this.type = type;
+	protected Uniform(DataType type, int location) {
+		this.type = type;
 		this.location = location;
 	}
 
@@ -33,6 +34,10 @@ public abstract class Uniform implements GlData.Buf {
 		} else {
 			return new Int(type, location);
 		}
+	}
+
+	public static Uniform createNew(Uniform uniform) {
+		return create(uniform.type, uniform.location);
 	}
 
 	@Override

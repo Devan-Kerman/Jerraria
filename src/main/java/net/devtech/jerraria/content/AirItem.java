@@ -1,7 +1,7 @@
 package net.devtech.jerraria.content;
 
-import net.devtech.jerraria.world.item.IdentityItem;
-import net.devtech.jerraria.world.item.Item;
+import net.devtech.jerraria.item.IdentityItem;
+import net.devtech.jerraria.item.Item;
 
 public final class AirItem extends IdentityItem {
 	public static final AirItem INSTANCE = new AirItem();

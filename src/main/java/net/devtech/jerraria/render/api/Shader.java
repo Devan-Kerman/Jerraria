@@ -3,6 +3,8 @@ package net.devtech.jerraria.render.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.devtech.jerraria.render.internal.BufferBuilder;
+
 public interface Shader<T extends ShaderStage> {
 	class VertexFormatBuilder<T extends GlValue<?>> {
 		final List<GlValue.Type<?>> values;
@@ -21,7 +23,18 @@ public interface Shader<T extends ShaderStage> {
 		public <N extends GlValue<T>> VertexFormatBuilder<N> add(GlValue.Type<N> type) {
 			return new VertexFormatBuilder<>(this, type);
 		}
+
+		public UniformBuilder<Primitive<T>> uniforms() {
+			return new UniformBuilder<>(this.values);
+		}
 	}
+
+	T start();
+
+	/**
+	 * @return a new version of the shader with it's own buffer
+	 */
+	Shader<T> copy();
 
 	class UniformBuilder<T extends ShaderStage & ShaderStage.Universal> {
 		final List<GlValue.Type<?>> attribute;
@@ -45,7 +58,7 @@ public interface Shader<T extends ShaderStage> {
 		}
 
 		public Shader<T> build() {
-
+			return null;
 		}
 	}
 }

@@ -13,12 +13,12 @@ public class UniformData extends GlData {
 	final List<ElementGroup> groups;
 	final List<Uniform> uniforms;
 
-	public UniformData(Map<String, Shader.Field> fields, int program) {
+	public UniformData(Map<String, BareShader.Field> fields, int program) {
 		Map<String, ElementGroup> groups = new LinkedHashMap<>();
 		ElementGroup defaultGroup = new ElementGroup();
 		Map<String, Element> elements = new HashMap<>();
 		List<Uniform> uniforms = new ArrayList<>();
-		for(Shader.Field value : fields.values()) {
+		for(BareShader.Field value : fields.values()) {
 			Element element;
 			ElementGroup group;
 			int location = glGetUniformLocation(program, value.name());
@@ -44,10 +44,19 @@ public class UniformData extends GlData {
 		this.init_();
 	}
 
+	public UniformData(UniformData data) {
+		this.elements = data.elements;
+		this.groups = data.groups.stream().map(ElementGroup::new).toList();
+		this.uniforms = data.uniforms.stream().map(Uniform::createNew).toList();
+	}
+
 	@Override
 	public UniformData start() {
 		for(Uniform uniform : this.uniforms) {
 			uniform.reset();
+		}
+		for(VAO.ElementGroup group : this.groups) {
+			group.buffer.vertexCount = 0;
 		}
 		return this;
 	}
@@ -132,11 +141,11 @@ public class UniformData extends GlData {
 		@Override
 		void upload() {
 			this.bind();
+			this.buffer.uniformCount();
 			this.buffer.upload(true);
 		}
 	}
 
 	public record StandardUniform(String name, DataType type, int location, int uniformIndex) implements Element {
-
 	}
 }

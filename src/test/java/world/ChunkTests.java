@@ -17,12 +17,12 @@ import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.SynchronousWorld;
-import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.tile.TileVariant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class WorldTest {
-	SynchronousWorld setupServer(boolean maintainOrder) throws IOException {
+public class ChunkTests {
+	public static SynchronousWorld setupServer(boolean maintainOrder) throws IOException {
 		Path dir = Files.createTempDirectory("jerraria_test");
 		System.out.println(dir.toAbsolutePath());
 		Executor executor = ForkJoinPool.commonPool();
@@ -31,7 +31,7 @@ public class WorldTest {
 
 	@Test
 	public void loadUnload() throws IOException {
-		SynchronousWorld world = this.setupServer(false);
+		SynchronousWorld world = setupServer(false);
 		Chunk chunk = world.getChunk(10, 10);
 		TileVariant variant = Tiles.TEST.getDefaultVariant();
 		chunk.ticket();
@@ -43,7 +43,7 @@ public class WorldTest {
 
 	@Test
 	public void synchronizedTicking() throws IOException {
-		SynchronousWorld world = this.setupServer(true);
+		SynchronousWorld world = setupServer(true);
 		Chunk test = world.getChunk(-1, -1);
 		Vector<Long> longs = new Vector<>();
 		LongList a = new LongArrayList();
@@ -62,7 +62,7 @@ public class WorldTest {
 
 	@Test
 	public void concurrentTicking() throws IOException {
-		SynchronousWorld world = this.setupServer(true);
+		SynchronousWorld world = setupServer(true);
 		Vector<Long> longs = new Vector<>();
 		LongList a = new LongArrayList();
 		for(int cx = 0; cx < 10; cx++) {

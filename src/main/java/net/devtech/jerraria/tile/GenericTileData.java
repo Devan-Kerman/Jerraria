@@ -1,7 +1,4 @@
-package net.devtech.jerraria.world.tile;
-
-import net.devtech.jerraria.world.TileLayers;
-import net.devtech.jerraria.world.World;
+package net.devtech.jerraria.tile;
 
 /**
  * This is the TileData for when mods want to store data on stack specific block, the reason mods are not allowed to just provide their own instance,

@@ -1,8 +1,6 @@
-package net.devtech.jerraria.world.tile;
+package net.devtech.jerraria.tile;
 
 import net.devtech.jerraria.util.data.element.JCElement;
-import net.devtech.jerraria.world.TileLayers;
-import net.devtech.jerraria.world.World;
 import org.jetbrains.annotations.ApiStatus;
 
 /**

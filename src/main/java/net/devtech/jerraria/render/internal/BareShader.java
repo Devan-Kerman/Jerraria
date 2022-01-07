@@ -23,20 +23,26 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.registry.Id;
 import org.lwjgl.opengl.GL20;
 
-public class Shader {
+public class BareShader {
 	public final int glId;
 	public final VAO vao;
 	public final UniformData uniforms;
 
-	public Shader(int id, VAO data, UniformData uniformData) {
+	public BareShader(int id, VAO data, UniformData uniformData) {
 		this.glId = id;
 		this.vao = data;
 		this.uniforms = uniformData;
 	}
 
-	public static Map<Id, Shader> compileShaders(Function<Id, String> fragSrc, Function<Id, String> vertSrc, List<Uncompiled> shaders) {
+	public BareShader(BareShader shader) {
+		this.glId = shader.glId;
+		this.vao = new VAO(shader.vao);
+		this.uniforms = new UniformData(shader.uniforms);
+	}
+
+	public static Map<Id, BareShader> compileShaders(Function<Id, String> fragSrc, Function<Id, String> vertSrc, List<Uncompiled> shaders) {
 		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders = new Object2IntOpenHashMap<>();
-		Map<Id, Shader> compiledShaders = new HashMap<>();
+		Map<Id, BareShader> compiledShaders = new HashMap<>();
 		for(Uncompiled uncompiled : shaders) {
 			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled, GL_FRAGMENT_SHADER);
 			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled, GL_VERTEX_SHADER);
@@ -51,7 +57,7 @@ public class Shader {
 
 			VAO vertex = new VAO(uncompiled.vertexFields, program);
 			UniformData uniform = new UniformData(uncompiled.uniformFields, program);
-			Shader shader = new Shader(program, vertex, uniform);
+			BareShader shader = new BareShader(program, vertex, uniform);
 			compiledShaders.put(uncompiled.id, shader);
 		}
 		fragmentShaders.values().forEach(GL20::glDeleteShader);

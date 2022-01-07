@@ -1,6 +1,6 @@
-package net.devtech.jerraria.world.tile.func;
+package net.devtech.jerraria.tile.func;
 
-import net.devtech.jerraria.world.tile.VariantConvertable;
+import net.devtech.jerraria.tile.VariantConvertable;
 import net.devtech.jerraria.world.ChunkLinkingAccess;
 
 public interface ChunkLinker<T extends VariantConvertable> {

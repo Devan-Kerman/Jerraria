@@ -3,7 +3,7 @@ package net.devtech.jerraria.content;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.world.entity.Entity;
+import net.devtech.jerraria.entity.Entity;
 public interface Entities {
 
 	Registry<Entity.Type<?>> REGISTRY = new Registry.Fast<>(null);

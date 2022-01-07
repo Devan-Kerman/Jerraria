@@ -3,8 +3,7 @@ package net.devtech.jerraria.content;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.world.tile.Tile;
-import org.jetbrains.annotations.ApiStatus;
+import net.devtech.jerraria.tile.Tile;
 
 public interface Tiles {
 	AirTile AIR = new AirTile();

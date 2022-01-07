@@ -1,7 +1,7 @@
-package net.devtech.jerraria.world.tile.func;
+package net.devtech.jerraria.tile.func;
 
 import net.devtech.jerraria.util.func.ArrayFunc;
-import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.tile.TileVariant;
 
 public interface TileProperty<T> {
 	static <T> ArrayFunc<TileProperty<T>> skipIf(T skip, T defaultValue) {

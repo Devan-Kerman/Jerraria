@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.tile;
+package net.devtech.jerraria.tile;
 
 import net.devtech.jerraria.util.data.element.JCElement;
 import org.jetbrains.annotations.Nullable;

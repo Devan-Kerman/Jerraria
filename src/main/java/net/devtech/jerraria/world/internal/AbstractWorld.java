@@ -10,9 +10,11 @@ import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class AbstractWorld implements World {
 	final ChunkAccessTileLayer[] tileLayers = new ChunkAccessTileLayer[TileLayers.COUNT];
+	final ChunkAccessEntityLayer entityLayer;
 
 	public AbstractWorld() {
 		Arrays.setAll(this.tileLayers, value -> new ChunkAccessTileLayer(TileLayers.LAYERS.get(value), this::getChunk));
+		this.entityLayer = new ChunkAccessEntityLayer(this::getChunk);
 	}
 
 	public abstract Chunk getChunk(int x, int y);
@@ -24,6 +26,6 @@ public abstract class AbstractWorld implements World {
 
 	@Override
 	public EntityLayer entityLayer() {
-		throw new UnsupportedOperationException("mald");
+		return this.entityLayer;
 	}
 }

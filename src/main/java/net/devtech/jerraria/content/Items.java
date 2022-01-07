@@ -3,8 +3,8 @@ package net.devtech.jerraria.content;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.world.item.IdentityItem;
-import net.devtech.jerraria.world.item.Item;
+import net.devtech.jerraria.item.IdentityItem;
+import net.devtech.jerraria.item.Item;
 
 public interface Items {
 	IdentityItem AIR = AirItem.INSTANCE;

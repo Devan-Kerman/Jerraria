@@ -38,6 +38,10 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		return this;
 	}
 
+	void uniformCount() {
+		this.vertexCount = 1;
+	}
+
 	void upload(boolean isUniform) {
 		ByteBuffer buffer = this.buffer;
 		int lim = buffer.limit();

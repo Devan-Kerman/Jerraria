@@ -3,16 +3,12 @@ package net.devtech.jerraria.world.internal.chunk;
 import static com.google.common.collect.Multimaps.asMap;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -26,20 +22,19 @@ import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.devtech.jerraria.content.Entities;
 import net.devtech.jerraria.content.Tiles;
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.util.Pos;
 import net.devtech.jerraria.util.data.element.JCElement;
 import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.Entity;
-import net.devtech.jerraria.world.entity.EntityInternal;
-import net.devtech.jerraria.world.entity.SerializedEntity;
+import net.devtech.jerraria.entity.Entity;
+import net.devtech.jerraria.entity.EntityInternal;
+import net.devtech.jerraria.entity.SerializedEntity;
 import net.devtech.jerraria.world.internal.AbstractWorld;
-import net.devtech.jerraria.world.tile.InternalTileAccess;
-import net.devtech.jerraria.world.tile.EnumerableProperty;
-import net.devtech.jerraria.world.tile.Tile;
-import net.devtech.jerraria.world.tile.TileData;
-import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.tile.InternalTileAccess;
+import net.devtech.jerraria.tile.EnumerableProperty;
+import net.devtech.jerraria.tile.Tile;
+import net.devtech.jerraria.tile.TileData;
+import net.devtech.jerraria.tile.TileVariant;
 
 public class ChunkCodec {
 	public static final String RESERVED_ID = "__TILE_ID_INTERNAL__";

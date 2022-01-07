@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.tile;
+package net.devtech.jerraria.tile;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -25,7 +25,7 @@ import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
-import net.devtech.jerraria.world.tile.func.TileProperty;
+import net.devtech.jerraria.tile.func.TileProperty;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

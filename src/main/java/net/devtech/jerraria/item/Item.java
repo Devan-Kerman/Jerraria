@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.item;
+package net.devtech.jerraria.item;
 
 import java.util.function.Function;
 
