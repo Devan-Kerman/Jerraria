@@ -6,7 +6,9 @@ import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 
+import it.unimi.dsi.fastutil.Arrays;
 import net.devtech.jerraria.util.Log2;
 import org.lwjgl.opengl.GL20;
 
@@ -20,12 +22,48 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.buffer = allocateBuffer(Math.max(1024, Log2.nearestPowerOf2(length)));
 	}
 
+	public BufferBuilder(BufferBuilder builder) {
+		this.vertexLength = builder.vertexLength;
+		this.vertexCount = builder.vertexCount;
+		ByteBuffer buffer = builder.buffer;
+		if(buffer != null) {
+			int limit = buffer.limit();
+			ByteBuffer copy = allocateBuffer(limit);
+			copy.put(0, buffer, 0, Math.min(this.vertexLength * (this.vertexCount + 1), limit)); // account for unflushed
+			this.buffer = copy;
+		}
+	}
+
 	public BufferBuilder(int expectedSize, int length) {
 		this.vertexLength = length;
 		// compute the next highest power of 2 of 32-bit v
 		this.buffer = allocateBuffer(Log2.nearestPowerOf2(expectedSize));
 	}
 
+	/*public interface VertexComparator {
+		int compareTo(float[] primitiveA, float[] primitiveB);
+	}
+
+	public void sortQuads(VertexComparator comparator, GlData.Element vertex, int vertexes) {
+		VAO.Element element = (VAO.Element) vertex; // todo sorts the vertices and not the shapes, uh cope
+		if(element.type() != DataType.F32_VEC3) {
+			throw new UnsupportedOperationException("Coordinates must be of type " + DataType.F32_VEC3);
+		}
+
+		int len = this.vertexLength;
+		byte[] swapBuf = new byte[len];
+		ByteBuffer buffer = this.buffer;
+		Arrays.quickSort(0, this.vertexCount, (k1, k2) -> {
+			int indexA = k1 * len * vertexes;
+			buffer.get(indexA, bufA);
+			int indexB = k2 * len * vertexes;
+			return comparator.compareTo(x1, y1, z1, x2, y2, z2);
+		}, (a, b) -> {
+			buffer.get(len * a, swapBuf, 0, len); // move bytes from a into temp array
+			buffer.put(len * a, buffer, len * b, len); // copy from a -> b
+			buffer.put(len * a, swapBuf);
+		});
+	}*/
 
 	int vertexOffset() {
 		return this.vertexCount * this.vertexLength;

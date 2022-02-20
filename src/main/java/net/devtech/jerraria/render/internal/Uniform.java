@@ -20,6 +20,7 @@ import java.nio.FloatBuffer;
 public abstract class Uniform implements GlData.Buf {
 	final DataType type;
 	final int location;
+	boolean rebind;
 
 	protected Uniform(DataType type, int location) {
 		this.type = type;
@@ -38,6 +39,10 @@ public abstract class Uniform implements GlData.Buf {
 
 	public static Uniform createNew(Uniform uniform) {
 		return create(uniform.type, uniform.location);
+	}
+
+	public static Uniform copy(Uniform uniform) {
+		return uniform.copy();
 	}
 
 	@Override
@@ -79,6 +84,8 @@ public abstract class Uniform implements GlData.Buf {
 
 	abstract void bind();
 
+	abstract Uniform copy();
+
 	static class Matrix extends Uniform {
 		final FloatBuffer buf;
 
@@ -89,24 +96,31 @@ public abstract class Uniform implements GlData.Buf {
 
 		@Override
 		public GlData.Buf f(float f) {
-			buf.put(f);
+			this.buf.put(f);
 			return this;
 		}
 
 		@Override
 		void reset() {
-			buf.position(0);
+			this.buf.position(0);
 		}
 
 		@Override
 		void bind() {
 			this.reset();
-			switch(type.elementCount) {
-				case 4 -> glUniformMatrix2fv(location, false, this.buf);
-				case 9 -> glUniformMatrix3fv(location, false, this.buf);
-				case 16 -> glUniformMatrix4fv(location, false, this.buf);
-				default -> throw new UnsupportedOperationException("Unsupported matrix size " + type.elementCount);
+			switch(this.type.elementCount) {
+				case 4 -> glUniformMatrix2fv(this.location, false, this.buf);
+				case 9 -> glUniformMatrix3fv(this.location, false, this.buf);
+				case 16 -> glUniformMatrix4fv(this.location, false, this.buf);
+				default -> throw new UnsupportedOperationException("Unsupported matrix size " + this.type.elementCount);
 			}
+		}
+
+		@Override
+		Uniform copy() {
+			Matrix matrix = new Matrix(this.type, this.location);
+			matrix.buf.put(this.buf);
+			return matrix;
 		}
 	}
 
@@ -157,12 +171,26 @@ public abstract class Uniform implements GlData.Buf {
 
 		@Override
 		void bind() {
-			switch(this.type.elementCount) {
-				case 1 -> glUniform1i(location, this.a);
-				case 2 -> glUniform2i(location, this.a, this.b);
-				case 3 -> glUniform3i(location, this.a, this.b, this.c);
-				case 4 -> glUniform4i(location, this.a, this.b, this.c, this.d);
+			if(this.rebind) {
+				switch(this.type.elementCount) {
+					case 1 -> glUniform1i(this.location, this.a);
+					case 2 -> glUniform2i(this.location, this.a, this.b);
+					case 3 -> glUniform3i(this.location, this.a, this.b, this.c);
+					case 4 -> glUniform4i(this.location, this.a, this.b, this.c, this.d);
+				}
+				this.rebind = false;
 			}
+		}
+
+		@Override
+		Uniform copy() {
+			Int copy = new Int(this.type, this.location);
+			copy.index = this.index;
+			copy.a = this.a;
+			copy.b = this.b;
+			copy.c = this.c;
+			copy.d = this.d;
+			return copy;
 		}
 	}
 
@@ -194,11 +222,22 @@ public abstract class Uniform implements GlData.Buf {
 		@Override
 		void bind() {
 			switch(this.type.elementCount) {
-				case 1 -> glUniform1f(location, this.a);
-				case 2 -> glUniform2f(location, this.a, this.b);
-				case 3 -> glUniform3f(location, this.a, this.b, this.c);
-				case 4 -> glUniform4f(location, this.a, this.b, this.c, this.d);
+				case 1 -> glUniform1f(this.location, this.a);
+				case 2 -> glUniform2f(this.location, this.a, this.b);
+				case 3 -> glUniform3f(this.location, this.a, this.b, this.c);
+				case 4 -> glUniform4f(this.location, this.a, this.b, this.c, this.d);
 			}
+		}
+
+		@Override
+		Uniform copy() {
+			Float copy = new Float(this.type, this.location);
+			copy.index = this.index;
+			copy.a = this.a;
+			copy.b = this.b;
+			copy.c = this.c;
+			copy.d = this.d;
+			return copy;
 		}
 	}
 }

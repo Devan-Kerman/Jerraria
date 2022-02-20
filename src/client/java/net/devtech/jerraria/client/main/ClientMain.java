@@ -1,24 +1,10 @@
 package net.devtech.jerraria.client.main;
 
-import static org.lwjgl.opengl.GL20.glUniform1iv;
-import static org.lwjgl.opengl.GL31.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL31.glBufferData;
-import static org.lwjgl.opengl.GL31.glGenBuffers;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformBlockName;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformName;
-import static org.lwjgl.opengl.GL31.glGetProgramInfoLog;
-import static org.lwjgl.opengl.GL31.glGetProgramiv;
-import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
-import static org.lwjgl.opengl.GL31.glGetUniformIndices;
-import static org.lwjgl.opengl.GL31.glShaderSource;
-
-import java.util.List;
-
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.render.internal.DataType;
-import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.UniformData;
-import net.devtech.jerraria.render.internal.VAO;
+import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.SCopy;
+import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.render.internal.ShaderManager;
 import org.intellij.lang.annotations.Language;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -28,6 +14,13 @@ import org.lwjgl.system.MemoryUtil;
 public class ClientMain {
 	static {
 		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
+		@Language("JAVA")
+		String vertexSrc = """
+			public abstract class MyShader extends AbstractShader {
+				public final V.F<?> uniformA = this.uniform(Vec3.f("name"));
+				public final Vec3.F<V.F<End>> vertexFormat = this.append();
+			}
+			""".stripLeading();
 	}
 
 	public static void main(String[] args) {
@@ -49,22 +42,6 @@ public class ClientMain {
 		});
 
 		@Language("GLSL")
-		String vertexSrc = """
-			#version 330 core
-
-			uniform Uniform { vec3 color; };
-			uniform float w;
-
-			in vec3 aPos;
-			out vec3 vertexColor;
-
-			void main() {
-			    gl_Position = vec4(aPos, w);
-			    vertexColor = color;
-			}
-			""".stripLeading();
-
-		@Language("GLSL")
 		String fragmentSrc = """
 			#version 330 core
 			out vec4 FragColor;
@@ -75,60 +52,49 @@ public class ClientMain {
 			}
 			""".stripLeading();
 
-		Id id = Id.create("bruh", "test");
-		BareShader shader = BareShader.compileShaders(i -> fragmentSrc, i -> vertexSrc, List.of(
-			new BareShader.Uncompiled(
-				id,
-				id,
-				id)
-				.vert(DataType.F32_VEC3, "aPos")
-				.uniform(DataType.F32_VEC3, "color", "Uniform")
-				.uniform(DataType.F32, "w")
-		)).get(id);
+		@Language("GLSL")
+		String vertexSrc = """
+			#version 430 core
 
-		VAO vao = shader.vao;
-		vao.start();
-		var pos = vao.getElement("aPos");
-		vao.element(pos).f(0).f(0).f(0);
-		vao.next();
-		vao.element(pos).f(1).f(0).f(0);
-		vao.next();
-		vao.element(pos).f(0).f(1).f(0);
-		vao.next();
+			in vec3 aPos;
 
-		UniformData uniforms = shader.uniforms;
-		uniforms.start();
-		uniforms.element("color").f(1.0f).f(0.5f).f(1.0f);
-		uniforms.element("w").f(1.0f);
+			uniform vec3 color;
+			uniform float w;
 
-		BareShader copy = new BareShader(shader);
-		VAO vao2 = copy.vao;
-		vao2.start();
-		var pos2 = vao2.getElement("aPos");
-		vao2.element(pos2).f(0).f(0).f(0);
-		vao2.next();
-		vao2.element(pos2).f(1).f(0).f(0);
-		vao2.next();
-		vao2.element(pos2).f(0).f(1).f(0);
-		vao2.next();
+			out vec3 vertexColor;
+			void main() {
+			    gl_Position = vec4(aPos, w);
+			    vertexColor = vec3(color.rg, w * color.b);
+			}
+			""".stripLeading();
 
-		UniformData uniforms2 = copy.uniforms;
-		uniforms2.start();
-		uniforms2.element("color").f(1.0f).f(0.5f).f(1.0f);
-		uniforms2.element("w").f(1.0f);
+		ShaderManager.FRAG_SOURCES.add($ -> fragmentSrc);
+		ShaderManager.VERT_SOURCES.add($ -> vertexSrc);
+		ShaderManager.SHADER_PROVIDERS.add($ -> new ShaderManager.ShaderPair($, $));
+
+		TestShader shader = TestShader.INSTANCE;
+		shader.color.vec3f(1.0f, 0.5f, .5f);
+		shader.w.f(1.0f);
+
+		shader.vert().vec3f(0, 0, 0);
+		shader.vert().vec3f(1, 0, 0);
+		shader.vert().vec3f(0, 1, 0);
+
+		TestShader copy = Shader.copy(shader, SCopy.PRESERVE_VERTEX_DATA);
+		copy.color.vec3f(1.0f, 0.5f, .5f);
+		copy.w.f(1f);
+
+		//shader.vert().vec3f(0, 0, 0);
+		//shader.vert().vec3f(-1, 0, 0);
+		//shader.vert().vec3f(0, -1, 0);
 
 		while(!GLFW.glfwWindowShouldClose(window)) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			//shader.draw(GL_TRIANGLES);
-			copy.draw(GL_TRIANGLES);
+			copy.render(Primitive.TRIANGLE);
 			GLFW.glfwSwapBuffers(window);
 			GLFW.glfwPollEvents();
 		}
 
 		GLFW.glfwTerminate();
-	}
-
-	private static void render() {
-		// todo: render
 	}
 }

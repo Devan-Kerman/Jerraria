@@ -9,7 +9,7 @@ public abstract class GlData {
 		pos = getElement("pos");
 	}
 
-	public abstract GlData start();
+	public abstract GlData flush();
 
 	public Buf element(String name) {
 		return element(getElement(name));
@@ -19,7 +19,7 @@ public abstract class GlData {
 
 	public abstract Element getElement(String name);
 
-	interface Element {}
+	public interface Element {}
 
 	public interface Buf {
 		Buf f(float f);

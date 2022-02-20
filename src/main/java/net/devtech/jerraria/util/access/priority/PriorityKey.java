@@ -38,7 +38,6 @@ public final class PriorityKey {
 		this.name = name;
 	}
 
-
 	public static List<PriorityKey> sort(Iterable<PriorityKey> keys) {
 		return sort(keys, key -> {
 			ArrayList<PriorityKey> list = new ArrayList<>(Arrays.asList(key.after));

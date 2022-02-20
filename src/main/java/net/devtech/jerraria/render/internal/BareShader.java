@@ -21,9 +21,12 @@ import java.util.function.Function;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.render.api.GlValue;
+import net.devtech.jerraria.render.api.SCopy;
 import org.lwjgl.opengl.GL20;
 
 public class BareShader {
+	public static BareShader activeShader;
 	public final int glId;
 	public final VAO vao;
 	public final UniformData uniforms;
@@ -34,10 +37,10 @@ public class BareShader {
 		this.uniforms = uniformData;
 	}
 
-	public BareShader(BareShader shader) {
+	public BareShader(BareShader shader, SCopy method) {
 		this.glId = shader.glId;
-		this.vao = new VAO(shader.vao);
-		this.uniforms = new UniformData(shader.uniforms);
+		this.vao = new VAO(shader.vao, method.preserveVertexData);
+		this.uniforms = new UniformData(shader.uniforms, method.preserveUniforms);
 	}
 
 	public static Map<Id, BareShader> compileShaders(Function<Id, String> fragSrc, Function<Id, String> vertSrc, List<Uncompiled> shaders) {
@@ -79,11 +82,12 @@ public class BareShader {
 
 	public void draw(int primitive) {
 		glUseProgram(this.glId);
-		this.uniforms.bind();
+		this.uniforms.bind(activeShader != this);
+		activeShader = this;
 		this.vao.bindAndDraw(primitive);
 	}
 
-	public static class Uncompiled {
+	public static final class Uncompiled {
 		final Id id;
 		final Id frag, vert;
 		final Map<String, Field> vertexFields;
@@ -118,6 +122,14 @@ public class BareShader {
 		public Uncompiled uniform(DataType type, String name, String groupName) {
 			this.uniformFields.put(name, new Field(type, name, groupName));
 			return this;
+		}
+
+		public Uncompiled type(GlValue.Loc type, DataType local, String name) {
+			if(type == GlValue.Loc.UNIFORM) {
+				return uniform(local, name);
+			} else {
+				return vert(local, name);
+			}
 		}
 	}
 

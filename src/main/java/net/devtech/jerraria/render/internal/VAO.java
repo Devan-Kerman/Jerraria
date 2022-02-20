@@ -48,24 +48,26 @@ public class VAO extends GlData {
 			for(GlData.Element v : group.elements) {
 				Element value = (Element) v;
 				DataType type = value.type;
-				GL30.glVertexAttribPointer(value.location,
+				GL30.glVertexAttribPointer(
+					value.location,
 					type.elementCount,
 					type.elementType,
 					type.normalized,
 					type.byteCount,
-					value.byteOffset);
+					value.byteOffset
+				);
 				GL30.glEnableVertexAttribArray(value.location);
 			}
 		}
 		this.init_();
 	}
 
-	public VAO(VAO vao) {
+	public VAO(VAO vao, boolean copyContents) {
 		this.glId = vao.glId;
 		List<ElementGroup> groups = new ArrayList<>();
 		ElementGroup last = null;
 		for(ElementGroup group : vao.groups) {
-			groups.add(last = new ElementGroup(group));
+			groups.add(last = new ElementGroup(group, copyContents));
 		}
 		this.groups = groups;
 		this.elements = vao.elements;
@@ -73,7 +75,7 @@ public class VAO extends GlData {
 	}
 
 	@Override
-	public VAO start() {
+	public VAO flush() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.vertexCount = 0;
 		}
@@ -89,6 +91,11 @@ public class VAO extends GlData {
 		return buffer;
 	}
 
+	@Override
+	public GlData.Element getElement(String name) {
+		return this.elements.get(name);
+	}
+
 	public VAO next() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.next();
@@ -100,11 +107,6 @@ public class VAO extends GlData {
 	public VAO bind() {
 		GL30.glBindVertexArray(this.glId);
 		return this;
-	}
-
-	@Override
-	public GlData.Element getElement(String name) {
-		return this.elements.get(name);
 	}
 
 	public void bindAndDraw(int mode) {
@@ -138,11 +140,15 @@ public class VAO extends GlData {
 			this.elements = new ArrayList<>();
 		}
 
-		public ElementGroup(ElementGroup group) {
+		public ElementGroup(ElementGroup group, boolean copyContents) {
 			this.name = group.name;
 			this.elements = group.elements;
 			this.len = group.len;
-			this.buffer = new BufferBuilder(group.len);
+			if(copyContents) {
+				this.buffer = new BufferBuilder(group.buffer);
+			} else {
+				this.buffer = new BufferBuilder(group.len);
+			}
 			this.glId = group.glId;
 		}
 
@@ -162,6 +168,6 @@ public class VAO extends GlData {
 		}
 	}
 
-	public record Element(int groupIndex, String name, DataType type, int location, int byteOffset) implements GlData.Element {
-	}
+	public record Element(int groupIndex, String name, DataType type, int location, int byteOffset)
+		implements GlData.Element {}
 }
