@@ -1,7 +1,7 @@
 package net.devtech.jerraria.entity;
 
 import net.devtech.jerraria.util.data.element.JCElement;
-import net.devtech.jerraria.util.shape.SimpleShape;
+import net.devtech.jerraria.util.SimpleShape;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 

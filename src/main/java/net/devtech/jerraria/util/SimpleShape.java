@@ -1,4 +1,4 @@
-package net.devtech.jerraria.util.shape;
+package net.devtech.jerraria.util;
 
 public interface SimpleShape {
 	/**

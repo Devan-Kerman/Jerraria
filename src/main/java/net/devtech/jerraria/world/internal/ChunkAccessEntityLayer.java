@@ -23,7 +23,6 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 
 	@Override
 	public Stream<BaseEntity> getEntitiesEnclosed(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
-		// todo convert to chunk coordinates, and filter to ensure it exactly matches bounds
 		Spliterator<BaseEntity> spliterator = this.getEntitySpliterator(
 			fromX << World.LOG2_CHUNK_SIZE,
 			fromY << World.LOG2_CHUNK_SIZE,
