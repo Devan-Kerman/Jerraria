@@ -2,11 +2,12 @@ package net.devtech.jerraria.world.internal;
 
 import java.util.Collections;
 import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import net.devtech.jerraria.entity.Entity;
+import net.devtech.jerraria.entity.BaseEntity;
 import net.devtech.jerraria.util.Ceil;
 import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.EntitySearchType;
@@ -14,7 +15,7 @@ import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public class ChunkAccessEntityLayer implements EntityLayer {
-	private static final Spliterator<Entity> EMPTY = Collections.<Entity>emptyList().spliterator();
+	private static final Spliterator<BaseEntity> EMPTY = Collections.<BaseEntity>emptyList().spliterator();
 	final ChunkAccessTileLayer.ChunkGetter getter;
 
 	public ChunkAccessEntityLayer(ChunkAccessTileLayer.ChunkGetter getter) {
@@ -22,9 +23,9 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 	}
 
 	@Override
-	public Stream<Entity> getEntities(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
+	public Stream<BaseEntity> getEntities(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
 		// todo convert to chunk coordinates, and filter to ensure it exactly matches bounds
-		Spliterator<Entity> spliterator = this.getEntitySpliterator(
+		Spliterator<BaseEntity> spliterator = this.getEntitySpliterator(
 			fromX << World.LOG2_CHUNK_SIZE,
 			fromY << World.LOG2_CHUNK_SIZE,
 			Ceil.div(toX, World.CHUNK_SIZE),
@@ -32,18 +33,18 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 		return StreamSupport.stream(spliterator, false);//.filter(entity -> entity.enclosed(type, fromX, fromY, toX, toY));
 	}
 
-	public Spliterator<Entity> getEntitySpliterator(int fromX, int fromY, int toX, int toY) {
+	public Spliterator<BaseEntity> getEntitySpliterator(int fromX, int fromY, int toX, int toY) {
 		return new EntitySpliterator(fromX, fromY, toX, toY);
 	}
 
-	public class EntitySpliterator implements Spliterator<Entity> {
+	public class EntitySpliterator implements Spliterator<BaseEntity> {
 		int fromX, fromY, toX, toY;
 		int cx, cy;
 		/**
 		 * max x on last y
 		 */
 		int maxX;
-		Spliterator<Entity> current;
+		Spliterator<BaseEntity> current;
 
 		public EntitySpliterator(int fromX, int fromY, int toX, int toY) {
 			this.fromX = fromX;
@@ -54,7 +55,7 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 		}
 
 		@Override
-		public boolean tryAdvance(Consumer<? super Entity> action) {
+		public boolean tryAdvance(Consumer<? super BaseEntity> action) {
 			if(current != null && current.tryAdvance(action)) {
 				return true;
 			}
@@ -77,7 +78,7 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 		}
 
 		@Override
-		public Spliterator<Entity> trySplit() {
+		public Spliterator<BaseEntity> trySplit() {
 			int xSize = this.toX - this.fromX;
 			int currentIndex = (this.cy * xSize) + this.cx;
 			int maxIndex = xSize * (this.toY - this.fromY) - (this.toX - this.maxX);

@@ -14,7 +14,7 @@ import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Func;
-import net.devtech.jerraria.util.LazyBool;
+import net.devtech.jerraria.util.TriState;
 import net.devtech.jerraria.util.access.Access;
 import net.devtech.jerraria.util.access.func.FuncFinder;
 import net.devtech.jerraria.util.access.internal.AccessImpl;
@@ -37,13 +37,14 @@ public class Tile implements IdentifiedObject {
 	public static final Access<TileProperty<Boolean>> HAS_BLOCK_ENTITY = new AccessImpl<>(ArrayFunc.builder()
 		.retIfNN(FuncFinder.onlyAbstract())
 		.buildInfer());
+
 	private static final Logger LOGGER = Logger.getLogger("Tile");
 
 	static {
 		HAS_BLOCK_ENTITY.andThen(PriorityKey.DEFAULT, TileVariant::hasBlockData);
 	}
 
-	LazyBool doesTileDataTick;
+	TriState doesTileDataTick;
 
 	int linkFromX, linkToX, linkFromY, linkToY;
 	TileVariant[] cache;
@@ -110,11 +111,11 @@ public class Tile implements IdentifiedObject {
 
 	// block data
 	public boolean doesDataTick(World world, TileVariant variant, @NotNull TileData data, TileLayers layers, int x, int y) {
-		LazyBool dat = this.doesTileDataTick;
+		TriState dat = this.doesTileDataTick;
 		switch(dat) {
 			case UNIT -> {
 				boolean overrides = Func.get(Tile::tickData).getDeclaringClass() != Tile.class;
-				this.doesTileDataTick = overrides ? LazyBool.TRUE : LazyBool.FALSE;
+				this.doesTileDataTick = overrides ? TriState.TRUE : TriState.FALSE;
 				return overrides;
 			}
 			case TRUE -> {

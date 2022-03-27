@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
@@ -14,17 +15,23 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.data.JCIO;
 import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.world.Server;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
 
 public class SynchronousWorld extends TickingWorld {
+	public static final AtomicInteger SESSION_IDS = new AtomicInteger();
+	final Server server;
 	final Path directory;
 	final Long2ObjectMap<Chunk> loadedChunkCache = new Long2ObjectOpenHashMap<>();
 	final ChunkReader reader;
+	final int sessionId = SESSION_IDS.incrementAndGet();
 
-	public SynchronousWorld(Path directory, Executor executor, boolean maintainOrder) {
+	public SynchronousWorld(
+		Path directory, Executor executor, boolean maintainOrder, Server server) {
 		super(executor, maintainOrder);
 		this.directory = directory;
+		this.server = server;
 		this.reader = new ChunkReader();
 	}
 
@@ -34,6 +41,16 @@ public class SynchronousWorld extends TickingWorld {
 			long key = entry.getLongKey();
 			this.unloadChunk(entry.getValue(), key);
 		}
+	}
+
+	@Override
+	public Server getServer() {
+		return this.server;
+	}
+
+	@Override
+	public int sessionId() {
+		return this.sessionId;
 	}
 
 	@Override

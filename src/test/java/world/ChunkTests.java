@@ -26,7 +26,7 @@ public class ChunkTests {
 		Path dir = Files.createTempDirectory("jerraria_test");
 		System.out.println(dir.toAbsolutePath());
 		Executor executor = ForkJoinPool.commonPool();
-		return new SynchronousWorld(dir, executor, maintainOrder);
+		return new SynchronousWorld(dir, executor, maintainOrder, null);
 	}
 
 	@Test

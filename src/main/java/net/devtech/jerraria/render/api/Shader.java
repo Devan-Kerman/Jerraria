@@ -72,7 +72,7 @@ public abstract class Shader<T extends GlValue<?>> {
 		this.isCopy = true;
 	}
 
-	public void render(Primitive primitive) {
+	public final void render(Primitive primitive) {
 		if(this.vertices % primitive.vertexCount != 0) {
 			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for rendering " + primitive + " but found " + this.vertices);
 		}
@@ -80,19 +80,19 @@ public abstract class Shader<T extends GlValue<?>> {
 		this.shader.draw(primitive.glId);
 	}
 
-	public void renderAndFlush(Primitive primitive) {
+	public final void renderAndFlush(Primitive primitive) {
 		this.render(primitive);
 		this.shader.vao.flush();
 	}
 
-	public void endOfVertex() {
+	private void endOfVertex() {
 		if(!this.finalized) {
 			this.shader.vao.next();
 			this.finalized = true;
 		}
 	}
 
-	public T vert() {
+	public final T vert() {
 		if(this.vertices != 0 && !this.finalized) {
 			this.shader.vao.next();
 		}
@@ -101,7 +101,7 @@ public abstract class Shader<T extends GlValue<?>> {
 		return this.compiled;
 	}
 
-	protected <U extends GlValue<End>> U uni(GlValue.Type<U> type) {
+	protected final <U extends GlValue<End>> U uni(GlValue.Type<U> type) {
 		if(!this.isCopy) {
 			if(this.shader == null) {
 				this.uniforms.add(type);
@@ -112,7 +112,7 @@ public abstract class Shader<T extends GlValue<?>> {
 		return type.create(this.uniformData, null);
 	}
 
-	class LazyUniformData extends GlData {
+	final class LazyUniformData extends GlData {
 		@Override
 		public GlData flush() {
 			return Shader.this.shader.uniforms.flush();
@@ -137,7 +137,7 @@ public abstract class Shader<T extends GlValue<?>> {
 		}
 	}
 
-	static class LazyElement implements GlData.Element {
+	static final class LazyElement implements GlData.Element {
 		Shader<?> shader;
 		String name;
 		GlData.Element value;

@@ -9,6 +9,13 @@ public interface World {
 	int CHUNK_SIZE = 1 << LOG2_CHUNK_SIZE;
 	int CHUNK_MASK = CHUNK_SIZE - 1;
 
+	Server getServer();
+
+	/**
+	 * Unique id of this world for this game session. Aka: not stable across restarts!
+	 */
+	int sessionId();
+
 	TileLayer layerFor(TileLayers layers);
 
 	default TileLayer fluidLayer() {

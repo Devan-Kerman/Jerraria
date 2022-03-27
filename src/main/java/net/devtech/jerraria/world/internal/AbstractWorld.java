@@ -1,6 +1,7 @@
 package net.devtech.jerraria.world.internal;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.TileLayer;
@@ -28,4 +29,5 @@ public abstract class AbstractWorld implements World {
 	public EntityLayer entityLayer() {
 		return this.entityLayer;
 	}
+
 }

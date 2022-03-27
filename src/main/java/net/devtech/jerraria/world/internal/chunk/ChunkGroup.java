@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.devtech.jerraria.world.ChunkLinkingAccess;
+import net.devtech.jerraria.world.Server;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.TickingWorld;
@@ -81,6 +82,16 @@ public class ChunkGroup {
 				chunk = backing.getChunk(x, y);
 			}
 			return chunk;
+		}
+
+		@Override
+		public Server getServer() {
+			return backing.getServer();
+		}
+
+		@Override
+		public int sessionId() {
+			return backing.sessionId();
 		}
 
 		@Override

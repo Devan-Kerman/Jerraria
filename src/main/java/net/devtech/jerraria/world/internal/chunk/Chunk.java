@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLongPair;
@@ -18,7 +19,7 @@ import net.devtech.jerraria.util.data.JCTagView;
 import net.devtech.jerraria.util.data.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.entity.Entity;
+import net.devtech.jerraria.entity.BaseEntity;
 import net.devtech.jerraria.entity.EntityInternal;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.tile.TileData;
@@ -36,7 +37,7 @@ public class Chunk implements Executor {
 	final List<UnpositionedTileData> actions;
 	final Object2IntMap<Chunk> links;
 	final List<Runnable> immediateTasks = new ArrayList<>();
-	final Set<Entity> entities;
+	final Set<BaseEntity> entities;
 
 	List<IntLongPair> unresolved;
 
@@ -70,11 +71,11 @@ public class Chunk implements Executor {
 		this.entities = ChunkCodec.deserializeEntities(world, tag.get("entities", NativeJCType.ENTITIES));
 	}
 
-	public void addEntity(Entity entity) {
+	public void addEntity(BaseEntity entity) {
 		this.entities.add(entity);
 	}
 
-	public void removeEntity(Entity entity) {
+	public void removeEntity(BaseEntity entity) {
 		this.entities.remove(entity);
 	}
 
@@ -154,7 +155,7 @@ public class Chunk implements Executor {
 				this.group.remove(this);
 			}
 			this.group = group;
-			for(Entity entity : this.entities) {
+			for(BaseEntity entity : this.entities) {
 				EntityInternal.setWorld(entity, group.local);
 			}
 		}
@@ -171,8 +172,12 @@ public class Chunk implements Executor {
 			}
 		} while(this.actions.size() > originals);
 
-		for(Entity entity : this.entities) {
-			EntityInternal.tickPos(entity);
+		for(BaseEntity entity : this.entities) {
+			// tick entities
+		}
+
+		for(BaseEntity entity : this.entities) {
+			EntityInternal.tickPos(entity); // allow entities to schedule chunk relocations
 		}
 	}
 
@@ -321,7 +326,7 @@ public class Chunk implements Executor {
 		return this.chunkY;
 	}
 
-	public Set<Entity> getEntities() {
+	public Iterable<BaseEntity> getEntities() {
 		return this.entities;
 	}
 }

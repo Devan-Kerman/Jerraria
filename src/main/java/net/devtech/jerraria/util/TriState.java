@@ -1,6 +1,6 @@
 package net.devtech.jerraria.util;
 
-public enum LazyBool {
+public enum TriState {
 	UNIT,
 	FALSE,
 	TRUE

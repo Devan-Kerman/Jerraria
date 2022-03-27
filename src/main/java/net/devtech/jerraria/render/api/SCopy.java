@@ -6,6 +6,8 @@ public enum SCopy {
 	PRESERVE_BOTH(true, true),
 	PRESERVE_NEITHER(false, false);
 
+	// todo view-only stuff, so u can "share vertex data" for example
+
 	public final boolean preserveUniforms, preserveVertexData;
 
 	SCopy(boolean uniforms, boolean data) {
