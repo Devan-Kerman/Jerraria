@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Objects;
 
 public class PathVirtualFile implements VirtualFile {
-
 	protected final Path path;
 
 	private PathVirtualFile(Path path) {

@@ -9,7 +9,9 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 public interface VirtualFile {
-
+	/**
+	 * @return '/' for root directories, all other paths will not contain a leading '/'
+	 */
 	String name();
 
 	@Nullable
@@ -35,7 +37,7 @@ public interface VirtualFile {
 		@Nullable
 		VirtualFile resolve(String name);
 
-		Collection<VirtualFile> children();
+		Collection<? extends VirtualFile> children();
 	}
 
 	interface Regular extends VirtualFile {

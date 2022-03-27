@@ -1,5 +1,7 @@
 plugins {
 	id 'java'
+	id 'idea'
+	id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.3"
 }
 
 group 'net.devtech'
@@ -26,27 +28,29 @@ repositories {
 	}
 }
 
-def lwjglVersion = '3.3.0-SNAPSHOT'
+def lwjglVersion = '3.3.1'
 def lwjglNatives = 'natives-windows'
 
 dependencies {
 	implementation 'org.ow2.asm:asm:9.2'
 	implementation 'org.ow2.asm:asm-commons:9.2'
-	implementation 'com.google.guava:guava:31.0.1-jre'
-	implementation 'it.unimi.dsi:fastutil:8.5.6'
-	implementation 'org.jetbrains:annotations:22.0.0'
+	implementation 'com.google.guava:guava:31.1-jre'
+	implementation 'it.unimi.dsi:fastutil:8.5.8'
+	implementation 'org.jetbrains:annotations:23.0.0'
 
 	implementation 'io.netty:netty-handler:4.1.75.Final'
 	implementation 'io.netty:netty-codec-http:4.1.75.Final'
 	implementation 'io.netty:netty-transport-native-epoll:4.1.75.Final'
 	implementation 'io.netty:netty-transport-native-kqueue:4.1.75.Final'
 
+	implementation 'com.beust:jcommander:1.82'
+
 	implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
-	implementation "org.lwjgl:lwjgl"
-	implementation "org.lwjgl:lwjgl-glfw"
-	implementation "org.lwjgl:lwjgl-openal"
-	implementation "org.lwjgl:lwjgl-opengl"
-	implementation "org.lwjgl:lwjgl-stb"
+	implementation "org.lwjgl:lwjgl:$lwjglVersion"
+	implementation "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+	implementation "org.lwjgl:lwjgl-openal:$lwjglVersion"
+	implementation "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+	implementation "org.lwjgl:lwjgl-stb:$lwjglVersion"
 
 	clientRuntimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
@@ -54,8 +58,8 @@ dependencies {
 	clientRuntimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
 	clientRuntimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
 	testImplementation 'com.google.jimfs:jimfs:1.2'
 }
@@ -88,4 +92,35 @@ task startServer(type: JavaExec) {
 
 	classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
 	mainClass.set('net.devtech.jerraria.server.dedicated.ServerMain')
+}
+
+ext.genOutputDir = file("$buildDir/generated-resources")
+def resources = file("$projectDir/src/main/resources")
+task generateFileIndex {
+	inputs.dir(resources)
+	def outputFile = file("$genOutputDir/index.txt")
+	outputs.file(outputFile)
+
+	doLast {
+		def files = [], dirs = []
+		def outDir = resources.toPath()
+		resources.traverse { file ->
+			def relative = outDir.relativize(file.toPath()).toString().replace('\\', '/')
+			if (file.isDirectory()) {
+				dirs << relative
+			} else {
+				files << relative
+			}
+		}
+
+		outputFile.text = dirs.join("\n") + "\n%%end of dirs%%\n" + files.join("\n")
+	}
+}
+
+sourceSets.main.output.dir genOutputDir, builtBy: generateFileIndex
+
+idea.project.settings {
+	taskTriggers {
+		beforeBuild tasks.getByName("generateFileIndex")
+	}
 }

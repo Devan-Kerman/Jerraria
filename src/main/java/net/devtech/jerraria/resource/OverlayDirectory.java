@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public record OverlayDirectory(String name, List<Directory> directories) implements VirtualFile.Directory {
-
 	@Override
 	public String name() {
 		return name;
@@ -13,6 +12,10 @@ public record OverlayDirectory(String name, List<Directory> directories) impleme
 
 	@Override
 	public @Nullable VirtualFile resolve(String name) {
+		if(name.charAt(0) == '/') {
+			throw new IllegalArgumentException("resolution query cannot start with '/': \"" + name + "\"");
+		}
+
 		List<Directory> innerDirectories = new ArrayList<>();
 
 		for (Directory directory : directories) {
@@ -37,7 +40,7 @@ public record OverlayDirectory(String name, List<Directory> directories) impleme
 		Map<String, OverlayDirectory> overlays = new HashMap<>();
 		List<VirtualFile> files = new ArrayList<>();
 
-		for (Directory directory : directories) {
+		for (Directory directory : this.directories) {
 			for (VirtualFile child : directory.children()) {
 				String name = child.name();
 

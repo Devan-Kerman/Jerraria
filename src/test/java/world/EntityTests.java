@@ -1,6 +1,7 @@
 package world;
 
 import net.devtech.jerraria.entity.BaseEntity;
+import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public class EntityTests {
@@ -15,6 +16,16 @@ public class EntityTests {
 		@Override
 		public String toString() {
 			return "[" + chunk.getChunkX() + ',' + chunk.getChunkY() + ']';
+		}
+
+		@Override
+		public boolean isEnclosed(EntitySearchType type, double fromX, double fromY, double toX, double toY) {
+			return false;
+		}
+
+		@Override
+		public boolean doesIntersect(EntitySearchType type, double fromX, double fromY, double toX, double toY) {
+			return false;
 		}
 	}
 }
