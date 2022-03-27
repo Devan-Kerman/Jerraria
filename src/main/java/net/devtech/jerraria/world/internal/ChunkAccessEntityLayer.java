@@ -2,7 +2,6 @@ package net.devtech.jerraria.world.internal;
 
 import java.util.Collections;
 import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -23,14 +22,14 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 	}
 
 	@Override
-	public Stream<BaseEntity> getEntities(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
+	public Stream<BaseEntity> getEntitiesEnclosed(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
 		// todo convert to chunk coordinates, and filter to ensure it exactly matches bounds
 		Spliterator<BaseEntity> spliterator = this.getEntitySpliterator(
 			fromX << World.LOG2_CHUNK_SIZE,
 			fromY << World.LOG2_CHUNK_SIZE,
 			Ceil.div(toX, World.CHUNK_SIZE),
 			Ceil.div(toY, World.CHUNK_SIZE));
-		return StreamSupport.stream(spliterator, false);//.filter(entity -> entity.enclosed(type, fromX, fromY, toX, toY));
+		return StreamSupport.stream(spliterator, false).filter(entity -> entity.isEnclosed(type, fromX, fromY, toX, toY));
 	}
 
 	public Spliterator<BaseEntity> getEntitySpliterator(int fromX, int fromY, int toX, int toY) {
@@ -72,7 +71,7 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 			}
 
 			Chunk chunk = getter.getChunk(cx, cy);
-			current = chunk.getEntities().spliterator();
+			current = chunk.getRawEntities().spliterator();
 
 			return tryAdvance(action);
 		}

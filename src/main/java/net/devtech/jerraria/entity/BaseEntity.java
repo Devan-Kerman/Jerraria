@@ -1,29 +1,24 @@
 package net.devtech.jerraria.entity;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import net.devtech.jerraria.content.Items;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Pos;
+import net.devtech.jerraria.util.Positioned;
 import net.devtech.jerraria.util.data.element.JCElement;
-import net.devtech.jerraria.world.Server;
+import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
-public class BaseEntity {
+public abstract class BaseEntity implements Positioned {
 	/**
-	 * Entity that has no position in the world
+	 * this states the entity does not belong to a chunk
 	 */
-	private static final int HOMELESS_CHUNK_COORD = Integer.MIN_VALUE;
-
-	// it's actually impossible for -int_max to be a valid chunk coordinate
-	/**
-	 * the chunk the entity is currently stored in
-	 */
-	int oldChunkX = HOMELESS_CHUNK_COORD, oldChunkY, oldWorldId;
+	public static final int HOBO_CHUNK_POS = Integer.MIN_VALUE;
+	int oldChunkX = HOBO_CHUNK_POS, oldChunkY, oldWorldId;
 
 	Type<?> type;
 	double x, y;
@@ -45,17 +40,45 @@ public class BaseEntity {
 	}
 
 	protected final void updatePosition(World world, double x, double y) {
+		boolean inWorld = this.inWorld();
+
 		this.world = world;
 		this.x = x;
 		this.y = y;
 
-		if(this.oldChunkX == HOMELESS_CHUNK_COORD) {
-			this.tickPosition(false, false);
+		if(!inWorld) {
+			this.tickPosition();
 		}
 	}
 
+	protected final void remove() {
+		this.world = null;
+		this.oldChunkX = HOBO_CHUNK_POS;
+	}
+
+	/**
+	 * @return true if the entity is currently in a world
+	 */
+	public boolean inWorld() {
+		return this.world != null;
+	}
+
+	/**
+	 * @return true if the entity is entirely enclosed by the given bounding box
+	 */
+	public abstract boolean isEnclosed(EntitySearchType type, double fromX, double fromY, double toX, double toY);
+
+	/**
+	 * @return true if the entity contacts the given bounding box
+	 */
+	public abstract boolean doesIntersect(EntitySearchType type, double fromX, double fromY, double toX, double toY);
+
+	public static <T> Type<T> createType(Function<BaseEntity, JCElement<T>> serializer, Deserializer<T> deserializer) {
+		return new Type<>(serializer, deserializer);
+	}
+
 	public Pos getPos() {
-		return new Pos(x, y);
+		return new Pos(this.x, this.y);
 	}
 
 	public int getBlockX() {
@@ -66,10 +89,12 @@ public class BaseEntity {
 		return (int) Math.floor(this.y);
 	}
 
+	@Override
 	public double getX() {
 		return this.x;
 	}
 
+	@Override
 	public double getY() {
 		return this.y;
 	}
@@ -78,8 +103,8 @@ public class BaseEntity {
 		return this.world;
 	}
 
-	public static <T> Type<T> createType(Function<BaseEntity, JCElement<T>> serializer, Deserializer<T> deserializer) {
-		return new Type<>(serializer, deserializer);
+	protected void tick() {
+		// tick stuff
 	}
 
 	public interface Deserializer<T> {
@@ -91,66 +116,35 @@ public class BaseEntity {
 	}
 
 	/**
-	 * @return true if the entity is currently in a world
-	 */
-	public boolean inWorld() {
-		return this.world != null;
-	}
-
-	/**
 	 * used only when a chunk moves groups, and nothing else
 	 */
 	final void moveGroup(World world) {
 		this.world = world;
 	}
 
-	protected final void remove() {
-		this.tickPosition(true, true);
-		this.world = null;
+	boolean isHomeChunk(Chunk chunk) {
+		return this.oldChunkX == chunk.getChunkX() && this.oldChunkY == chunk.getChunkY() && this.oldWorldId == chunk.getWorld().sessionId();
 	}
 
-	// todo redo tick position
-	// instead, chunks will be responsible for removing entities that they don't contain themselves
-	// so after a chunk ticks, it checks to ensure all the entities in it's list are still within the chunk
-	// for all entities that have moved, they then executeAt & move chunks
-
-	// chunks will also have to automatically filter out removed entities from their getEntities method
-
-	void tickPosition(boolean exitOldChunk, boolean isRemove) {
+	void tickPosition() {
 		int cx = this.getChunkX(), cy = this.getChunkY();
 		if(cx == this.oldChunkX && cy == this.oldChunkY && this.world.sessionId() == this.oldWorldId) {
 			return; // entity has not actually moved
 		}
 
-		// remove entity from the chunk's entity list
-		if(exitOldChunk && this.oldChunkX != HOMELESS_CHUNK_COORD) {
-			int oldX = this.oldChunkX, oldY = this.oldChunkY, oldWorld = this.oldWorldId;
-			World world;
-			if(this.world.sessionId() == oldWorld && this.world.canAccessImmediately(oldX, oldY)) {
-				world = this.world;
-			} else {
-				Server server = this.world.getServer();
-				world = server.getById(this.oldWorldId);
-			}
+		this.world.executeAt(cx * World.CHUNK_SIZE, cy * World.CHUNK_SIZE).thenAccept(w -> {
+			Chunk chunk = ((AbstractWorld) w).getChunk(cx, cy);
+			chunk.addEntity(this);
+			this.oldChunkX = cx;
+			this.oldChunkY = cy;
+			this.world = w;
+		});
+	}
 
-			world.executeAt(oldX * World.CHUNK_SIZE, oldY * World.CHUNK_SIZE).thenAccept(w -> {
-				Chunk chunk = ((AbstractWorld) w).getChunk(oldX, oldY);
-				chunk.removeEntity(this);
-			});
-		}
-
-		if(isRemove) {
-			this.world = null;
-			this.oldChunkX = HOMELESS_CHUNK_COORD;
-		} else {
-			this.world.executeAt(cx * World.CHUNK_SIZE, cy * World.CHUNK_SIZE).thenAccept(w -> {
-				Chunk chunk = ((AbstractWorld) w).getChunk(cx, cy);
-				chunk.addEntity(this);
-				this.oldChunkX = cx;
-				this.oldChunkY = cy;
-				this.world = w;
-			});
-		}
+	void setHomeChunk(Chunk chunk) {
+		this.oldChunkX = chunk.getChunkX();
+		this.oldChunkY = chunk.getChunkY();
+		this.oldWorldId = chunk.getWorld().sessionId();
 	}
 
 	private int getChunkX() {

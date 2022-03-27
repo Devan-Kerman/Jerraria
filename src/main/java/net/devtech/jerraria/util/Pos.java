@@ -1,6 +1,6 @@
 package net.devtech.jerraria.util;
 
-public record Pos(double x, double y) {
+public record Pos(double x, double y) implements Positioned {
 	public Pos withX(double x) {
 		return new Pos(x, this.y);
 	}
@@ -19,5 +19,15 @@ public record Pos(double x, double y) {
 
 	public Pos withYOffset(double y) {
 		return new Pos(this.x, this.y + y);
+	}
+
+	@Override
+	public double getX() {
+		return this.x;
+	}
+
+	@Override
+	public double getY() {
+		return this.y;
 	}
 }

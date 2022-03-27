@@ -107,7 +107,7 @@ public class ChunkCodec {
 		return entitySet;
 	}
 
-	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Set<BaseEntity> entities) {
+	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Iterable<BaseEntity> entities) {
 		ListMultimap<Id.Full, SerializedEntity> map = ArrayListMultimap.create();
 		for(BaseEntity entity : entities) {
 			Id.Full id = Entities.REGISTRY.getId(entity.getType());

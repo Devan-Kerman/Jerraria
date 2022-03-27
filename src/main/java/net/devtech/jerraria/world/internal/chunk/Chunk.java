@@ -3,10 +3,12 @@ package net.devtech.jerraria.world.internal.chunk;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -38,6 +40,7 @@ public class Chunk implements Executor {
 	final Object2IntMap<Chunk> links;
 	final List<Runnable> immediateTasks = new ArrayList<>();
 	final Set<BaseEntity> entities;
+	final Iterable<BaseEntity> filteredEntitiesView;
 
 	List<IntLongPair> unresolved;
 
@@ -53,6 +56,8 @@ public class Chunk implements Executor {
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
 		this.entities = new HashSet<>();
+		//noinspection StaticPseudoFunctionalStyleMethod
+		this.filteredEntitiesView = Iterables.filter(this.entities, BaseEntity::inWorld);
 	}
 
 	public Chunk(TickingWorld world, int chunkX, int chunkY, JCTagView tag) {
@@ -69,14 +74,16 @@ public class Chunk implements Executor {
 		this.links = new Object2IntOpenHashMap<>(unresolved.size());
 		this.actions = ChunkCodec.deserializeTemporaryData(this, tag.get("actions", NativeJCType.ID_ANY_LIST));
 		this.entities = ChunkCodec.deserializeEntities(world, tag.get("entities", NativeJCType.ENTITIES));
+		//noinspection StaticPseudoFunctionalStyleMethod
+		this.filteredEntitiesView = Iterables.filter(this.entities, BaseEntity::inWorld);
+		for(BaseEntity entity : this.entities) {
+			EntityInternal.setHomeChunk(entity, this);
+		}
 	}
 
 	public void addEntity(BaseEntity entity) {
 		this.entities.add(entity);
-	}
-
-	public void removeEntity(BaseEntity entity) {
-		this.entities.remove(entity);
+		EntityInternal.setHomeChunk(entity, this);
 	}
 
 	public JCTagView write() {
@@ -172,8 +179,13 @@ public class Chunk implements Executor {
 			}
 		} while(this.actions.size() > originals);
 
-		for(BaseEntity entity : this.entities) {
-			// tick entities
+		for(Iterator<BaseEntity> iterator = this.entities.iterator(); iterator.hasNext(); ) {
+			BaseEntity entity = iterator.next();
+			if(!EntityInternal.isHomeChunk(entity, this)) {
+				iterator.remove();
+			} else {
+				EntityInternal.tick(entity);
+			}
 		}
 
 		for(BaseEntity entity : this.entities) {
@@ -326,7 +338,10 @@ public class Chunk implements Executor {
 		return this.chunkY;
 	}
 
-	public Iterable<BaseEntity> getEntities() {
-		return this.entities;
+	/**
+	 * @return these entities may not be actually in the chunk, those are updated prior to entity tick
+	 */
+	public Iterable<BaseEntity> getRawEntities() {
+		return this.filteredEntitiesView;
 	}
 }
