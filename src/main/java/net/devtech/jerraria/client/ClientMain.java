@@ -59,13 +59,15 @@ public class ClientMain {
 			// launch game
 			ClientRenderContext.initializeRendering(clientResources);
 
-			/*SolidColorShader shader = SolidColorShader.INSTANCE;
-			shader.vert().rgb(255, 255, 255).vec3f(0, 0, 0);
-			shader.vert().rgb(255, 255,255).vec3f(1, 0, 0);
-			shader.vert().rgb(255, 255, 255).vec3f(0, 1, 0);*/
+			SolidColorShader box = SolidColorShader.INSTANCE;
+			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+			text.texture.tex(ClientRenderContext.asciiAtlasId);
 
-			ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
-			shader.texture.tex(ClientRenderContext.asciiAtlasId);
+			LoadingStage stage = LoadingStage.create("loading", 10);
+			stage.complete(5);
+
+			stage.allocateSubstage("atlas", 4).complete(2);
+			stage.allocateSubstage("sound", 9).complete(2);
 
 			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
@@ -75,8 +77,10 @@ public class ClientMain {
 				mat.scale(2, -2);
 				mat.translate(-1, 1);
 
-				LoadingStage.renderText(mat, shader, "ur kinda cringe bro");
-				shader.renderAndFlush(Primitive.TRIANGLE);
+				stage.render(mat, box, text, 10, 0, 0);
+
+				box.renderAndFlush(Primitive.TRIANGLE);
+				text.renderAndFlush(Primitive.TRIANGLE);
 				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
 				GLFW.glfwPollEvents();
 			}

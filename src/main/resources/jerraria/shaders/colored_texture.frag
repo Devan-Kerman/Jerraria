@@ -7,5 +7,9 @@ in vec2 oUV;
 uniform sampler2D texture_;
 
 void main() {
-	FragColor = texture(texture_, oUV) * vec4(oColor, 1.0);
+	vec4 pixel = texture(texture_, oUV);
+	if(pixel.a < .1) {
+		discard;
+	}
+	FragColor = pixel * vec4(oColor, 1.0);
 }
