@@ -94,7 +94,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 	 */
 	ByteBuffer allocate(int bytes) {
 		ByteBuffer buffer = this.buffer;
-		if(buffer.limit() < bytes) {
+		if(buffer.remaining() < bytes) {
 			ByteBuffer old = buffer;
 			int oldCount = buffer.limit();
 			buffer = allocateBuffer(oldCount << 1);

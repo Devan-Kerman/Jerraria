@@ -32,11 +32,16 @@ public class UniformData extends GlData {
 		ElementGroup defaultGroup = new ElementGroup();
 		Map<String, Element> elements = new HashMap<>();
 		List<Uniform> uniforms = new ArrayList<>();
+		int textureUnitCounter = 0;
 		for(BareShader.Field value : fields.values()) {
 			Element element;
 			ElementGroup group;
 			int location = glGetUniformLocation(program, value.name());
-			if("default".equals(value.groupName(true))) {
+			if(value.type().isSampler) {
+				group = defaultGroup;
+				element = new StandardUniform(value.name(), value.type(), location, uniforms.size());
+				uniforms.add(Uniform.createSampler(value.type(), location, textureUnitCounter++));
+			} else if("default".equals(value.groupName(true))) {
 				group = defaultGroup;
 				element = new StandardUniform(value.name(), value.type(), location, uniforms.size());
 				uniforms.add(Uniform.create(value.type(), location));

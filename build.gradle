@@ -45,6 +45,7 @@ dependencies {
 
 	implementation 'com.beust:jcommander:1.82'
 
+	implementation 'org.l33tlabs.twl:pngdecoder:1.0'
 	implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 	implementation "org.lwjgl:lwjgl:$lwjglVersion"
 	implementation "org.lwjgl:lwjgl-glfw:$lwjglVersion"
@@ -52,11 +53,11 @@ dependencies {
 	implementation "org.lwjgl:lwjgl-opengl:$lwjglVersion"
 	implementation "org.lwjgl:lwjgl-stb:$lwjglVersion"
 
-	clientRuntimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-	clientRuntimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-	clientRuntimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
-	clientRuntimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-	clientRuntimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+	runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'

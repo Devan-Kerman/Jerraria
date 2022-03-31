@@ -2,7 +2,6 @@ package net.devtech.jerraria.render.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.internal.BareShader;
@@ -10,7 +9,7 @@ import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 
-public abstract class Shader<T extends GlValue<?>> {
+public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	public final Id id;
 
 	final List<GlValue.Type<?>> uniforms;
@@ -28,11 +27,11 @@ public abstract class Shader<T extends GlValue<?>> {
 		T copy(T old, SCopy method);
 	}
 
-	public interface ShaderInitializer<N extends GlValue<?>, T extends Shader<N>> {
+	public interface ShaderInitializer<N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> {
 		T create(Id id, VFBuilder<End> builder, Object context);
 	}
 
-	public static <N extends GlValue<?>, T extends Shader<N>> T createShader(Id id, ShaderCopier<T> copyFunction, ShaderInitializer<N, T> initializer) {
+	public static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T createShader(Id id, ShaderCopier<T> copyFunction, ShaderInitializer<N, T> initializer) {
 		VFBuilderImpl<End> builder = new VFBuilderImpl<>();
 		@SuppressWarnings("unchecked")
 		T shader = initializer.create(id, builder, copyFunction);
@@ -40,7 +39,7 @@ public abstract class Shader<T extends GlValue<?>> {
 		return shader;
 	}
 
-	public static <N extends GlValue<?>, T extends Shader<N>> T copy(T shader, SCopy method) {
+	public static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T copy(T shader, SCopy method) {
 		//noinspection unchecked
 		return (T) shader.copyFunction.copy(shader, method);
 	}

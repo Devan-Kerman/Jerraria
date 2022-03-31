@@ -33,7 +33,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 		N create(GlData data, GlValue<?> next);
 	}
 
-	public interface Universal {
+	public interface Attribute {
 	}
 
 	protected static <N extends GlValue<?>> Simple<N> simple(SimpleType<N> type, DataType dataType, String name) {

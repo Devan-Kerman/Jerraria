@@ -12,14 +12,19 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import com.beust.jcommander.JCommander;
-import net.devtech.jerraria.render.ClientRendering;
+import net.devtech.jerraria.loading.LoadingStage;
+import net.devtech.jerraria.render.ClientRenderContext;
+import net.devtech.jerraria.render.math.Matrix3f;
+import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
 import net.devtech.jerraria.resource.VirtualFile;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 public class ClientMain {
 	public static void main(String[] argv) {
@@ -32,9 +37,9 @@ public class ClientMain {
 		VirtualFile.Directory client = IndexVirtualFile.from(ClientMain.class);
 
 		List<VirtualFile.Directory> resourcePacks = new ArrayList<>();
-		resourcePacks.add(client);
 
 		List<Closeable> closeables = new ArrayList<>();
+		List<IOException> exceptions = new ArrayList<>();
 		try {
 			// setup game
 			addResourcePack(args.resources, resourcePacks, closeables);
@@ -47,14 +52,41 @@ public class ClientMain {
 				);
 			}
 
+			resourcePacks.add(client);
+
 			OverlayDirectory clientResources = OverlayDirectory.overlay("client", resourcePacks);
 			// launch game
+			ClientRenderContext.initializeRendering(clientResources);
+
+			/*SolidColorShader shader = SolidColorShader.INSTANCE;
+			shader.vert().rgb(255, 255, 255).vec3f(0, 0, 0);
+			shader.vert().rgb(255, 255,255).vec3f(1, 0, 0);
+			shader.vert().rgb(255, 255, 255).vec3f(0, 1, 0);*/
+
+			ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
+			shader.texture.tex(ClientRenderContext.asciiAtlasId);
+
+
+			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+				int[] dims = ClientRenderContext.dims;
+				Matrix3f mat = new Matrix3f();
+				mat.scale(2, 2);
+				mat.translate(-1, -1);
+				mat.scale(dims[1] / (dims[0] * 8F), 1/8F);
+				// todo make matrix
+				LoadingStage.renderText(mat, shader, "ur kinda cringe bro");
+				shader.renderAndFlush(Primitive.TRIANGLE);
+				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
+				GLFW.glfwPollEvents();
+			}
 
 			// close game
 
+		} catch(IOException e) {
+			exceptions.add(e);
 		} finally {
 			// close game
-			List<IOException> exceptions = new ArrayList<>();
 			for(Closeable closeable : closeables) {
 				try {
 					closeable.close();

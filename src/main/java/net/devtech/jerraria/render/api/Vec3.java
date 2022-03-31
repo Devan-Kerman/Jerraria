@@ -2,8 +2,9 @@ package net.devtech.jerraria.render.api;
 
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
+import net.devtech.jerraria.render.math.Matrix3f;
 
-public abstract class Vec3<N extends GlValue<?>> extends GlValue<N> implements GlValue.Universal {
+public abstract class Vec3<N extends GlValue<?>> extends GlValue<N> implements GlValue.Attribute {
 	final String name;
 	final GlData.Element element;
 
@@ -29,6 +30,10 @@ public abstract class Vec3<N extends GlValue<?>> extends GlValue<N> implements G
 		public N vec3f(float a, float b, float c) {
 			this.data.element(this.element).f(a).f(b).f(c);
 			return this.getNext();
+		}
+
+		public N vec3f(Matrix3f mat, float a, float b, float c) {
+			return this.vec3f(mat.mulX(a, b, c), mat.mulY(a, b, c), mat.mulZ(a, b, c));
 		}
 	}
 

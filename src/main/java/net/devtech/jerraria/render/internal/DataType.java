@@ -2,12 +2,19 @@ package net.devtech.jerraria.render.internal;
 
 import static org.lwjgl.opengl.GL11.GL_BYTE;
 import static org.lwjgl.opengl.GL11.GL_SHORT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_1D;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_3D;
 import static org.lwjgl.opengl.GL20.GL_BOOL;
 import static org.lwjgl.opengl.GL20.GL_DOUBLE;
 import static org.lwjgl.opengl.GL20.GL_FLOAT;
 import static org.lwjgl.opengl.GL20.GL_INT;
+import static org.lwjgl.opengl.GL20.GL_SAMPLER_1D;
+import static org.lwjgl.opengl.GL20.GL_SAMPLER_2D;
+import static org.lwjgl.opengl.GL20.GL_SAMPLER_3D;
+import static org.lwjgl.opengl.GL20.GL_SAMPLER_CUBE;
 import static org.lwjgl.opengl.GL20.GL_UNSIGNED_INT;
 
 public enum DataType {
@@ -113,11 +120,15 @@ public enum DataType {
 	NORMALIZED_F32_MAT4(NORMALIZED_F32, 16, "mat4"),
 	NORMALIZED_F32_MAT4x3(NORMALIZED_F32, 12, "mat4x3"),
 	NORMALIZED_F32_MAT4x2(NORMALIZED_F32, 8, "mat4x2"),
-	;
+
+	TEXTURE_1D(GL_TEXTURE_1D, 4, false, "sampler1D"),
+	TEXTURE_2D(GL_TEXTURE_2D, 4, false, "sampler2D"),
+	TEXTURE_3D(GL_TEXTURE_3D, 4, false, "sampler3D");
 
 	public final String glslName;
 	public final boolean normalized;
 	public final int byteCount, elementCount, elementType;
+	public final boolean isMatrix, isSampler;
 
 
 	DataType(int glslType, int byteCount, boolean normalized, String name) {
@@ -138,6 +149,8 @@ public enum DataType {
 		this.byteCount = byteCount;
 		this.elementCount = elementCount;
 		this.elementType = elementType;
+		this.isMatrix = this.name().contains("MAT");
+		this.isSampler = name.contains("sampler");
 	}
 
 	public boolean isFloating() {

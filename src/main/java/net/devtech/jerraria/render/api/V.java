@@ -3,7 +3,7 @@ package net.devtech.jerraria.render.api;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 
-public abstract class V<N extends GlValue<?>> extends GlValue<N> implements GlValue.Universal {
+public abstract class V<N extends GlValue<?>> extends GlValue<N> implements GlValue.Attribute {
 	final String name;
 	final GlData.Element element;
 

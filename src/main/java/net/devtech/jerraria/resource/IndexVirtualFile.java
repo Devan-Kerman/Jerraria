@@ -34,10 +34,10 @@ public abstract class IndexVirtualFile implements VirtualFile {
 			while((line = reader.readLine()) != null && !line.equals("%%end of dirs%%")) {
 				Directory dir = root;
 				int last = 0, current;
-				while((current = line.indexOf('/', last)) != -1) {
+				while((current = line.indexOf('/', last+1)) != -1) {
 					IndexVirtualFile create = dir.getOrCreateDir(line.substring(last, current));
 					dir = (Directory) create;
-					last = current;
+					last = current+1;
 				}
 				dir.getOrCreateDir(line.substring(last));
 			}
@@ -58,7 +58,7 @@ public abstract class IndexVirtualFile implements VirtualFile {
 					throw new IllegalArgumentException("Incomplete indexing, missing directory for \"" + line + "\"");
 				}
 
-				dir.index.put(name, new IndexVirtualFile.File(name, source));
+				dir.index.put(name, new IndexVirtualFile.File(line, source));
 			}
 		} catch(IOException e) {
 			throw Validate.rethrow(e);

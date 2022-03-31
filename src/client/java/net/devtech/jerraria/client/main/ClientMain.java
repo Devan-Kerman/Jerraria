@@ -14,13 +14,6 @@ import org.lwjgl.system.MemoryUtil;
 public class ClientMain {
 	static {
 		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
-		@Language("JAVA")
-		String vertexSrc = """
-			public abstract class MyShader extends AbstractShader {
-				public final V.F<?> uniformA = this.uniform(Vec3.f("name"));
-				public final Vec3.F<V.F<End>> vertexFormat = this.append();
-			}
-			""".stripLeading();
 	}
 
 	public static void main(String[] args) {

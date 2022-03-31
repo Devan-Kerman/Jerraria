@@ -14,6 +14,8 @@ import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 
 import java.nio.FloatBuffer;
 
+import org.lwjgl.opengl.GL13;
+
 /**
  * Non buffer object uniform data
  */
@@ -27,8 +29,12 @@ public abstract class Uniform implements GlData.Buf {
 		this.location = location;
 	}
 
+	public static Uniform createSampler(DataType type, int location, int textureUnit) {
+		return new Sampler(type, location, textureUnit);
+	}
+
 	public static Uniform create(DataType type, int location) {
-		if(type.name().contains("MAT")) {
+		if(type.isMatrix) {
 			return new Matrix(type, location);
 		} else if(type.isFloating()) {
 			return new Float(type, location);
@@ -38,6 +44,9 @@ public abstract class Uniform implements GlData.Buf {
 	}
 
 	public static Uniform createNew(Uniform uniform) {
+		if(uniform instanceof Sampler s) {
+			return new Sampler(s.type, s.location, s.textureUnit);
+		}
 		return create(uniform.type, uniform.location);
 	}
 
@@ -121,6 +130,41 @@ public abstract class Uniform implements GlData.Buf {
 			Matrix matrix = new Matrix(this.type, this.location);
 			matrix.buf.put(this.buf);
 			return matrix;
+		}
+	}
+
+	static class Sampler extends Uniform {
+		final int textureUnit;
+		int textureId;
+
+		protected Sampler(DataType type, int location, int unit) {
+			super(type, location);
+			this.textureUnit = unit;
+		}
+
+		@Override
+		public GlData.Buf i(int i) {
+			this.textureId = i;
+			return this;
+		}
+
+		@Override
+		void reset() {
+			this.textureId = -1;
+		}
+
+		@Override
+		void bind() {
+			GL13.glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
+			GL13.glBindTexture(this.type.elementType, this.textureId);
+			glUniform1i(this.location, this.textureUnit);
+		}
+
+		@Override
+		Uniform copy() {
+			Sampler texture = new Sampler(this.type, this.location, this.textureUnit);
+			texture.textureId = this.textureId;
+			return texture;
 		}
 	}
 
