@@ -25,8 +25,8 @@ public class Matrix3f {
 		a13 = a13 + x * a33;
 
 		a21 = a21 + y * a31;
-		a22 = a21 + y * a32;
-		a23 = a21 + y * a33;
+		a22 = a22 + y * a32;
+		a23 = a23 + y * a33;
 		return this;
 	}
 
@@ -59,9 +59,12 @@ public class Matrix3f {
 
 	public static void main(String[] args) {
 		Matrix3f mat2 = new Matrix3f();
-		mat2.scale(2, 2);
-		mat2.translate(-1, -1);
+		mat2.scale(2, -2);
+		mat2.translate(-1, 1);
 
-		System.out.println(mat2.mulX(1, 1, 1) + " " + mat2.mulY(1, 1, 1));
+		System.out.println(mat2.mulX(0, 0, 1) + " " + mat2.mulY(0, 0, 1)); // -1, 1
+		System.out.println(mat2.mulX(1, 0, 1) + " " + mat2.mulY(1, 0, 1)); // 1, 1
+		System.out.println(mat2.mulX(1, 1, 1) + " " + mat2.mulY(1, 1, 1)); // 1, -1
+		System.out.println(mat2.mulX(0, 1, 1) + " " + mat2.mulY(0, 1, 1)); // -1, -1
 	}
 }

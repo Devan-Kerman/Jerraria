@@ -19,6 +19,7 @@ import net.devtech.jerraria.render.ClientRenderContext;
 import net.devtech.jerraria.render.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -63,19 +64,24 @@ public class ClientMain {
 			shader.vert().rgb(255, 255,255).vec3f(1, 0, 0);
 			shader.vert().rgb(255, 255, 255).vec3f(0, 1, 0);*/
 
-			ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
-			shader.texture.tex(ClientRenderContext.asciiAtlasId);
+			//ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
+			//shader.texture.tex(ClientRenderContext.asciiAtlasId);
 
 
 			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 				int[] dims = ClientRenderContext.dims;
 				Matrix3f mat = new Matrix3f();
-				mat.scale(2, 2);
-				mat.translate(-1, -1);
-				mat.scale(dims[1] / (dims[0] * 8F), 1/8F);
+				mat.scale(2, -2);
+				mat.translate(-1, 1);
+
+				//mat.scale(dims[1] / (dims[0] * 8F), 1/8F);
+				SolidColorShader shader = SolidColorShader.INSTANCE;
+				shader.vert().rgb(255, 255, 255).vec3f(mat, 0, 0, 1);
+				shader.vert().rgb(255, 255,255).vec3f(mat, 1, 0, 1);
+				shader.vert().rgb(255, 255, 255).vec3f(mat, 0, 1, 1);
 				// todo make matrix
-				LoadingStage.renderText(mat, shader, "ur kinda cringe bro");
+				//LoadingStage.renderText(mat, shader, "ur kinda cringe bro");
 				shader.renderAndFlush(Primitive.TRIANGLE);
 				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
 				GLFW.glfwPollEvents();
