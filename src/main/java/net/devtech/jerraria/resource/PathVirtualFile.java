@@ -45,6 +45,14 @@ public class PathVirtualFile implements VirtualFile {
 		}
 	}
 
+	public static VirtualFile.Directory ofDirectory(Path path) {
+		if (Files.isRegularFile(path)) {
+			throw new IllegalArgumentException(path + " is not a directory!");
+		} else {
+			return new PathDirectory(path);
+		}
+	}
+
 	@Override
 	public String name() {
 		return path.getName(path.getNameCount() - 1).toString();

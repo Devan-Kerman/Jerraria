@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import net.devtech.jerraria.registry.Id;
@@ -23,7 +24,7 @@ public class ShaderManager {
 	}
 
 	private static <T> Function<Id, T> findFirst(List<Function<Id, T>> list) {
-		return id1 -> list.stream().map(f -> f.apply(id1)).findFirst().orElseThrow();
+		return id1 -> list.stream().map(f -> f.apply(id1)).filter(Objects::nonNull).findFirst().orElseThrow();
 	}
 
 	private static BareShader getShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms) {

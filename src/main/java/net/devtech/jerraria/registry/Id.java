@@ -23,6 +23,14 @@ public abstract class Id {
 		}
 	}
 
+	public static Id parse(String string) {
+		int index = string.indexOf(':');
+		if(index == -1) {
+			throw new IllegalStateException(string + " is not a valid identifier! must come in form <namespace>:<path>");
+		}
+		return create(string.substring(0, index), string.substring(index+1));
+	}
+
 	public static Full createFull(String namespace, String path) {
 		Objects.requireNonNull(namespace, "namespace cannot be null!");
 		Objects.requireNonNull(path, "path cannot be null!");

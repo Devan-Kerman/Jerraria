@@ -15,20 +15,20 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.data.JCIO;
 import net.devtech.jerraria.util.data.NativeJCType;
-import net.devtech.jerraria.world.Server;
+import net.devtech.jerraria.world.WorldServer;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
 
 public class SynchronousWorld extends TickingWorld {
 	public static final AtomicInteger SESSION_IDS = new AtomicInteger();
-	final Server server;
+	final WorldServer server;
 	final Path directory;
 	final Long2ObjectMap<Chunk> loadedChunkCache = new Long2ObjectOpenHashMap<>();
 	final ChunkReader reader;
 	final int sessionId = SESSION_IDS.incrementAndGet();
 
 	public SynchronousWorld(
-		Path directory, Executor executor, boolean maintainOrder, Server server) {
+		Path directory, Executor executor, boolean maintainOrder, WorldServer server) {
 		super(executor, maintainOrder);
 		this.directory = directory;
 		this.server = server;
@@ -44,7 +44,7 @@ public class SynchronousWorld extends TickingWorld {
 	}
 
 	@Override
-	public Server getServer() {
+	public WorldServer getServer() {
 		return this.server;
 	}
 

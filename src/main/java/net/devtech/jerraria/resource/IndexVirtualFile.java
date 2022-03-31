@@ -116,6 +116,7 @@ public abstract class IndexVirtualFile implements VirtualFile {
 
 	static class File extends IndexVirtualFile implements VirtualFile.Regular {
 		final Class<?> type;
+
 		File(String path, Class<?> type) {
 			super(path);
 			this.type = type;
