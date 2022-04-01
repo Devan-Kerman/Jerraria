@@ -18,11 +18,17 @@ public interface VirtualFile {
 	 */
 	String name();
 
-	@Nullable
+	default boolean hasFileExtension(String extension) {
+		String name = this.name();
+		int lenA = name.length(), lenB = extension.length();
+		return lenA > lenB && name.charAt(lenA - lenB - 1) == '.' && name.endsWith(extension);
+	}
+
+	@NotNull
 	default String fileExtension() {
 		String name = this.name();
-		int index = name.indexOf('.');
-		return index < 0 ? null : name.substring(0, index);
+		int index = name.lastIndexOf('.');
+		return index < 0 ? "" : name.substring(index+1);
 	}
 
 	default Stream<VirtualFile> walk(SearchOrder order) {

@@ -215,14 +215,11 @@ public abstract class Uniform implements GlData.Buf {
 
 		@Override
 		void bind() {
-			if(this.rebind) {
-				switch(this.type.elementCount) {
-					case 1 -> glUniform1i(this.location, this.a);
-					case 2 -> glUniform2i(this.location, this.a, this.b);
-					case 3 -> glUniform3i(this.location, this.a, this.b, this.c);
-					case 4 -> glUniform4i(this.location, this.a, this.b, this.c, this.d);
-				}
-				this.rebind = false;
+			switch(this.type.elementCount) {
+				case 1 -> glUniform1i(this.location, this.a);
+				case 2 -> glUniform2i(this.location, this.a, this.b);
+				case 3 -> glUniform3i(this.location, this.a, this.b, this.c);
+				case 4 -> glUniform4i(this.location, this.a, this.b, this.c, this.d);
 			}
 		}
 

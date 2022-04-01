@@ -1,6 +1,6 @@
 package net.devtech.jerraria.render.math;
 
-public class Matrix3f {
+public class Matrix3f implements AutoCloseable {
 	private float a11, a12, a13, a21, a22, a23, a31, a32, a33;
 
 	public Matrix3f() {
@@ -19,7 +19,25 @@ public class Matrix3f {
 		return a31 * x + a32 * y + a33 * z;
 	}
 
-	public Matrix3f translate(float x, float y) {
+	public Matrix3f offset(float x, float y) {
+		this.a13 = this.a11 * x + this.a12 * y + this.a13;
+		this.a23 = this.a21 * x + this.a22 * y + this.a23;
+		this.a33 = this.a31 * x + this.a32 * y + this.a33;
+		return this;
+	}
+
+	public Matrix3f scale(float scaleX, float scaleY) {
+		a11 *= scaleX;
+		a21 *= scaleX;
+		a31 *= scaleX;
+
+		a12 *= scaleY;
+		a22 *= scaleY;
+		a32 *= scaleY;
+		return this;
+	}
+
+	public Matrix3f offsetInverse(float x, float y) {
 		a11 = a11 + x * a31;
 		a12 = a12 + x * a32;
 		a13 = a13 + x * a33;
@@ -30,7 +48,7 @@ public class Matrix3f {
 		return this;
 	}
 
-	public Matrix3f scale(float scaleX, float scaleY) {
+	public Matrix3f scaleInverse(float scaleX, float scaleY) {
 		a11 *= scaleX;
 		a12 *= scaleX;
 		a13 *= scaleX;
@@ -57,14 +75,8 @@ public class Matrix3f {
 		return mat;
 	}
 
-	public static void main(String[] args) {
-		Matrix3f mat2 = new Matrix3f();
-		mat2.scale(2, -2);
-		mat2.translate(-1, 1);
+	@Override
+	public void close() {
 
-		System.out.println(mat2.mulX(0, 0, 1) + " " + mat2.mulY(0, 0, 1)); // -1, 1
-		System.out.println(mat2.mulX(1, 0, 1) + " " + mat2.mulY(1, 0, 1)); // 1, 1
-		System.out.println(mat2.mulX(1, 1, 1) + " " + mat2.mulY(1, 1, 1)); // 1, -1
-		System.out.println(mat2.mulX(0, 1, 1) + " " + mat2.mulY(0, 1, 1)); // -1, -1
 	}
 }

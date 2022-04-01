@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render;
+package net.devtech.jerraria.client;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -22,24 +22,28 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
 public class ClientRenderContext {
-	public static long glMainWindow;
-	public static RandomCollection<String> titleTextCollection;
-	public static String title;
-	public static int asciiAtlasId;
+	public static final int MAX_TEXTURE_SIZE = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+	public static final String PROPERTIES_FILE_EXTENSION = "prop";
+	public static final long GL_MAIN_WINDOW;
+	public static final RandomCollection<String> TITLE_TEXT_COLLECTION;
+	public static final String TITLE;
+	public static final int asciiAtlasId;
 	public static int[] dims = {800, 600};
 
-	public static void initializeRendering(VirtualFile.Directory directory) throws IOException {
+	static {
+		VirtualFile.Directory directory = ClientMain.clientResources;
 		// handled by static block
-		titleTextCollection = readSplashText(directory, "title.txt");
+		TITLE_TEXT_COLLECTION = readSplashText(directory, "boot/title.txt");
 		GLFW.glfwInit();
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
 		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 
-		String title = titleTextCollection.next();
+		String title = TITLE_TEXT_COLLECTION.next();
+		TITLE = title;
+
 		long window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
-		ClientRenderContext.title = title;
-		glMainWindow = window;
+		GL_MAIN_WINDOW = window;
 		GLFW.glfwMakeContextCurrent(window);
 		GLFW.glfwSwapInterval(1);
 		GLFW.glfwShowWindow(window);
@@ -59,7 +63,7 @@ public class ClientRenderContext {
 			VirtualFile shaders = directory
 				.resolveDirectory(id.unpackNamespace())
 				.resolveDirectory("shaders")
-				.resolve(id.getUnpackedPath() + ".properties");
+				.resolve(id.getUnpackedPath() + "." + PROPERTIES_FILE_EXTENSION);
 			if(shaders != null) {
 				try(var input = shaders.asRegular().read()) {
 					Properties properties = new Properties();
@@ -74,7 +78,11 @@ public class ClientRenderContext {
 			return null;
 		});
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
-		asciiAtlasId = loadBootTexture(directory, "boot/ascii_atlas.png");
+		try {
+			asciiAtlasId = loadBootTexture(directory, "boot/ascii_atlas.png");
+		} catch(IOException e) {
+			throw Validate.rethrow(e);
+		}
 	}
 
 	public static int loadBootTexture(VirtualFile.Directory directory, String texture) throws IOException {
@@ -142,4 +150,6 @@ public class ClientRenderContext {
 		}
 		return collection;
 	}
+
+	public static void init() {}
 }

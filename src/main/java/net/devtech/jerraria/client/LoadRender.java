@@ -1,26 +1,25 @@
-package net.devtech.jerraria.loading;
+package net.devtech.jerraria.client;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import net.devtech.jerraria.render.ClientRenderContext;
 import net.devtech.jerraria.render.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 
-public class LoadingStage {
-	final LoadingStage parent;
-	List<LoadingStage> children = List.of();
+public class LoadRender {
+	final LoadRender parent;
+	List<LoadRender> children = new Vector<>();
 
 	String titleText;
-	int completed, taskSize;
+	int completed, taskSize; // make some things atomic
 
-	public static LoadingStage create(String title, int size) {
-		return new LoadingStage(null, title, size);
+	public static LoadRender create(String title, int size) {
+		return new LoadRender(null, title, size);
 	}
 
-	protected LoadingStage(LoadingStage parent, String titleText, int taskSize) {
+	protected LoadRender(LoadRender parent, String titleText, int taskSize) {
 		this.parent = parent;
 		this.titleText = titleText;
 		this.taskSize = taskSize;
@@ -35,25 +34,35 @@ public class LoadingStage {
 		float realWidth = width - .2f;
 		float barWidth = ratio * realWidth;
 
-		box.drawRect(mat, offX + .1f, offY + .1f, width - .2f, .8f, 0xFFFFFF);
+		box.drawRect(mat, offX + .1f, offY + .1f, width - .2f, .8f, 0xAABBBB);
 		int hashCode = this.hashCode();
 		box.drawRect(mat, offX + .1f, offY + .1f, barWidth, .8f, RAINBOW[hashCode % RAINBOW.length]);
 
-		renderText(mat, text, String.format(this.titleText, this.completed, this.taskSize), RAINBOW[(hashCode+3) % RAINBOW.length], offX, offY);
+		try(var mov = mat.copy().offset(offX+.1f, offY+.1f).scale(.5f, .5f)) {
+			renderText(
+				mov,
+				text,
+				String.format(this.titleText, this.completed, this.taskSize),
+				RAINBOW[(hashCode + 2) % RAINBOW.length],
+				0,
+				0
+			);
+		}
 
 		float currentOffset = 0;
-		float increment = width / this.children.size();
-		for(LoadingStage child : this.children) {
+		List<LoadRender> copy = new Vector<>(this.children);
+		if(!copy.isEmpty()) {
+			copy.removeIf(l -> l.completed >= l.taskSize);
+		}
+		float increment = width / copy.size();
+		for(LoadRender child : copy) {
 			child.render(mat, box, text, increment, currentOffset, offY + 1);
 			currentOffset += increment;
 		}
 	}
 
-	public LoadingStage allocateSubstage(String titleText, int initialTaskSize) {
-		if(this.children.isEmpty()) {
-			this.children = new ArrayList<>();
-		}
-		LoadingStage stage = new LoadingStage(this, titleText, initialTaskSize);
+	public LoadRender substage(String titleText, int initialTaskSize) {
+		LoadRender stage = new LoadRender(this, titleText, initialTaskSize);
 		this.children.add(stage);
 		return stage;
 	}
@@ -62,7 +71,7 @@ public class LoadingStage {
 		this.completed += amount;
 	}
 
-	public LoadingStage getParent() {
+	public LoadRender getParent() {
 		return this.parent;
 	}
 
@@ -80,6 +89,10 @@ public class LoadingStage {
 
 	public void setTaskSize(int taskSize) {
 		this.taskSize = taskSize;
+	}
+
+	public void setToComplete() {
+		this.completed = this.taskSize;
 	}
 
 	// y = 1/8
