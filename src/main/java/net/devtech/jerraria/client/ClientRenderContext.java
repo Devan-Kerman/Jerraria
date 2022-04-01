@@ -6,12 +6,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Properties;
+import java.util.Vector;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.internal.ShaderManager;
+import net.devtech.jerraria.render.math.Matrix3f;
+import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.RandomCollection;
 import net.devtech.jerraria.util.Validate;
@@ -27,7 +36,7 @@ public class ClientRenderContext {
 	public static final long GL_MAIN_WINDOW;
 	public static final RandomCollection<String> TITLE_TEXT_COLLECTION;
 	public static final String TITLE;
-	public static final int asciiAtlasId;
+	public static final int ASCII_ATLAS_ID;
 	public static int[] dims = {800, 600};
 
 	static {
@@ -79,9 +88,45 @@ public class ClientRenderContext {
 		});
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
 		try {
-			asciiAtlasId = loadBootTexture(directory, "boot/ascii_atlas.png");
+			ASCII_ATLAS_ID = loadBootTexture(directory, "boot/ascii_atlas.png");
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
+		}
+
+		SolidColorShader box = SolidColorShader.INSTANCE;
+		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+		text.texture.tex(ClientRenderContext.ASCII_ATLAS_ID);
+
+		List<Runnable> renderThreadTasks = new Vector<>();
+		Executor renderThreadExecutor = renderThreadTasks::add;
+		LoadRender initializationProgress = new LoadRender(null, "Game Initialization [%d/%d]", 1);
+		LoadRender atlasProgress = initializationProgress.substage("Stitching main atlas", 1);
+		CompletableFuture<Atlas> mainAtlas = CompletableFuture.supplyAsync(() -> Atlas.createAtlas(atlasProgress, renderThreadExecutor, Id.parse("jerraria:main")));
+
+
+		CompletableFuture<?> gameInitialization = CompletableFuture.allOf(mainAtlas);
+
+		// loading screen
+		while(!GLFW.glfwWindowShouldClose(ClientRenderContext.GL_MAIN_WINDOW) && !gameInitialization.isDone()) {
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			int[] dims = ClientRenderContext.dims;
+
+			Matrix3f cartToIndexMat = new Matrix3f();
+			cartToIndexMat.offset(-1, 1);
+			cartToIndexMat.scale(2, -2);
+			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
+
+			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
+			box.renderAndFlush(Primitive.TRIANGLE);
+			text.renderAndFlush(Primitive.TRIANGLE);
+			GLFW.glfwSwapBuffers(ClientRenderContext.GL_MAIN_WINDOW);
+			GLFW.glfwPollEvents();
+
+			int current = renderThreadTasks.size();
+			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
+				renderThreadTasks.get(i).run();
+			}
+			renderThreadTasks.subList(0, current).clear();
 		}
 	}
 

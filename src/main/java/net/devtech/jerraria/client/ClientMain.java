@@ -12,12 +12,17 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import com.beust.jcommander.JCommander;
+import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -60,32 +65,7 @@ public class ClientMain {
 			// launch game
 			ClientRenderContext.init();
 
-			SolidColorShader box = SolidColorShader.INSTANCE;
-			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
-			text.texture.tex(ClientRenderContext.asciiAtlasId);
 
-			LoadRender stage = LoadRender.create("loading [%d/%d]", 10);
-			stage.complete(5);
-
-			stage.substage("atlas [%d/%d]", 4).complete(2);
-			stage.substage("sound [%d/%d]", 9).complete(2);
-
-			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.GL_MAIN_WINDOW)) {
-				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-				int[] dims = ClientRenderContext.dims;
-
-				Matrix3f cartToIndexMat = new Matrix3f();
-				cartToIndexMat.offset(-1, 1);
-				cartToIndexMat.scale(2, -2);
-				cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
-
-				stage.render(cartToIndexMat, box, text, 10, 0, 0);
-
-				box.renderAndFlush(Primitive.TRIANGLE);
-				text.renderAndFlush(Primitive.TRIANGLE);
-				GLFW.glfwSwapBuffers(ClientRenderContext.GL_MAIN_WINDOW);
-				GLFW.glfwPollEvents();
-			}
 
 			// close game
 
