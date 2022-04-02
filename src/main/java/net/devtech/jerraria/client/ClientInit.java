@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.client.render.api.Primitive;
 import net.devtech.jerraria.client.render.internal.ShaderManager;
-import net.devtech.jerraria.client.render.math.Matrix3f;
+import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.client.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.client.render.shaders.SolidColorShader;
 import net.devtech.jerraria.client.render.textures.Atlas;

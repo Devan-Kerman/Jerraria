@@ -3,7 +3,7 @@ package net.devtech.jerraria.client.render.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.devtech.jerraria.client.render.api.End;
+import net.devtech.jerraria.client.render.api.types.End;
 import net.devtech.jerraria.client.render.api.GlValue;
 import net.devtech.jerraria.client.render.api.VFBuilder;
 

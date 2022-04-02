@@ -1,16 +1,16 @@
 package net.devtech.jerraria.client.render.shaders;
 
-import net.devtech.jerraria.client.render.math.Matrix3f;
+import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.client.render.textures.Texture;
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.client.render.api.Color;
-import net.devtech.jerraria.client.render.api.End;
+import net.devtech.jerraria.client.render.api.types.Color;
+import net.devtech.jerraria.client.render.api.types.End;
 import net.devtech.jerraria.client.render.api.SCopy;
 import net.devtech.jerraria.client.render.api.Shader;
-import net.devtech.jerraria.client.render.api.Tex;
+import net.devtech.jerraria.client.render.api.types.Tex;
 import net.devtech.jerraria.client.render.api.VFBuilder;
-import net.devtech.jerraria.client.render.api.Vec2;
-import net.devtech.jerraria.client.render.api.Vec3;
+import net.devtech.jerraria.client.render.api.types.Vec2;
+import net.devtech.jerraria.client.render.api.types.Vec3;
 
 public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>> {
 	public static final ColoredTextureShader INSTANCE = createShader(Id.create("jerraria", "colored_texture"), ColoredTextureShader::new, ColoredTextureShader::new);

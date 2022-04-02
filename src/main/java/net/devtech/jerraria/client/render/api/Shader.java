@@ -3,6 +3,7 @@ package net.devtech.jerraria.client.render.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.devtech.jerraria.client.render.api.types.End;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.client.render.internal.BareShader;
 import net.devtech.jerraria.client.render.internal.GlData;

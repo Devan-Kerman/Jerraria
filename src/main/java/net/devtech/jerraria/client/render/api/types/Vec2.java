@@ -1,5 +1,6 @@
-package net.devtech.jerraria.client.render.api;
+package net.devtech.jerraria.client.render.api.types;
 
+import net.devtech.jerraria.client.render.api.GlValue;
 import net.devtech.jerraria.client.render.internal.DataType;
 import net.devtech.jerraria.client.render.internal.GlData;
 import net.devtech.jerraria.client.render.textures.Texture;

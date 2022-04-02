@@ -1,4 +1,4 @@
-package net.devtech.jerraria.client.render.math;
+package net.devtech.jerraria.util.math;
 
 public class Matrix3f implements AutoCloseable {
 	private float a11, a12, a13, a21, a22, a23, a31, a32, a33;

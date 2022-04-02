@@ -1,8 +1,9 @@
-package net.devtech.jerraria.client.render.api;
+package net.devtech.jerraria.client.render.api.types;
 
+import net.devtech.jerraria.client.render.api.GlValue;
 import net.devtech.jerraria.client.render.internal.DataType;
 import net.devtech.jerraria.client.render.internal.GlData;
-import net.devtech.jerraria.client.render.math.Matrix3f;
+import net.devtech.jerraria.util.math.Matrix3f;
 
 public abstract class Vec3<N extends GlValue<?>> extends GlValue<N> implements GlValue.Attribute {
 	final String name;

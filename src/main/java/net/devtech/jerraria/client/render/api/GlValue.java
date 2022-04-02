@@ -5,7 +5,7 @@ import net.devtech.jerraria.client.render.internal.DataType;
 import net.devtech.jerraria.client.render.internal.GlData;
 
 public abstract class GlValue<N extends GlValue<?>> {
-	final GlData data;
+	protected final GlData data;
 	final N next;
 
 	protected GlValue(GlData data, GlValue next) {

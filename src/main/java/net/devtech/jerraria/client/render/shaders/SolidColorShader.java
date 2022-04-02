@@ -1,13 +1,13 @@
 package net.devtech.jerraria.client.render.shaders;
 
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.client.render.api.Color;
-import net.devtech.jerraria.client.render.api.End;
+import net.devtech.jerraria.client.render.api.types.Color;
+import net.devtech.jerraria.client.render.api.types.End;
 import net.devtech.jerraria.client.render.api.SCopy;
 import net.devtech.jerraria.client.render.api.Shader;
 import net.devtech.jerraria.client.render.api.VFBuilder;
-import net.devtech.jerraria.client.render.api.Vec3;
-import net.devtech.jerraria.client.render.math.Matrix3f;
+import net.devtech.jerraria.client.render.api.types.Vec3;
+import net.devtech.jerraria.util.math.Matrix3f;
 
 public class SolidColorShader extends Shader<Color.RGB<Vec3.F<End>>> {
 	public static final SolidColorShader INSTANCE = createShader(Id.create("jerraria", "solid_color"), SolidColorShader::new, SolidColorShader::new);
