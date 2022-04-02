@@ -75,6 +75,7 @@ public class ClientMain {
 				text.render(Primitive.TRIANGLE);
 				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
 				GLFW.glfwPollEvents();
+				ClientRenderContext.mainAtlas.updateAnimation(System.currentTimeMillis());
 			}
 
 			// close game

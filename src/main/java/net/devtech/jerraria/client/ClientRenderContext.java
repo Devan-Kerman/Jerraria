@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 public class ClientRenderContext {
@@ -195,7 +196,11 @@ public class ClientRenderContext {
 			}
 		}
 
-		// todo exit if should close
-		ClientRenderContext.mainAtlas = mainAtlas.join();
+		if(GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
+			// maybe window should close and start up again later
+			mainAtlas.thenAccept(a -> ClientRenderContext.mainAtlas = a);
+		} else {
+			ClientRenderContext.mainAtlas = mainAtlas.join();
+		}
 	}
 }
