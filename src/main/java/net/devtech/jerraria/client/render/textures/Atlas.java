@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -283,7 +284,7 @@ public class Atlas {
 		LoadRender definitions = render.substage("Reading definitions [%d/%d]", atlasDefinitions.size());
 		for(VirtualFile definition : atlasDefinitions) {
 			try(BufferedReader reader = new BufferedReader(new InputStreamReader(definition.asRegular().read()))) {
-				reader.lines().map(source::resolve).forEach(toProcess::add);
+				reader.lines().map(source::resolve).filter(Objects::nonNull).forEach(toProcess::add);
 			}
 			definitions.complete(1);
 		}

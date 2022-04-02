@@ -5,6 +5,7 @@ import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import it.unimi.dsi.fastutil.HashCommon;
@@ -31,7 +32,7 @@ public final class UUID2ObjectMap<T> extends AbstractMap<Id.Full, T> {
 	}
 
 	@Override
-	public EntrySet entrySet() {
+	public Set<Entry<Id.Full,T>> entrySet() {
 		EntrySet set = this.entries;
 		if(set == null) {
 			this.entries = set = new EntrySet();

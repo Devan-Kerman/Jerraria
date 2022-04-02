@@ -70,17 +70,11 @@ public class ClientMain {
 			text.vert().vec3f(1, 1, 1).uv(texture,1, 0).rgb(0xFFFFFF);
 			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
+			RenderThread.addRenderStage(() -> text.render(Primitive.TRIANGLE), 10);
 
-			while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
-				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-				GLFW.glfwPollEvents();
-				ClientInit.mainAtlas.updateAnimation(System.currentTimeMillis());
-				text.render(Primitive.TRIANGLE);
-				GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
-			}
+			RenderThread.startRender();
 
 			// close game
-
 		} catch(Throwable e) {
 			exceptions.add(e);
 		} finally {

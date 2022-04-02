@@ -36,7 +36,7 @@ class ClientInit {
 	static Atlas mainAtlas;
 	static int[] dims = {800, 600};
 
-	public static void init(VirtualFile.Directory directory) {
+	static void init(VirtualFile.Directory directory) {
 		// handled by static block
 		titleTextCollection = readSplashText(directory, "boot/title.txt");
 		GLFW.glfwInit();
