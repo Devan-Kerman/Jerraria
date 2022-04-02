@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
-import net.devtech.jerraria.client.ClientRenderContext;
+import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.resource.VirtualFile;
 
 /**
@@ -37,7 +37,7 @@ public final class Texture {
 
 	/**
 	 * @see Atlas
-	 * @see ClientRenderContext#mainAtlas
+	 * @see JerrariaClient#MAIN_ATLAS
 	 */
 	public static Texture loadTexture(VirtualFile.Directory directory, String texture) throws IOException {
 		// load png file

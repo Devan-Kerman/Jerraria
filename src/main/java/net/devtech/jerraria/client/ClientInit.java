@@ -27,18 +27,16 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
-public class ClientRenderContext {
-	public static final String PROPERTIES_FILE_EXTENSION = "prop";
-	public static int maxTextureSize;
-	public static long glMainWindow;
-	public static RandomCollection<String> titleTextCollection;
-	public static String title;
-	public static int asciiAtlasId;
-	public static Atlas mainAtlas;
-	public static int[] dims = {800, 600};
+class ClientInit {
+	static int maxTextureSize;
+	static long glMainWindow;
+	static RandomCollection<String> titleTextCollection;
+	static String title;
+	static int asciiAtlasId;
+	static Atlas mainAtlas;
+	static int[] dims = {800, 600};
 
-	public static void init() {
-		VirtualFile.Directory directory = ClientMain.clientResources;
+	public static void init(VirtualFile.Directory directory) {
 		// handled by static block
 		titleTextCollection = readSplashText(directory, "boot/title.txt");
 		GLFW.glfwInit();
@@ -47,7 +45,7 @@ public class ClientRenderContext {
 		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 
 		String title = titleTextCollection.next();
-		ClientRenderContext.title = title;
+		ClientInit.title = title;
 
 		long window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
 		glMainWindow = window;
@@ -62,7 +60,7 @@ public class ClientRenderContext {
 		GL11.glViewport(0, 0, 800, 600);
 		GLFW.glfwSetFramebufferSizeCallback(window, ($, width, height) -> {
 			GL11.glViewport(0, 0, width, height);
-			ClientRenderContext.dims = new int[]{width, height};
+			ClientInit.dims = new int[]{width, height};
 		});
 
 		ShaderManager.FRAG_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".frag"));
@@ -72,7 +70,7 @@ public class ClientRenderContext {
 			VirtualFile shaders = directory
 				.resolveDirectory(id.unpackNamespace())
 				.resolveDirectory("shaders")
-				.resolve(id.getUnpackedPath() + "." + PROPERTIES_FILE_EXTENSION);
+				.resolve(id.getUnpackedPath() + "." + Validate.PROPERTIES_FILE_EXTENSION);
 			if(shaders != null) {
 				try(var input = shaders.asRegular().read()) {
 					Properties properties = new Properties();
@@ -95,7 +93,7 @@ public class ClientRenderContext {
 
 		SolidColorShader box = SolidColorShader.INSTANCE;
 		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
-		text.texture.tex(ClientRenderContext.asciiAtlasId);
+		text.texture.tex(ClientInit.asciiAtlasId);
 
 		List<Runnable> renderThreadTasks = new Vector<>();
 		Executor renderThreadExecutor = renderThreadTasks::add;
@@ -106,9 +104,9 @@ public class ClientRenderContext {
 		CompletableFuture<?> gameInitialization = CompletableFuture.allOf(mainAtlas);
 
 		// loading screen
-		while(!(GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow) || gameInitialization.isDone())) {
+		while(!(GLFW.glfwWindowShouldClose(ClientInit.glMainWindow) || gameInitialization.isDone())) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			int[] dims = ClientRenderContext.dims;
+			int[] dims = ClientInit.dims;
 
 			Matrix3f cartToIndexMat = new Matrix3f();
 			cartToIndexMat.offset(-1, 1);
@@ -118,7 +116,7 @@ public class ClientRenderContext {
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.renderAndFlush(Primitive.TRIANGLE);
 			text.renderAndFlush(Primitive.TRIANGLE);
-			GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
+			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 			GLFW.glfwPollEvents();
 
 			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
@@ -126,11 +124,11 @@ public class ClientRenderContext {
 			}
 		}
 
-		if(GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
+		if(GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
 			// maybe window should close and start up again later
-			mainAtlas.thenAccept(a -> ClientRenderContext.mainAtlas = a);
+			mainAtlas.thenAccept(a -> ClientInit.mainAtlas = a);
 		} else {
-			ClientRenderContext.mainAtlas = mainAtlas.join();
+			ClientInit.mainAtlas = mainAtlas.join();
 		}
 	}
 

@@ -19,7 +19,6 @@ import java.util.concurrent.Executor;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.client.ClientMain;
-import net.devtech.jerraria.client.ClientRenderContext;
 import net.devtech.jerraria.client.LoadRender;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.resource.VirtualFile;
@@ -292,7 +291,7 @@ public class Atlas {
 					toProcess.addAll(d.children());
 				} else {
 					VirtualFile.Regular file = process.asRegular();
-					if(file.hasFileExtension(ClientRenderContext.PROPERTIES_FILE_EXTENSION)) {
+					if(file.hasFileExtension(Validate.PROPERTIES_FILE_EXTENSION)) {
 						animations.add(file);
 					} else if(file.hasFileExtension("png")) {
 						try(InputStream input = file.read()) {

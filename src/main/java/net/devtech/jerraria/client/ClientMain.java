@@ -57,13 +57,12 @@ public class ClientMain {
 			ClientMain.clientResources = OverlayDirectory.overlay("client", resourcePacks);
 
 			// launch game
-
-			ClientRenderContext.init();
+			ClientInit.init(clientResources);
 
 			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
 			text.flush();
-			text.texture.atlas(ClientRenderContext.mainAtlas);
-			Texture texture = ClientRenderContext.mainAtlas.asTexture();
+			text.texture.atlas(ClientInit.mainAtlas);
+			Texture texture = ClientInit.mainAtlas.asTexture();
 			text.vert().vec3f(-1, -1, 1).uv(texture,0, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
@@ -72,12 +71,12 @@ public class ClientMain {
 			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
 
-			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
+			while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 				text.render(Primitive.TRIANGLE);
-				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
+				GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 				GLFW.glfwPollEvents();
-				ClientRenderContext.mainAtlas.updateAnimation(System.currentTimeMillis());
+				ClientInit.mainAtlas.updateAnimation(System.currentTimeMillis());
 			}
 
 			// close game

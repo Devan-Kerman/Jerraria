@@ -10,6 +10,8 @@ import com.sun.tools.javac.Main;
 import org.jetbrains.annotations.Nullable;
 
 public class Validate {
+	public static final String PROPERTIES_FILE_EXTENSION = "prop";
+
 	public static void void_(Object object) {}
 
 	public static <T> T orDefault(T val, T def) {
