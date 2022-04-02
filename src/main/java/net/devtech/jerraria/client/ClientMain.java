@@ -73,10 +73,10 @@ public class ClientMain {
 
 			while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-				text.render(Primitive.TRIANGLE);
-				GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 				GLFW.glfwPollEvents();
 				ClientInit.mainAtlas.updateAnimation(System.currentTimeMillis());
+				text.render(Primitive.TRIANGLE);
+				GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 			}
 
 			// close game

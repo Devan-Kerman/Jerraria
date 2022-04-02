@@ -9,12 +9,14 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
@@ -27,6 +29,7 @@ import net.devtech.jerraria.util.Validate;
 public class Atlas {
 	private static final Executor RENDER_THREAD_EXECUTOR = Runnable::run;
 	static int copyFrameBufferId = -1;
+	static final Map<Id, Atlas> ATLASES = new ConcurrentHashMap<>();
 	final int glId;
 	final Map<String, ExactTexture> textureMap;
 	final List<AnimatedTexture> animated;
@@ -219,6 +222,7 @@ public class Atlas {
 		uploading.setToComplete();
 		render.setToComplete();
 		this.texture = new Texture(this.glId, 0, 0, 1, 1);
+		ATLASES.put(atlasId, this);
 	}
 
 	public static Atlas createAtlas(Id atlasId) {
@@ -238,6 +242,10 @@ public class Atlas {
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}
+	}
+
+	public static Map<Id, Atlas> getAtlases() {
+		return Collections.unmodifiableMap(ATLASES);
 	}
 
 	public void updateAnimation(long timeSrc) {
