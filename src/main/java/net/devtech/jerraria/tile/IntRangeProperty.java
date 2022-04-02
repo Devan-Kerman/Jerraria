@@ -3,8 +3,8 @@ package net.devtech.jerraria.tile;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.AbstractIntList;
-import net.devtech.jerraria.util.data.element.JCElement;
-import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.jerracode.element.JCElement;
+import net.devtech.jerraria.jerracode.NativeJCType;
 
 public class IntRangeProperty extends AbstractIntList implements EnumerableProperty<Integer, Integer> {
 	final int from, length, defaultValue;

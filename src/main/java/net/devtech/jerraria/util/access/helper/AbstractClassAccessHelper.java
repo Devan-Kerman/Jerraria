@@ -4,7 +4,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import com.google.common.reflect.TypeToken;
-import net.devtech.jerraria.util.TypeHelper;
+import net.devtech.jerraria.util.hacks.TypeHelper;
 
 public abstract class AbstractClassAccessHelper<T, C extends Type, F> extends AbstractAccessHelper<C, F> {
 	protected final MapFilter<Class<?>, F> filterClassExact;

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.jerracode.element.JCElement;
 
 public interface EnumerableProperty<T, E> {
 	String getName();

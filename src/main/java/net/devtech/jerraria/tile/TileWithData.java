@@ -1,6 +1,6 @@
 package net.devtech.jerraria.tile;
 
-import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.jerracode.element.JCElement;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class TileWithData extends Tile {

@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import net.devtech.jerraria.entity.BaseEntity;
-import net.devtech.jerraria.util.Ceil;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
@@ -26,8 +26,8 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 		Spliterator<BaseEntity> spliterator = this.getEntitySpliterator(
 			fromX << World.LOG2_CHUNK_SIZE,
 			fromY << World.LOG2_CHUNK_SIZE,
-			Ceil.div(toX, World.CHUNK_SIZE),
-			Ceil.div(toY, World.CHUNK_SIZE));
+			JMath.div(toX, World.CHUNK_SIZE),
+			JMath.div(toY, World.CHUNK_SIZE));
 		return StreamSupport.stream(spliterator, false).filter(entity -> entity.isEnclosed(type, fromX, fromY, toX, toY));
 	}
 

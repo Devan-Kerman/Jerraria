@@ -6,10 +6,8 @@ import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 
-import it.unimi.dsi.fastutil.Arrays;
-import net.devtech.jerraria.util.Log2;
+import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL20;
 
 public final class BufferBuilder extends ByteBufferGlDataBuf {
@@ -19,7 +17,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 
 	public BufferBuilder(int length) {
 		this.vertexLength = length;
-		this.buffer = allocateBuffer(Math.max(1024, Log2.nearestPowerOf2(length)));
+		this.buffer = allocateBuffer(Math.max(1024, JMath.nearestPowerOf2(length)));
 	}
 
 	public BufferBuilder(BufferBuilder builder) {
@@ -37,7 +35,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 	public BufferBuilder(int expectedSize, int length) {
 		this.vertexLength = length;
 		// compute the next highest power of 2 of 32-bit v
-		this.buffer = allocateBuffer(Log2.nearestPowerOf2(expectedSize));
+		this.buffer = allocateBuffer(JMath.nearestPowerOf2(expectedSize));
 	}
 
 	/*public interface VertexComparator {

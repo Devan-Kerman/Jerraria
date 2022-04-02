@@ -32,6 +32,7 @@ public class Atlas {
 	final Map<String, ExactTexture> textureMap;
 	final List<AnimatedTexture> animated;
 	final int atlasWidth, atlasHeight;
+	final Texture texture;
 
 	protected Atlas(LoadRender render, Executor executor, VirtualFile.Directory source, Id atlasId) throws IOException {
 		Map<String, RawImageSprite> imageSprites = new HashMap<>();
@@ -218,6 +219,7 @@ public class Atlas {
 		CompletableFuture.allOf(animations.toArray(CompletableFuture[]::new)).join();
 		uploading.setToComplete();
 		render.setToComplete();
+		this.texture = new Texture(this.glId, 0, 0, 1, 1);
 	}
 
 	public static Atlas createAtlas(Id atlasId) {
@@ -244,6 +246,14 @@ public class Atlas {
 		for(AnimatedTexture animatedTexture : this.animated) {
 			animatedTexture.update(glId, timeSrc);
 		}
+	}
+
+	public Texture getTexture(String name) {
+		return this.textureMap.get(name).texture;
+	}
+
+	public Texture asTexture() {
+		return this.texture;
 	}
 
 	public int glId() {
@@ -291,9 +301,8 @@ public class Atlas {
 								ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
 							decoder.decode(buffer, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
 							buffer.flip();
-							String name = file.name();
-							imageSprites.put(name,
-								new RawImageSprite(name, buffer, decoder.getWidth(), decoder.getHeight()));
+							String name = file.withoutExtension();
+							imageSprites.put(name, new RawImageSprite(name, buffer, decoder.getWidth(), decoder.getHeight()));
 						} catch(UnsupportedOperationException e) {
 							System.out.println(e.getLocalizedMessage() + " " + file.name());
 						}
@@ -310,15 +319,16 @@ public class Atlas {
 			try(InputStream stream = animation.read()) {
 				Properties properties = new Properties();
 				properties.load(stream);
-				String name = animation.name();
-				int index = name.lastIndexOf('.');
-				String spritePath = name.substring(0, index) + ".png";
-				RawImageSprite sprite = imageSprites.get(spritePath);
+				String name = animation.withoutExtension();
+				RawImageSprite sprite = imageSprites.get(name);
 				int frames = Integer.parseInt(properties.getProperty("frames"));
 				int[] msPerFrame = Arrays
 					.stream(properties.getProperty("msPerFrame").split(","))
 					.mapToInt(Integer::parseInt)
 					.toArray();
+				if(sprite.height % frames != 0) {
+					throw new IllegalStateException(name + "'s height (" + sprite.height + ") is not divisible by the number of frames (" + frames + ")");
+				}
 				RawAnimatedSprite animated = new RawAnimatedSprite(sprite, frames, msPerFrame);
 				animatedSprites.add(animated);
 			}

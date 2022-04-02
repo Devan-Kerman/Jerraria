@@ -1,11 +1,8 @@
 package net.devtech.jerraria.client;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -13,7 +10,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.internal.ShaderManager;
@@ -21,14 +17,14 @@ import net.devtech.jerraria.render.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.resource.VirtualFile;
-import net.devtech.jerraria.util.RandomCollection;
+import net.devtech.jerraria.util.collect.RandomCollection;
 import net.devtech.jerraria.util.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 public class ClientRenderContext {
@@ -40,72 +36,6 @@ public class ClientRenderContext {
 	public static int asciiAtlasId;
 	public static Atlas mainAtlas;
 	public static int[] dims = {800, 600};
-
-	public static int loadBootTexture(VirtualFile.Directory directory, String texture) throws IOException {
-		// load png file
-		VirtualFile.Regular regular = directory
-			.resolveFile(texture);
-
-		PNGDecoder decoder = new PNGDecoder(regular.read());
-
-		//create a byte buffer big enough to store RGBA values
-		ByteBuffer buffer = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
-
-		//decode
-		decoder.decode(buffer, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
-
-		//flip the buffer so its ready to read
-		buffer.flip();
-
-		//create a texture
-		int id = glGenTextures();
-
-		//bind the texture
-		glBindTexture(GL_TEXTURE_2D, id);
-
-		//tell opengl how to unpack bytes
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-		//set the texture parameters, can be GL_LINEAR or GL_NEAREST
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		//upload texture
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-		return id;
-	}
-
-	@NotNull
-	private static String findShaderSource(VirtualFile.Directory directory, Id shaderId, String extension) {
-		VirtualFile.Regular shader = directory
-			.resolveDirectory(shaderId.unpackNamespace())
-			.resolveDirectory("shaders")
-			.resolveFile(shaderId.getUnpackedPath() + extension);
-		String source;
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(shader.read()))) {
-			source = reader.lines().collect(Collectors.joining("\n"));
-		} catch(IOException e) {
-			throw Validate.rethrow(e);
-		}
-		return source;
-	}
-
-	public static RandomCollection<String> readSplashText(VirtualFile.Directory directory, String fileName) {
-		RandomCollection<String> collection = new RandomCollection<>();
-		for(VirtualFile file : directory.resolveAll(fileName)) {
-			VirtualFile.Regular regular = file.asRegular();
-			try(BufferedReader reader = new BufferedReader(new InputStreamReader(regular.read()))) {
-				reader.lines().forEach(s -> {
-					String[] split = s.split("\\#", 2);
-					double weight = Double.parseDouble(split[0]);
-					collection.add(weight, split[1]);
-				});
-			} catch(IOException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-		return collection;
-	}
 
 	public static void init() {
 		VirtualFile.Directory directory = ClientMain.clientResources;
@@ -158,7 +88,7 @@ public class ClientRenderContext {
 		});
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
 		try {
-			asciiAtlasId = loadBootTexture(directory, "boot/ascii_atlas.png");
+			asciiAtlasId = Texture.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}
@@ -203,4 +133,38 @@ public class ClientRenderContext {
 			ClientRenderContext.mainAtlas = mainAtlas.join();
 		}
 	}
+
+	@NotNull
+	private static String findShaderSource(VirtualFile.Directory directory, Id shaderId, String extension) {
+		VirtualFile.Regular shader = directory
+			.resolveDirectory(shaderId.unpackNamespace())
+			.resolveDirectory("shaders")
+			.resolveFile(shaderId.getUnpackedPath() + extension);
+		String source;
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(shader.read()))) {
+			source = reader.lines().collect(Collectors.joining("\n"));
+		} catch(IOException e) {
+			throw Validate.rethrow(e);
+		}
+		return source;
+	}
+
+	public static RandomCollection<String> readSplashText(VirtualFile.Directory directory, String fileName) {
+		RandomCollection<String> collection = new RandomCollection<>();
+		for(VirtualFile file : directory.resolveAll(fileName)) {
+			VirtualFile.Regular regular = file.asRegular();
+			try(BufferedReader reader = new BufferedReader(new InputStreamReader(regular.read()))) {
+				reader.lines().forEach(s -> {
+					String[] split = s.split("\\#", 2);
+					double weight = Double.parseDouble(split[0]);
+					collection.add(weight, split[1]);
+				});
+			} catch(IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		return collection;
+	}
+
+
 }

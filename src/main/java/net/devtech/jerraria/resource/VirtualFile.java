@@ -82,5 +82,11 @@ public interface VirtualFile {
 
 	interface Regular extends VirtualFile {
 		InputStream read() throws IOException;
+
+		default String withoutExtension() {
+			String name = this.name();
+			int index = name.lastIndexOf('.');
+			return index != -1 ? name.substring(0, index) : name;
+		}
 	}
 }

@@ -7,10 +7,9 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Consumer;
 
-import net.devtech.jerraria.util.data.JCIO;
-import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.jerracode.JCIO;
+import net.devtech.jerraria.jerracode.NativeJCType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

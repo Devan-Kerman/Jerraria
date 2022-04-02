@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLongPair;
@@ -17,8 +16,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.content.Tiles;
-import net.devtech.jerraria.util.data.JCTagView;
-import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.jerracode.JCTagView;
+import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.entity.BaseEntity;

@@ -2,6 +2,7 @@ package net.devtech.jerraria.render.api;
 
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
+import net.devtech.jerraria.render.textures.Texture;
 
 public abstract class Vec2<N extends GlValue<?>> extends GlValue<N> implements GlValue.Attribute {
 	final String name;
@@ -29,6 +30,10 @@ public abstract class Vec2<N extends GlValue<?>> extends GlValue<N> implements G
 		public N vec2f(float a, float b) {
 			this.data.element(this.element).f(a).f(b);
 			return this.getNext();
+		}
+
+		public N uv(Texture texture, float u, float v) {
+			return this.vec2f(texture.getOffX() + texture.getWidth() * u, texture.getOffY() + texture.getHeight() * v);
 		}
 	}
 

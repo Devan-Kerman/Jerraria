@@ -3,8 +3,8 @@ package net.devtech.jerraria.tile;
 import java.util.List;
 import java.util.Objects;
 
-import net.devtech.jerraria.util.data.element.JCElement;
-import net.devtech.jerraria.util.data.NativeJCType;
+import net.devtech.jerraria.jerracode.element.JCElement;
+import net.devtech.jerraria.jerracode.NativeJCType;
 
 public class EnumProperty<E extends Enum<E>> implements EnumerableProperty<E, String> {
 	final Class<E> type;

@@ -7,7 +7,7 @@ import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.jerracode.element.JCElement;
 
 public class IdentityItem extends Item implements Item.Type<Void> {
 	Id.Full id;

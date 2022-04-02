@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.internal.chunk;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
-import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.tile.TileData;

@@ -16,6 +16,7 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -61,14 +62,15 @@ public class ClientMain {
 
 			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
 			text.flush();
-			text.texture.tex(ClientRenderContext.mainAtlas.glId());
-			text.vert().vec3f(-1, -1, 1).vec2f(0, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(1, -1, 1).vec2f(1, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(-1, 1, 1).vec2f(0, 0).rgb(0xFFFFFF);
+			text.texture.atlas(ClientRenderContext.mainAtlas);
+			Texture texture = ClientRenderContext.mainAtlas.asTexture();
+			text.vert().vec3f(-1, -1, 1).uv(texture,0, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
 
-			text.vert().vec3f(1, 1, 1).vec2f(1, 0).rgb(0xFFFFFF);
-			text.vert().vec3f(1, -1, 1).vec2f(1, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(-1, 1, 1).vec2f(0, 0).rgb(0xFFFFFF);
+			text.vert().vec3f(1, 1, 1).uv(texture,1, 0).rgb(0xFFFFFF);
+			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
 
 			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
 				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);

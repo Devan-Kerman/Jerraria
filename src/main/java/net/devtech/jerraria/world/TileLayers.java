@@ -2,7 +2,7 @@ package net.devtech.jerraria.world;
 
 import java.util.List;
 
-import net.devtech.jerraria.util.Log2;
+import net.devtech.jerraria.util.math.JMath;
 
 public enum TileLayers {
 	BLOCK,
@@ -12,6 +12,6 @@ public enum TileLayers {
 
 	public static final List<TileLayers> LAYERS = List.of(values());
 	public static final int COUNT = LAYERS.size();
-	public static final int COUNT_LOG2 = Log2.log2(COUNT);
-	public static final int COUNT_MASK = Log2.nearestPowerOf2(COUNT) - 1;
+	public static final int COUNT_LOG2 = JMath.log2(COUNT);
+	public static final int COUNT_MASK = JMath.nearestPowerOf2(COUNT) - 1;
 }

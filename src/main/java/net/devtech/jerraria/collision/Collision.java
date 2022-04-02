@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.devtech.jerraria.entity.BaseEntity;
-import net.devtech.jerraria.util.Polygon;
+import net.devtech.jerraria.util.math.Polygon;
 
 public class Collision {
 	final List<Polygon> polygons = new ArrayList<>();

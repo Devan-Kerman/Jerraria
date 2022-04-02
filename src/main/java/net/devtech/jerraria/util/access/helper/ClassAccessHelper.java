@@ -4,7 +4,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import com.google.common.reflect.TypeToken;
-import net.devtech.jerraria.util.TypeHelper;
+import net.devtech.jerraria.util.hacks.TypeHelper;
 
 public class ClassAccessHelper<T, F> extends AbstractClassAccessHelper<T, Class<? extends T>, F> {
 	public ClassAccessHelper(HelperContext<Class<? extends T>, F> context) {

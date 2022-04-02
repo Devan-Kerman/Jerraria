@@ -5,9 +5,9 @@ import java.util.function.Function;
 import net.devtech.jerraria.content.Items;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
-import net.devtech.jerraria.util.Pos;
-import net.devtech.jerraria.util.Positioned;
-import net.devtech.jerraria.util.data.element.JCElement;
+import net.devtech.jerraria.util.math.Position;
+import net.devtech.jerraria.util.math.Positioned;
+import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
@@ -77,8 +77,8 @@ public abstract class BaseEntity implements Positioned {
 		return new Type<>(serializer, deserializer);
 	}
 
-	public Pos getPos() {
-		return new Pos(this.x, this.y);
+	public Position getPos() {
+		return new Position(this.x, this.y);
 	}
 
 	public int getBlockX() {

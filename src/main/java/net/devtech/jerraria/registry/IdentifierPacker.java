@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import it.unimi.dsi.fastutil.chars.CharSet;
-import net.devtech.jerraria.util.Log2;
+import net.devtech.jerraria.util.math.JMath;
 
 /**
  * stack packed string is in the following format: [string len] [char id...]. Examples: "test": [4] [0, 1, 2, 0, 0, 0, 0,
@@ -57,7 +57,7 @@ public final class IdentifierPacker {
 		ID_TO_CHAR = Arrays.copyOf(toChar, current);
 		VALID_CHARACTERS = validChars;
 
-		BITS_PER_CHAR = Log2.log2(current);
+		BITS_PER_CHAR = JMath.log2(current);
 		CHAR_MASK = (1 << BITS_PER_CHAR) - 1;
 		STR_LEN_BITS_SIZE = Long.SIZE % BITS_PER_CHAR;
 		STR_LEN_MASK = (1 << STR_LEN_BITS_SIZE) - 1;
