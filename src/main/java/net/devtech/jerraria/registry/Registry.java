@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.collect.UUID2ObjectMap;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class Registry<T> {

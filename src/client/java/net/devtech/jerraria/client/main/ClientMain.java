@@ -1,10 +1,9 @@
 package net.devtech.jerraria.client.main;
 
-import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.render.api.Primitive;
-import net.devtech.jerraria.render.api.SCopy;
-import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.internal.ShaderManager;
+import net.devtech.jerraria.client.render.api.Primitive;
+import net.devtech.jerraria.client.render.api.SCopy;
+import net.devtech.jerraria.client.render.api.Shader;
+import net.devtech.jerraria.client.render.internal.ShaderManager;
 import org.intellij.lang.annotations.Language;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;

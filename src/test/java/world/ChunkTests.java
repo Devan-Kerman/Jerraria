@@ -12,12 +12,12 @@ import java.util.concurrent.TimeoutException;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import net.devtech.jerraria.content.Tiles;
+import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.SynchronousWorld;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileVariant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

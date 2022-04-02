@@ -9,8 +9,8 @@ import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
 
 public class TestTemporaryData extends TemporaryTileData {

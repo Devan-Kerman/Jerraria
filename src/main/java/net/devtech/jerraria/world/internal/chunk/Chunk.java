@@ -15,16 +15,16 @@ import it.unimi.dsi.fastutil.ints.IntLongPair;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.devtech.jerraria.content.Tiles;
+import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.entity.BaseEntity;
-import net.devtech.jerraria.entity.EntityInternal;
+import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.EntityInternal;
 import net.devtech.jerraria.world.internal.TickingWorld;
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {

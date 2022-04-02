@@ -1,6 +1,6 @@
 package world;
 
-import net.devtech.jerraria.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.BaseEntity;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 

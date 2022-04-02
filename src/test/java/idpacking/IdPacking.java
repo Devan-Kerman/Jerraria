@@ -1,7 +1,6 @@
 package idpacking;
 
 import net.devtech.jerraria.registry.IdentifierPacker;
-import net.devtech.jerraria.util.Validate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -1,12 +1,11 @@
 package net.devtech.jerraria.client;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import net.devtech.jerraria.render.math.Matrix3f;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.client.render.math.Matrix3f;
+import net.devtech.jerraria.client.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.client.render.shaders.SolidColorShader;
 
 public class LoadRender {
 	final LoadRender parent;

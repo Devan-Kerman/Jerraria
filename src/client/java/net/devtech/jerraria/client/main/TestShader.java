@@ -1,12 +1,12 @@
 package net.devtech.jerraria.client.main;
 
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.render.api.End;
-import net.devtech.jerraria.render.api.SCopy;
-import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.api.V;
-import net.devtech.jerraria.render.api.VFBuilder;
-import net.devtech.jerraria.render.api.Vec3;
+import net.devtech.jerraria.client.render.api.End;
+import net.devtech.jerraria.client.render.api.SCopy;
+import net.devtech.jerraria.client.render.api.Shader;
+import net.devtech.jerraria.client.render.api.V;
+import net.devtech.jerraria.client.render.api.VFBuilder;
+import net.devtech.jerraria.client.render.api.Vec3;
 
 public class TestShader extends Shader<Vec3.F<End>> {
 	public static final TestShader INSTANCE = createShader(Id.create("bruh", "test"), TestShader::new, TestShader::new);

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import net.devtech.jerraria.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.BaseEntity;
 import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.EntitySearchType;

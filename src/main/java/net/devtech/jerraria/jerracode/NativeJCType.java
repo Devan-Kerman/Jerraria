@@ -27,7 +27,7 @@ import net.devtech.jerraria.jerracode.codec.ArrayCodec;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerracode.internal.PairJCType;
 import net.devtech.jerraria.jerracode.pool.JCDecodePool;
-import net.devtech.jerraria.entity.SerializedEntity;
+import net.devtech.jerraria.world.entity.SerializedEntity;
 import org.jetbrains.annotations.NotNull;
 
 /**

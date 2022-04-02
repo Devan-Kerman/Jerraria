@@ -1,7 +1,5 @@
 package net.devtech.jerraria.world;
 
-import net.devtech.jerraria.world.World;
-
 public interface ChunkLinkingAccess {
 	default void link(int blockPosX, int blockPosY) {
 		this.linkChunk(blockPosX >> World.LOG2_CHUNK_SIZE, blockPosY >> World.LOG2_CHUNK_SIZE);

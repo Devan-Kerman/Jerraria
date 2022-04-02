@@ -6,9 +6,9 @@ import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ScheduledTick;
 import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
-import net.devtech.jerraria.tile.VariantConvertable;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.world.tile.VariantConvertable;
 import org.jetbrains.annotations.Nullable;
 
 public class ChunkAccessTileLayer implements TileLayer {

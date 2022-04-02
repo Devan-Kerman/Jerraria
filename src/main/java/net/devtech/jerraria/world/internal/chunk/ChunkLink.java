@@ -11,8 +11,8 @@ import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
-import net.devtech.jerraria.tile.TileData;
-import net.devtech.jerraria.tile.TileVariant;
+import net.devtech.jerraria.world.tile.TileData;
+import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.Nullable;
 
 public class ChunkLink extends TemporaryTileData {

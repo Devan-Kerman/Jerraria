@@ -2,7 +2,7 @@ package net.devtech.jerraria.world;
 
 import java.util.stream.Stream;
 
-import net.devtech.jerraria.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.BaseEntity;
 
 public interface EntityLayer {
 

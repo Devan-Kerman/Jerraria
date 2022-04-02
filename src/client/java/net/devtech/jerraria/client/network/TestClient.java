@@ -20,7 +20,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.timeout.ReadTimeoutHandler;
-import net.devtech.jerraria.server.network.*;
+import net.devtech.jerraria.network.network.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;

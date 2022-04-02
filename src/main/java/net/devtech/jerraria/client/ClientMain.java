@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.api.Primitive;
-import net.devtech.jerraria.render.textures.Texture;
+import net.devtech.jerraria.client.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.client.render.api.Primitive;
+import net.devtech.jerraria.client.render.textures.Texture;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
