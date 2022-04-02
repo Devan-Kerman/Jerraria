@@ -84,6 +84,10 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		this.shader.vao.flush();
 	}
 
+	public final void flush() {
+		this.shader.vao.flush();
+	}
+
 	private void endOfVertex() {
 		if(!this.finalized) {
 			this.shader.vao.next();

@@ -31,104 +31,14 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
 public class ClientRenderContext {
-	public static final int MAX_TEXTURE_SIZE = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
 	public static final String PROPERTIES_FILE_EXTENSION = "prop";
-	public static final long GL_MAIN_WINDOW;
-	public static final RandomCollection<String> TITLE_TEXT_COLLECTION;
-	public static final String TITLE;
-	public static final int ASCII_ATLAS_ID;
+	public static int maxTextureSize;
+	public static long glMainWindow;
+	public static RandomCollection<String> titleTextCollection;
+	public static String title;
+	public static int asciiAtlasId;
+	public static Atlas mainAtlas;
 	public static int[] dims = {800, 600};
-
-	static {
-		VirtualFile.Directory directory = ClientMain.clientResources;
-		// handled by static block
-		TITLE_TEXT_COLLECTION = readSplashText(directory, "boot/title.txt");
-		GLFW.glfwInit();
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-
-		String title = TITLE_TEXT_COLLECTION.next();
-		TITLE = title;
-
-		long window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
-		GL_MAIN_WINDOW = window;
-		GLFW.glfwMakeContextCurrent(window);
-		GLFW.glfwSwapInterval(1);
-		GLFW.glfwShowWindow(window);
-		GL.createCapabilities();
-
-		// todo save viewport size
-		GL11.glViewport(0, 0, 800, 600);
-		GLFW.glfwSetFramebufferSizeCallback(window, ($, width, height) -> {
-			GL11.glViewport(0, 0, width, height);
-			ClientRenderContext.dims = new int[]{width, height};
-		});
-
-		ShaderManager.FRAG_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".frag"));
-		ShaderManager.VERT_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".vert"));
-
-		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
-			VirtualFile shaders = directory
-				.resolveDirectory(id.unpackNamespace())
-				.resolveDirectory("shaders")
-				.resolve(id.getUnpackedPath() + "." + PROPERTIES_FILE_EXTENSION);
-			if(shaders != null) {
-				try(var input = shaders.asRegular().read()) {
-					Properties properties = new Properties();
-					properties.load(input);
-					String frag = properties.getProperty("frag");
-					String vert = properties.getProperty("vert");
-					return new ShaderManager.ShaderPair(Id.parse(frag), Id.parse(vert));
-				} catch(IOException e) {
-					throw new IllegalArgumentException("Unable to parse " + shaders.name(), e);
-				}
-			}
-			return null;
-		});
-		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
-		try {
-			ASCII_ATLAS_ID = loadBootTexture(directory, "boot/ascii_atlas.png");
-		} catch(IOException e) {
-			throw Validate.rethrow(e);
-		}
-
-		SolidColorShader box = SolidColorShader.INSTANCE;
-		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
-		text.texture.tex(ClientRenderContext.ASCII_ATLAS_ID);
-
-		List<Runnable> renderThreadTasks = new Vector<>();
-		Executor renderThreadExecutor = renderThreadTasks::add;
-		LoadRender initializationProgress = new LoadRender(null, "Game Initialization [%d/%d]", 1);
-		LoadRender atlasProgress = initializationProgress.substage("Stitching main atlas", 1);
-		CompletableFuture<Atlas> mainAtlas = CompletableFuture.supplyAsync(() -> Atlas.createAtlas(atlasProgress, renderThreadExecutor, Id.parse("jerraria:main")));
-
-
-		CompletableFuture<?> gameInitialization = CompletableFuture.allOf(mainAtlas);
-
-		// loading screen
-		while(!GLFW.glfwWindowShouldClose(ClientRenderContext.GL_MAIN_WINDOW) && !gameInitialization.isDone()) {
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			int[] dims = ClientRenderContext.dims;
-
-			Matrix3f cartToIndexMat = new Matrix3f();
-			cartToIndexMat.offset(-1, 1);
-			cartToIndexMat.scale(2, -2);
-			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
-
-			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
-			box.renderAndFlush(Primitive.TRIANGLE);
-			text.renderAndFlush(Primitive.TRIANGLE);
-			GLFW.glfwSwapBuffers(ClientRenderContext.GL_MAIN_WINDOW);
-			GLFW.glfwPollEvents();
-
-			int current = renderThreadTasks.size();
-			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
-				renderThreadTasks.get(i).run();
-			}
-			renderThreadTasks.subList(0, current).clear();
-		}
-	}
 
 	public static int loadBootTexture(VirtualFile.Directory directory, String texture) throws IOException {
 		// load png file
@@ -196,5 +106,96 @@ public class ClientRenderContext {
 		return collection;
 	}
 
-	public static void init() {}
+	public static void init() {
+		VirtualFile.Directory directory = ClientMain.clientResources;
+		// handled by static block
+		titleTextCollection = readSplashText(directory, "boot/title.txt");
+		GLFW.glfwInit();
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+
+		String title = titleTextCollection.next();
+		ClientRenderContext.title = title;
+
+		long window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
+		glMainWindow = window;
+		GLFW.glfwMakeContextCurrent(window);
+		GLFW.glfwSwapInterval(1);
+		GLFW.glfwShowWindow(window);
+		GL.createCapabilities();
+
+		maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+
+		// todo save viewport size
+		GL11.glViewport(0, 0, 800, 600);
+		GLFW.glfwSetFramebufferSizeCallback(window, ($, width, height) -> {
+			GL11.glViewport(0, 0, width, height);
+			ClientRenderContext.dims = new int[]{width, height};
+		});
+
+		ShaderManager.FRAG_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".frag"));
+		ShaderManager.VERT_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".vert"));
+
+		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
+			VirtualFile shaders = directory
+				.resolveDirectory(id.unpackNamespace())
+				.resolveDirectory("shaders")
+				.resolve(id.getUnpackedPath() + "." + PROPERTIES_FILE_EXTENSION);
+			if(shaders != null) {
+				try(var input = shaders.asRegular().read()) {
+					Properties properties = new Properties();
+					properties.load(input);
+					String frag = properties.getProperty("frag");
+					String vert = properties.getProperty("vert");
+					return new ShaderManager.ShaderPair(Id.parse(frag), Id.parse(vert));
+				} catch(IOException e) {
+					throw new IllegalArgumentException("Unable to parse " + shaders.name(), e);
+				}
+			}
+			return null;
+		});
+		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
+		try {
+			asciiAtlasId = loadBootTexture(directory, "boot/ascii_atlas.png");
+		} catch(IOException e) {
+			throw Validate.rethrow(e);
+		}
+
+		SolidColorShader box = SolidColorShader.INSTANCE;
+		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+		text.texture.tex(ClientRenderContext.asciiAtlasId);
+
+		List<Runnable> renderThreadTasks = new Vector<>();
+		Executor renderThreadExecutor = renderThreadTasks::add;
+		LoadRender initializationProgress = new LoadRender(null, "Game Initialization [%d/%d]", 1);
+		LoadRender atlasProgress = initializationProgress.substage("Stitching main atlas", 1);
+
+		CompletableFuture<Atlas> mainAtlas = CompletableFuture.supplyAsync(() -> Atlas.createAtlas(atlasProgress, renderThreadExecutor, Id.parse("jerraria:main")));
+		CompletableFuture<?> gameInitialization = CompletableFuture.allOf(mainAtlas);
+
+		// loading screen
+		while(!(GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow) || gameInitialization.isDone())) {
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			int[] dims = ClientRenderContext.dims;
+
+			Matrix3f cartToIndexMat = new Matrix3f();
+			cartToIndexMat.offset(-1, 1);
+			cartToIndexMat.scale(2, -2);
+			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
+
+			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
+			box.renderAndFlush(Primitive.TRIANGLE);
+			text.renderAndFlush(Primitive.TRIANGLE);
+			GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
+			GLFW.glfwPollEvents();
+
+			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
+				renderThreadTasks.remove(i).run();
+			}
+		}
+
+		// todo exit if should close
+		ClientRenderContext.mainAtlas = mainAtlas.join();
+	}
 }

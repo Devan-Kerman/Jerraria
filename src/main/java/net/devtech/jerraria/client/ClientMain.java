@@ -12,17 +12,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 import com.beust.jcommander.JCommander;
-import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.render.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
-import net.devtech.jerraria.render.shaders.SolidColorShader;
-import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -63,9 +56,26 @@ public class ClientMain {
 			ClientMain.clientResources = OverlayDirectory.overlay("client", resourcePacks);
 
 			// launch game
+
 			ClientRenderContext.init();
 
+			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+			text.flush();
+			text.texture.tex(ClientRenderContext.mainAtlas.glId());
+			text.vert().vec3f(-1, -1, 1).vec2f(0, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(1, -1, 1).vec2f(1, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(-1, 1, 1).vec2f(0, 0).rgb(0xFFFFFF);
 
+			text.vert().vec3f(1, 1, 1).vec2f(1, 0).rgb(0xFFFFFF);
+			text.vert().vec3f(1, -1, 1).vec2f(1, 1).rgb(0xFFFFFF);
+			text.vert().vec3f(-1, 1, 1).vec2f(0, 0).rgb(0xFFFFFF);
+
+			while(!GLFW.glfwWindowShouldClose(ClientRenderContext.glMainWindow)) {
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+				text.render(Primitive.TRIANGLE);
+				GLFW.glfwSwapBuffers(ClientRenderContext.glMainWindow);
+				GLFW.glfwPollEvents();
+			}
 
 			// close game
 
