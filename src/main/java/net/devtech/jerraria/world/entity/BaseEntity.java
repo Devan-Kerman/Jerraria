@@ -107,6 +107,10 @@ public abstract class BaseEntity implements Positioned {
 		// tick stuff
 	}
 
+	public boolean doesSaveInChunk() {
+		return true;
+	}
+
 	public interface Deserializer<T> {
 		BaseEntity deserialize(Type<?> type, JCElement<T> element, World world, double x, double y);
 	}

@@ -4,10 +4,14 @@ import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.math.SimpleShape;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.render.EntityRenderer;
 
-public class Entity extends BaseEntity {
+import java.util.Objects;
+
+public abstract class Entity extends BaseEntity {
 	SimpleShape bounds;
 	double dx, dy;
+	EntityRenderer renderer;
 
 	public Entity(Type<?> type, SimpleShape bounds) {
 		super(type);
@@ -17,6 +21,16 @@ public class Entity extends BaseEntity {
 	protected Entity(Type<?> type, JCElement<?> element, World world, double x, double y, SimpleShape bounds) {
 		super(type, element, world, x, y);
 		this.bounds = bounds;
+	}
+
+	protected abstract EntityRenderer createRenderer();
+
+	public EntityRenderer getRenderer() {
+		EntityRenderer renderer = this.renderer;
+		if(renderer == null) {
+			this.renderer = renderer = Objects.requireNonNull(this.createRenderer(), "Cannot have null entity renderer!");
+		}
+		return renderer;
 	}
 
 	public void setVelocity(double dx, double dy) {

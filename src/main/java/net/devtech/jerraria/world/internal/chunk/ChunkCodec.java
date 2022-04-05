@@ -97,7 +97,7 @@ public class ChunkCodec {
 
 	public static Set<BaseEntity> deserializeEntities(World world, List<Pair<Id.Full, List<SerializedEntity>>> entities) {
 		Set<BaseEntity> entitySet = new HashSet<>();
-		for(Pair<Id.Full, List<SerializedEntity>> ofTypes : entities) {
+		for(var ofTypes : entities) {
 			Id.Full id = ofTypes.first();
 			for(SerializedEntity entity : ofTypes.second()) {
 				BaseEntity deserialized = EntityInternal.deserialize(world, id, entity);
@@ -110,9 +110,11 @@ public class ChunkCodec {
 	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Iterable<BaseEntity> entities) {
 		ListMultimap<Id.Full, SerializedEntity> map = ArrayListMultimap.create();
 		for(BaseEntity entity : entities) {
-			Id.Full id = Entities.REGISTRY.getId(entity.getType());
-			SerializedEntity serialize = EntityInternal.serialize(entity);
-			map.put(id, serialize);
+			if(entity.doesSaveInChunk()) {
+				Id.Full id = Entities.REGISTRY.getId(entity.getType());
+				SerializedEntity serialize = EntityInternal.serialize(entity);
+				map.put(id, serialize);
+			}
 		}
 		List<Pair<Id.Full, List<SerializedEntity>>> list = new ArrayList<>();
 		for(var entry : asMap(map).entrySet()) {
