@@ -61,7 +61,7 @@ public class ChunkAccessTileLayer implements TileLayer {
 		int localY = y & World.CHUNK_MASK;
 		TileData data = chunk.set(this.layers, localX, localY, variant);
 		if((flags & SKIP_ON_PLACE) == 0) {
-			//variant.onPlace(); (requires scheduling, pain)
+			//variant.onPlace(); (requires scheduling, pain) or does it? I don't think it does
 		}
 		return data;
 	}

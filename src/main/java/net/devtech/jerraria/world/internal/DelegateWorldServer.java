@@ -4,21 +4,18 @@ import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.WorldServer;
 
-public class JerrariaWorldServer implements WorldServer {
-	final VirtualFile.Directory resources;
+public class DelegateWorldServer implements WorldServer {
+	final WorldServer delegate;
 
-
-	public JerrariaWorldServer(VirtualFile.Directory resources) {
-		this.resources = resources;
-	}
+	public DelegateWorldServer(WorldServer delegate) {this.delegate = delegate;}
 
 	@Override
 	public World getById(int sessionId) {
-		return null;
+		return delegate.getById(sessionId);
 	}
 
 	@Override
 	public VirtualFile.Directory getResources() {
-		return null;
+		return delegate.getResources();
 	}
 }

@@ -17,7 +17,7 @@ public record ViewOnlyAccessImpl<F>(AccessImpl<F> backing) implements AccessInte
 
 	@Override
 	public void recompile() {
-		LOGGER.warning("Recompile called on view-only access, defaulting to calling backing instance!");
+		LOGGER.warning("Recompile called on view-only access, defaulting to calling backing vertexData!");
 		this.backing.recompile();
 	}
 

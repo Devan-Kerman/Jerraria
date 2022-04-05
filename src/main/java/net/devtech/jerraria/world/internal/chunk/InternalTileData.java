@@ -11,30 +11,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public class InternalTileData extends UnpositionedTileData.Tickable {
-	static final Type TYPE = new Type();
-	static {
-		REGISTRY.register(Id.createFull("jerraria", "tile_data"), TYPE);
-	}
-
 	TileLayers layer;
 	int absX, absY;
-
-	static class Type extends UnpositionedTileData.Type<InternalTileData> {
-		@Override
-		public InternalTileData read(Chunk chunk, JCElement<?> element) {
-			return chunk.data.get(element.castTo(NativeJCType.INT));
-		}
-
-		@Override
-		public InternalTileData create(TileLayers layers, int localX, int localY, int time) {
-			throw new UnsupportedOperationException("cannot create");
-		}
-
-		@Override
-		public JCElement<?> serialize(InternalTileData data) {
-			return JCElement.create(NativeJCType.INT, Chunk.getIndex(data.getLayer(), data.getLocalX(), data.getLocalY()));
-		}
-	}
 
 	@Override
 	@ApiStatus.Internal
@@ -83,5 +61,27 @@ public class InternalTileData extends UnpositionedTileData.Tickable {
 		TileVariant new_,
 		@Nullable TileData newData) {
 		return oldData == newData;
+	}
+
+	static class Type extends UnpositionedTileData.Type<InternalTileData> {
+		@Override
+		public InternalTileData read(Chunk chunk, JCElement<?> element) {
+			return chunk.data.get(element.castTo(NativeJCType.INT));
+		}
+
+		@Override
+		public InternalTileData create(TileLayers layers, int localX, int localY, int time) {
+			throw new UnsupportedOperationException("cannot create");
+		}
+
+		@Override
+		public JCElement<?> serialize(InternalTileData data) {
+			return JCElement.create(NativeJCType.INT, Chunk.getIndex(data.getLayer(), data.getLocalX(), data.getLocalY()));
+		}
+	}
+
+	static final Type TYPE = new Type();
+	static {
+		REGISTRY.register(Id.createFull("jerraria", "tile_data"), TYPE);
 	}
 }

@@ -95,13 +95,13 @@ public class ChunkGroup {
 		}
 
 		@Override
-		public boolean isLoaded(int x, int y) {
-			return ChunkGroup.this.chunks.containsKey(Chunk.combineInts(x, y));
+		public boolean isChunkLoaded(int cx, int cy) {
+			return ChunkGroup.this.chunks.containsKey(Chunk.combineInts(cx, cy));
 		}
 
 		@Override
-		public boolean canAccessImmediately(int x, int y) {
-			return this.isLoaded(x, y);
+		public boolean isChunkAccessible(int cx, int cy) {
+			return this.isChunkLoaded(cx, cy);
 		}
 
 		@Override

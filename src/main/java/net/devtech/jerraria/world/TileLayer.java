@@ -24,6 +24,9 @@ public interface TileLayer {
 	@Nullable
 	TileData getBlockData(int x, int y);
 
+	/**
+	 * @return the newly created TileData for the given variant
+	 */
 	@Nullable
 	default TileData putBlock(TileVariant variant, int x, int y) {
 		return this.putBlock(variant, x, y, 0);
@@ -31,6 +34,8 @@ public interface TileLayer {
 
 	/**
 	 * puts the block at the given location, creates stack tile data for that location if the TileVariant has data
+	 *
+	 * @return the newly created TileData for the given variant
 	 */
 	@Nullable
 	TileData putBlock(TileVariant variant, int x, int y, int flags);

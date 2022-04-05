@@ -22,8 +22,6 @@ import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 public class ClientMain {
 	public static OverlayDirectory clientResources;
@@ -41,6 +39,7 @@ public class ClientMain {
 		List<Closeable> closeables = new ArrayList<>();
 		List<Throwable> exceptions = new ArrayList<>();
 		Throwable firstFailure = null;
+		exit:
 		try {
 			// setup game
 			addResourcePack(args.resources, resourcePacks, closeables);
@@ -54,11 +53,14 @@ public class ClientMain {
 			}
 
 			resourcePacks.add(client);
-			ClientMain.clientResources = OverlayDirectory.overlay("client", resourcePacks);
+			ClientMain.clientResources = OverlayDirectory.overlay("client_resources", resourcePacks);
 
 			// launch game
-			ClientInit.init(clientResources);
+			if(ClientInit.init(clientResources)) {
+				break exit;
+			}
 
+			// test code
 			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
 			text.flush();
 			text.texture.atlas(ClientInit.mainAtlas);
@@ -71,6 +73,7 @@ public class ClientMain {
 			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
 			RenderThread.addRenderStage(() -> text.render(Primitive.TRIANGLE), 10);
+			// test code
 
 			RenderThread.startRender();
 

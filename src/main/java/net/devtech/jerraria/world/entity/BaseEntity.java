@@ -41,7 +41,6 @@ public abstract class BaseEntity implements Positioned {
 
 	protected final void updatePosition(World world, double x, double y) {
 		boolean inWorld = this.inWorld();
-
 		this.world = world;
 		this.x = x;
 		this.y = y;

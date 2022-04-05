@@ -73,6 +73,7 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 		// autosaving and shutdown should run here, after immediate tasks
 	}
 
+	@Override
 	public boolean doesMaintainOrder() {
 		return this.maintainOrder;
 	}

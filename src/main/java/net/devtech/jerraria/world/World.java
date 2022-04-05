@@ -4,8 +4,11 @@ package net.devtech.jerraria.world;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import org.jetbrains.annotations.ApiStatus;
+
 public interface World {
 	int LOG2_CHUNK_SIZE = 8;
+	int LOG2_CHUNK_QUADRANT_SIZE = LOG2_CHUNK_SIZE - 1;
 	int CHUNK_SIZE = 1 << LOG2_CHUNK_SIZE;
 	int CHUNK_MASK = CHUNK_SIZE - 1;
 
@@ -37,22 +40,40 @@ public interface World {
 	EntityLayer entityLayer();
 
 	/**
-	 * Whether the world has a chunk for the given block position
+	 * @see #isChunkLoaded(int, int)
 	 */
-	boolean isLoaded(int x, int y);
+	default boolean isBlockLoaded(int bx, int by) {
+		return this.isChunkLoaded(bx >> World.LOG2_CHUNK_SIZE, by >> World.LOG2_CHUNK_SIZE);
+	}
+
+	/**
+	 * @see #isChunkAccessible(int, int)
+	 */
+	default boolean isBlockAccessible(int bx, int by) {
+		return this.isChunkAccessible(bx >> World.LOG2_CHUNK_SIZE, by >> World.LOG2_CHUNK_SIZE);
+	}
+
+	/**
+	 * Whether the world has a chunk for the given chunk position already.
+	 *
+	 * This returns false if the chunk is ungenerated/unloaded or not present (client)
+	 */
+	@ApiStatus.Internal
+	boolean isChunkLoaded(int cx, int cy);
 
 	/**
 	 * Whether the world has a chunk for the given block position, or can load one for the given position on demand
 	 */
-	boolean canAccessImmediately(int x, int y);
+	@ApiStatus.Internal
+	boolean isChunkAccessible(int cx, int cy);
 
 	/**
 	 * Executes the given action on the given chunk's group/thread.
 	 *  If the current world contains the given chunk (eg. if the World represents stack ChunkGroup)
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick
 	 */
-	default CompletableFuture<World> executeAt(int x, int y) {
-		return this.linkAndExecute(access -> access.link(x, y));
+	default CompletableFuture<World> executeAt(int bx, int by) {
+		return this.linkAndExecute(access -> access.link(bx, by));
 	}
 
 	/**
@@ -61,10 +82,10 @@ public interface World {
 	 *  If the current world contains the given chunk (eg. if the World represents stack ChunkGroup)
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick
 	 */
-	default CompletableFuture<World> linkAndExecute(int fromX, int fromY, int x, int y) {
+	default CompletableFuture<World> linkAndExecute(int fromX, int fromY, int bx, int by) {
 		return this.linkAndExecute(access -> {
 			access.link(fromX, fromY);
-			access.link(x, y);
+			access.link(bx, by);
 		});
 	}
 

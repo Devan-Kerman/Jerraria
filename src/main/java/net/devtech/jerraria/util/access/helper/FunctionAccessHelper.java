@@ -29,7 +29,7 @@ public class FunctionAccessHelper<T, F> extends AbstractAccessHelper<T, F> {
 	}
 
 	/**
-	 * if {@link T} instance of {@link F}, returns {@code (F) t}.
+	 * if {@link T} vertexData of {@link F}, returns {@code (F) t}.
 	 *
 	 * @param functionType the exact type of the function, used to filter. This is stack type token to allow the helper to differentiate between {@link
 	 *        Consumer<Integer>} and {@link Consumer<String>} for example.

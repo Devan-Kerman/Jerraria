@@ -12,12 +12,12 @@ import net.devtech.jerraria.client.render.api.VFBuilder;
 import net.devtech.jerraria.client.render.api.types.Vec2;
 import net.devtech.jerraria.client.render.api.types.Vec3;
 
-public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>> {
+public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>> { // vertex attributes
 	public static final ColoredTextureShader INSTANCE = createShader(Id.create("jerraria", "colored_texture"), ColoredTextureShader::new, ColoredTextureShader::new);
-	public final Tex<?> texture = this.uni(Tex.tex2d("texture_"));
+	public final Tex<?> texture = this.uni(Tex.tex2d("texture_")); // uniforms
 
 	public ColoredTextureShader(Id id, VFBuilder<End> builder, Object function) {
-		super(id, builder.add(Color.rgb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function);
+		super(id, builder.add(Color.rgb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex attributes
 	}
 
 	public ColoredTextureShader(ColoredTextureShader shader, SCopy copy) {

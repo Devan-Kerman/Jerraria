@@ -22,31 +22,32 @@ import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.BaseEntity;
 import net.devtech.jerraria.world.entity.EntityInternal;
+import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {
-	final TickingWorld world;
-	final int chunkX, chunkY;
+	protected final AbstractWorld world;
+	protected final int chunkX, chunkY;
 	/**
 	 * A flattened 3 dimensional array of each tile layer
 	 */
-	final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
-	final Int2ObjectMap<TileData> data;
-	final List<UnpositionedTileData> actions;
-	final Object2IntMap<Chunk> links;
-	final List<Runnable> immediateTasks = new ArrayList<>();
-	final Set<BaseEntity> entities;
-	final Iterable<BaseEntity> filteredEntitiesView;
+	protected final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
+	protected final Int2ObjectMap<TileData> data;
+	protected final List<UnpositionedTileData> actions;
+	protected final Object2IntMap<Chunk> links;
+	protected final List<Runnable> immediateTasks = new ArrayList<>();
+	protected final Set<BaseEntity> entities;
+	protected final Iterable<BaseEntity> filteredEntitiesView;
 
-	List<IntLongPair> unresolved;
+	protected List<IntLongPair> unresolved;
 
-	int ticketCount;
-	ChunkGroup group;
+	protected int ticketCount;
+	protected ChunkGroup group;
 
-	public Chunk(TickingWorld world, int chunkX, int chunkY) {
+	public Chunk(AbstractWorld world, int chunkX, int chunkY) {
 		Arrays.fill(this.variants, Tiles.AIR.getDefaultVariant());
 		this.data = new Int2ObjectOpenHashMap<>();
 		this.actions = new ArrayList<>();
@@ -59,7 +60,7 @@ public class Chunk implements Executor {
 		this.filteredEntitiesView = Iterables.filter(this.entities, BaseEntity::inWorld);
 	}
 
-	public Chunk(TickingWorld world, int chunkX, int chunkY, JCTagView tag) {
+	public Chunk(AbstractWorld world, int chunkX, int chunkY, JCTagView tag) {
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
@@ -125,7 +126,7 @@ public class Chunk implements Executor {
 		if(this.group != null) {
 			this.group.unticket();
 		} else if(this.ticketCount == 0) {
-			this.world.unloadIndividualChunk(this);
+			((TickingWorld)this.world).unloadIndividualChunk(this);
 		}
 	}
 
@@ -135,7 +136,7 @@ public class Chunk implements Executor {
 		if(chunk == this) return;
 		chunk.links.computeIntIfPresent(this, (c, i) -> i - 1);
 		if(this.links.computeIntIfPresent(chunk, (c, i) -> i - 1) <= 0) {
-			this.world.requiresRelinking(this);
+			((TickingWorld)this.world).requiresRelinking(this);
 			this.group = null;
 		}
 	}
@@ -144,7 +145,7 @@ public class Chunk implements Executor {
 		if(chunk == this) return;
 		chunk.links.mergeInt(this, 1, (c, i) -> i + 1);
 		if(this.links.mergeInt(chunk, 1, (c, i) -> i + 1) == 1) {
-			this.world.requiresRelinking(this);
+			((TickingWorld)this.world).requiresRelinking(this);
 		}
 	}
 
@@ -223,6 +224,8 @@ public class Chunk implements Executor {
 		return this.variants[getIndex(layer, x, y)];
 	}
 
+	// todo get & set
+	// set & get (current + success/failure context)
 	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
 		int index = getIndex(layer, x, y);
 		TileVariant old = this.variants[index];
@@ -286,7 +289,7 @@ public class Chunk implements Executor {
 
 	public void attachToGroup() {
 		if(this.group == null) {
-			this.world.requiresRelinking(this);
+			((TickingWorld)this.world).requiresRelinking(this);
 		}
 	}
 

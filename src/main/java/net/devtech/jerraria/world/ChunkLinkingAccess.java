@@ -9,7 +9,7 @@ public interface ChunkLinkingAccess {
 
 	default void linkRange(int fromBlockX, int fromBlockY, int toBlockX, int toBlockY) {
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
-			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy < (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
+			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy <= (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
 				this.linkChunk(cx, cy);
 			}
 		}

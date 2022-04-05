@@ -36,7 +36,7 @@ class ClientInit {
 	static Atlas mainAtlas;
 	static int[] dims = {800, 600};
 
-	static void init(VirtualFile.Directory directory) {
+	static boolean init(VirtualFile.Directory directory) {
 		// handled by static block
 		titleTextCollection = readSplashText(directory, "boot/title.txt");
 		GLFW.glfwInit();
@@ -104,7 +104,8 @@ class ClientInit {
 		CompletableFuture<?> gameInitialization = CompletableFuture.allOf(mainAtlas);
 
 		// loading screen
-		while(!(GLFW.glfwWindowShouldClose(ClientInit.glMainWindow) || gameInitialization.isDone())) {
+		boolean exit;
+		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			int[] dims = ClientInit.dims;
 
@@ -124,12 +125,13 @@ class ClientInit {
 			}
 		}
 
-		if(GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
+		if(exit) {
 			// maybe window should close and start up again later
 			mainAtlas.thenAccept(a -> ClientInit.mainAtlas = a);
 		} else {
 			ClientInit.mainAtlas = mainAtlas.join();
 		}
+		return exit;
 	}
 
 	@NotNull

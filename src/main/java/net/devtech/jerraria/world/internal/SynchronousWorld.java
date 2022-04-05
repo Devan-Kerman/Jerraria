@@ -54,12 +54,12 @@ public class SynchronousWorld extends TickingWorld {
 	}
 
 	@Override
-	public boolean isLoaded(int x, int y) {
-		return this.loadedChunkCache.containsKey(Chunk.combineInts(x, y));
+	public boolean isChunkLoaded(int cx, int cy) {
+		return this.loadedChunkCache.containsKey(Chunk.combineInts(cx, cy));
 	}
 
 	@Override
-	public boolean canAccessImmediately(int x, int y) {
+	public boolean isChunkAccessible(int cx, int cy) {
 		return true;
 	}
 

@@ -29,4 +29,7 @@ public abstract class AbstractWorld implements World {
 		return this.entityLayer;
 	}
 
+	public boolean doesMaintainOrder() {
+		return false;
+	}
 }
