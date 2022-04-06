@@ -1,4 +1,4 @@
-package net.devtech.jerraria.world.internal.client;
+package net.devtech.jerraria.world.tile.render;
 
 public enum AutoBlockLayerInvalidation {
 	/**

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.tile.render.TileRenderer;
 
 public final class TileVariant implements VariantConvertable {
 	final Tile owner;
@@ -93,5 +94,9 @@ public final class TileVariant implements VariantConvertable {
 		}
 		builder.append(']');
 		return builder.toString();
+	}
+
+	public TileRenderer getRenderer() {
+		return this.owner.getRenderer(this);
 	}
 }

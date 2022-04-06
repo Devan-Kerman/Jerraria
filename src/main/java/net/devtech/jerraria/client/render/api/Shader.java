@@ -16,7 +16,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	final List<GlValue.Type<?>> uniforms;
 	final GlData uniformData;
 	final VFBuilderImpl<T> builder;
-	final ShaderCopier<Shader<T>> copyFunction;
+	final ShaderCopier<Shader<?>> copyFunction;
 
 	boolean finalized;
 	int vertices;
@@ -40,7 +40,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		return shader;
 	}
 
-	public static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T copy(T shader, SCopy method) {
+	public static <T extends Shader<?>> T copy(T shader, SCopy method) {
 		//noinspection unchecked
 		return (T) shader.copyFunction.copy(shader, method);
 	}
@@ -48,7 +48,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	public Shader(Id id, VFBuilder<T> builder, Object context) {
 		this.id = id;
 		this.builder = (VFBuilderImpl<T>) builder;
-		this.copyFunction = (ShaderCopier<Shader<T>>) context;
+		this.copyFunction = (ShaderCopier<Shader<?>>) context;
 		this.uniformData = new LazyUniformData();
 		this.uniforms = new ArrayList<>();
 		this.isCopy = false;

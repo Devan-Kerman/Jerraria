@@ -1,8 +1,10 @@
 package net.devtech.jerraria.registry;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
-public abstract class Id {
+public abstract class Id implements Comparable<Id> {
 	public final long packedNamespace;
 	private int hash;
 
@@ -92,6 +94,26 @@ public abstract class Id {
 		public int hash0() {
 			return (int) (this.path ^ (this.path >>> 32));
 		}
+
+		@Override
+		public int compareTo(@NotNull Id o) {
+			// todo proper compare to, this is not alphabetical
+			if (o instanceof Full f) {
+				long ln = o.packedNamespace - this.packedNamespace;
+				if (ln < 0) {
+					return -1;
+				} else if (ln > 0) {
+					return 1;
+				}
+				long l = f.path - this.path;
+				if (l == 0) {
+					return 0;
+				} else if (l > 0) {
+					return 1;
+				}
+			}
+			return -1;
+		}
 	}
 
 	public static final class Partial extends Id {
@@ -118,12 +140,24 @@ public abstract class Id {
 				return true;
 			}
 			return o instanceof Partial partial && this.packed.equals(partial.packed);
-
 		}
 
 		@Override
 		public int hash0() {
 			return this.packed.hashCode();
+		}
+
+		@Override
+		public int compareTo(@NotNull Id o) {
+			if(o instanceof Partial p) {
+				long ln = p.packedNamespace - this.packedNamespace;
+				if(ln < 0) {
+					return -1;
+				} else if(ln == 0) {
+					return p.packed.compareTo(this.packed);
+				}
+			}
+			return 1;
 		}
 	}
 

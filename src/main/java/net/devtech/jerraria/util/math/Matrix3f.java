@@ -4,7 +4,13 @@ public class Matrix3f implements AutoCloseable {
 	private float a11, a12, a13, a21, a22, a23, a31, a32, a33;
 
 	public Matrix3f() {
-		a33 = a22 = a11 = 1;
+		this.a33 = this.a22 = this.a11 = 1;
+	}
+
+	public Matrix3f identity() {
+		this.a12 = this.a13 = this.a21 = this.a23 = this.a31 = this.a32 = 0;
+		this.a33 = this.a22 = this.a11 = 1;
+		return this;
 	}
 
 	public float mulX(float x, float y, float z) {

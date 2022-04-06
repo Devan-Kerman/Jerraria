@@ -26,6 +26,7 @@ import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
 import net.devtech.jerraria.world.tile.func.TileProperty;
+import net.devtech.jerraria.world.tile.render.TileRenderer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Long Live the Tile
  */
-public class Tile implements IdentifiedObject {
+public abstract class Tile implements IdentifiedObject {
 	public static final Access<TileProperty<Boolean>> HAS_BLOCK_ENTITY = new AccessImpl<>(ArrayFunc.builder()
 		.retIfNN(FuncFinder.onlyAbstract())
 		.buildInfer());
@@ -59,6 +60,8 @@ public class Tile implements IdentifiedObject {
 		var cache = this.initializeCache("getDefaultState");
 		return cache[this.defaultIndex];
 	}
+
+	public abstract TileRenderer getRenderer(TileVariant variant);
 
 	/**
 	 * @see TileLayer#scheduleTick(int, int, int)
