@@ -1,8 +1,6 @@
 package net.devtech.jerraria.util.math;
 
 public class JMath {
-	public static final int COS_PRECISION = 2048;
-	public static final float[] cosLookup = new float[COS_PRECISION];
 	public static final float PI_2 = (float) (Math.PI / 2);
 	public static final float PI2 = (float) (Math.PI * 2);
 	static final byte[] LogTable256 = new byte[256];
@@ -49,17 +47,15 @@ public class JMath {
 		}
 		LogTable256[0] = -1; // if you want log(0) to return -1
 
-		for(int i = 0; i < COS_PRECISION; i++) {
-			double input = (i * PI2 / COS_PRECISION);
-			cosLookup[i] = (float) Math.cos(input);
-		}
 	}
 
+	// lookup table is actually slower
+	
 	public static float cos(float theta) {
-		return cosLookup[(int) (COS_PRECISION * (Math.abs(theta) % PI2 / PI2))];
+		return (float) Math.cos(theta);
 	}
 
 	public static float sin(float theta) {
-		return cos(theta - PI_2);
+		return (float) Math.sin(theta);
 	}
 }
