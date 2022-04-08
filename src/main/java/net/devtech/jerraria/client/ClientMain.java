@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
-import net.devtech.jerraria.client.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.client.render.api.Primitive;
-import net.devtech.jerraria.client.render.textures.Texture;
+import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -24,6 +24,10 @@ import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
 
 public class ClientMain {
+	static {
+		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
+	}
+
 	public static OverlayDirectory clientResources;
 	public static void main(String[] argv) {
 		ClientArgs args = new ClientArgs();
@@ -72,6 +76,7 @@ public class ClientMain {
 			text.vert().vec3f(1, 1, 1).uv(texture,1, 0).rgb(0xFFFFFF);
 			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
 			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
+
 			RenderThread.addRenderStage(() -> text.render(Primitive.TRIANGLE), 10);
 			// test code
 

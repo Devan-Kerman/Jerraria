@@ -46,7 +46,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 		sorted.sort(Comparator.comparing(t -> t.getKey().value()));
 		for (var entry : sorted) {
 			var value = entry.getValue();
-			data.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(), value.copied(), value.configurator()));
+			data.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(), value.copied(), value.configurator(), value.primitive()));
 		}
 
 		// todo translucency sorting, pain

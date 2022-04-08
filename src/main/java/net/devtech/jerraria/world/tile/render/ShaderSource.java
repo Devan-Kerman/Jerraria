@@ -1,42 +1,31 @@
 package net.devtech.jerraria.world.tile.render;
 
-import net.devtech.jerraria.client.render.api.SCopy;
-import net.devtech.jerraria.client.render.api.Shader;
-import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.util.math.Matrix3f;
-import org.jetbrains.annotations.ApiStatus;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.math.Matrix3f;
+import org.jetbrains.annotations.ApiStatus;
+
 @SuppressWarnings("unchecked")
 public class ShaderSource {
-	public record ShaderKey(Shader<?> source, Id value) {}
-	public record ShaderValue<T extends Shader<?>>(T copied, ShaderConfigurator<T> configurator, AutoBlockLayerInvalidation invalidation) {}
-	final Map<ShaderKey, ShaderValue<?>> shaderMap = new HashMap<>();
+	final Map<Key, Value<?>> shaderMap = new HashMap<>();
 
 	public ShaderSource() {
 	}
 
-	public <T extends Shader<?> & ShaderConfigurator<? super T>> T computeIfAbsent(Id id, T rootShader, AutoBlockLayerInvalidation invalidation) {
-		return this.computeIfAbsent(id, rootShader, rootShader, invalidation);
-	}
-
-	public <T extends Shader<?> & ShaderConfigurator<? super T>> T computeIfAbsent(Id id, T rootShader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		return this.computeIfAbsent(id, rootShader, rootShader, copy, invalidation);
-	}
-
-	public <T extends Shader<?>> T computeIfAbsent(Id id, ShaderConfigurator<? super T> config, T rootShader, AutoBlockLayerInvalidation invalidation) {
-		return this.computeIfAbsent(id, config, rootShader, SCopy.PRESERVE_NEITHER, invalidation);
-	}
-
-	public <T extends Shader<?>> T computeIfAbsent(Id id, ShaderConfigurator<? super T> config, T rootShader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		return (T) this.shaderMap.computeIfAbsent(new ShaderKey(rootShader, id), key -> new ShaderValue<>(Shader.copy(rootShader, copy), config, invalidation)).copied;
+	public <T extends Shader<?>> T computeIfAbsent(ShaderKey<T> key) {
+		return (T) this.shaderMap.computeIfAbsent(
+			new Key(key.shader(), key.id()),
+			k -> new Value<>(Shader.copy(key.shader(), key.copy()), key.config(), key.invalidation(), key.primitive())
+		).copied;
 	}
 
 	@ApiStatus.Internal
-	public Set<Map.Entry<ShaderKey, ShaderValue<?>>> keySet() {
+	public Set<Map.Entry<Key, Value<?>>> keySet() {
 		return this.shaderMap.entrySet();
 	}
 
@@ -46,4 +35,13 @@ public class ShaderSource {
 		 */
 		void configureUniforms(Matrix3f chunkRenderMatrix, T shader);
 	}
+
+	@ApiStatus.Internal
+	public record Key(Shader<?> source, Id value) {}
+
+	@ApiStatus.Internal
+	public record Value<T extends Shader<?>>(T copied,
+	                                         ShaderConfigurator<T> configurator,
+	                                         AutoBlockLayerInvalidation invalidation,
+	                                         Primitive primitive) {}
 }

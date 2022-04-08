@@ -2,10 +2,16 @@ package net.devtech.jerraria.world.internal.client;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.google.common.collect.Iterables;
-import net.devtech.jerraria.client.render.api.Shader;
+import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.jerracode.JCTagView;
+import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.BaseEntity;
@@ -24,7 +30,10 @@ import org.jetbrains.annotations.Nullable;
  * shader layer refers to a specific gl shader with specific uniforms (and not a TileLayer)
  */
 public class ClientChunk extends Chunk {
+	static final Executor EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(), 4));
+
 	final @Nullable BakedClientChunkQuadrant[] quadrants = new BakedClientChunkQuadrant[4];
+	final @Nullable Future<?>[] futures = new Future[4];
 
 	public ClientChunk(AbstractWorld world, int chunkX, int chunkY) {
 		super(world, chunkX, chunkY);
@@ -47,12 +56,12 @@ public class ClientChunk extends Chunk {
 	}
 
 	void scheduleQuadrantReRender(int quadrantX, int quadrantY, AutoBlockLayerInvalidation reason) {
-		BakedClientChunkQuadrant quadrant = this.quadrants[quadrantX * 2 + quadrantY];
+		int quadrantIndex = quadrantX * 2 + quadrantY;
+		BakedClientChunkQuadrant quadrant = this.quadrants[quadrantIndex];
 		int absQuadX = quadrantX + this.chunkX * 2, absQuadY = quadrantY + this.chunkY * 2;
 		if (quadrant == null || quadrant.minInvalidation.ordinal() < reason.ordinal()) {
 			ClientChunk[] cache = new ClientChunk[4];
 			int cacheX = (absQuadX - 1) >> 1, cacheY = (absQuadY - 1) >> 1;
-
 			if (reason == AutoBlockLayerInvalidation.ON_BLOCK_UPDATE) {
 				for (int cqx = -1; cqx <= 1; cqx++) {
 					for (int cqy = -1; cqy <= 1; cqy++) {
@@ -87,23 +96,28 @@ public class ClientChunk extends Chunk {
 				cache[i] = new ClientChunk(cache[i]);
 			}
 
-			LocalClientWorldSnapshot snapshot = new LocalClientWorldSnapshot(
-				this.world.getServer(),
-				this.world.sessionId(),
-				cacheX,
-				cacheY,
-				cache
-			);
+			Future<?> future = this.futures[quadrantIndex];
+			if(future != null) {
+				future.cancel(true);
+			}
+			this.futures[quadrantIndex] = CompletableFuture.runAsync(() -> {
+				LocalClientWorldSnapshot snapshot = new LocalClientWorldSnapshot(
+					this.world.getServer(),
+					this.world.sessionId(),
+					cacheX,
+					cacheY,
+					cache
+				);
 
-			var baked = ClientChunkBakedTileQuadrantRenderer.bake(
-				snapshot,
-				absQuadX,
-				absQuadY
-			);
+				var baked = ClientChunkBakedTileQuadrantRenderer.bake(
+					snapshot,
+					absQuadX,
+					absQuadY
+				);
 
-			this.quadrants[quadrantX * 2 + quadrantY] = null;
-
-			// todo render
+				this.quadrants[quadrantIndex] = baked;
+				this.futures[quadrantIndex] = null;
+			}, EXECUTOR);
 		}
 	}
 
@@ -123,8 +137,28 @@ public class ClientChunk extends Chunk {
 		return data1;
 	}
 
+	@SuppressWarnings({
+		"unchecked",
+		"rawtypes"
+	})
+	public void render(Matrix3f chunkMatrix) {
+		@Nullable BakedClientChunkQuadrant[] chunkQuadrants = this.quadrants;
+		for(int i = 0, length = chunkQuadrants.length; i < length; i++) {
+			BakedClientChunkQuadrant quadrant = chunkQuadrants[i];
+			if(quadrant == null) {
+				continue;
+			}
+			int x = i / 2, y = i % 2;
+			Matrix3f copy = chunkMatrix.copy().offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, y << World.LOG2_CHUNK_QUADRANT_SIZE);
+			for(BakedClientChunkQuadrantData layer : quadrant.opaqueLayers) {
+				layer.configurator.configureUniforms(copy, layer.vertexData);
+				layer.vertexData.render(Primitive.TRIANGLE);
+			}
+		}
+	}
+
 	record BakedClientChunkQuadrantData<T extends Shader<?>>(AutoBlockLayerInvalidation invalidation, T vertexData,
-															 ShaderSource.ShaderConfigurator<T> configurator) {
+															 ShaderSource.ShaderConfigurator<T> configurator, Primitive primitive) {
 	}
 
 	@SuppressWarnings("rawtypes")

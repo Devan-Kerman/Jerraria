@@ -1,8 +1,8 @@
 package net.devtech.jerraria.jerraria.entity;
 
 import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.client.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.client.render.textures.Texture;
+import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.util.math.SimpleShape;
