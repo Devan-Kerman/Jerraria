@@ -20,10 +20,14 @@ public class ClientChunkBakedTileQuadrantRenderer {
 			endX = (absQuadrantX + 1) << World.LOG2_CHUNK_QUADRANT_SIZE,
 			endY = (absQuadrantY + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
 
+		Thread current = Thread.currentThread();
 		Matrix3f mat = new Matrix3f();
 		for (int x = startX; x < endX; x++) {
 			for (int y = startY; y < endY; y++) {
 				for (TileLayers layer : TileLayers.LAYERS) {
+					if(current.isInterrupted()) {
+						return null;
+					}
 					TileLayer tileLayer = localWorld.layerFor(layer);
 					TileVariant block = tileLayer.getBlock(x, y);
 					TileRenderer renderer = block.getRenderer();
@@ -45,6 +49,9 @@ public class ClientChunkBakedTileQuadrantRenderer {
 		var sorted = new ArrayList<>(source.keySet());
 		sorted.sort(Comparator.comparing(t -> t.getKey().value()));
 		for (var entry : sorted) {
+			if(current.isInterrupted()) {
+				return null;
+			}
 			var value = entry.getValue();
 			data.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(), value.copied(), value.configurator(), value.primitive()));
 		}

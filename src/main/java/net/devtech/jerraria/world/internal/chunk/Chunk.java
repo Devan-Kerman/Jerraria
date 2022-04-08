@@ -29,17 +29,17 @@ import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {
-	protected final AbstractWorld world;
-	protected final int chunkX, chunkY;
+	public final AbstractWorld world;
+	public final int chunkX, chunkY;
 	/**
 	 * A flattened 3 dimensional array of each tile layer
 	 */
-	protected final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
-	protected final Int2ObjectMap<TileData> data;
+	public final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
+	public final Int2ObjectMap<TileData> data;
 	protected final List<UnpositionedTileData> actions;
 	protected final Object2IntMap<Chunk> links;
 	protected final List<Runnable> immediateTasks = new ArrayList<>();
-	protected final Set<BaseEntity> entities;
+	public final Set<BaseEntity> entities;
 	protected final Iterable<BaseEntity> filteredEntitiesView;
 
 	protected List<IntLongPair> unresolved;

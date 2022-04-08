@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
+import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.textures.Texture;
@@ -22,6 +23,12 @@ import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.world.TileLayers;
+import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.internal.client.ClientChunk;
+import net.devtech.jerraria.world.internal.client.ClientWorld;
+import net.devtech.jerraria.world.internal.client.ClientWorldServer;
 
 public class ClientMain {
 	static {
@@ -65,19 +72,41 @@ public class ClientMain {
 			}
 
 			// test code
-			ColoredTextureShader text = ColoredTextureShader.INSTANCE;
-			text.flush();
-			text.texture.atlas(ClientInit.mainAtlas);
-			Texture texture = ClientInit.mainAtlas.asTexture();
-			text.vert().vec3f(-1, -1, 1).uv(texture,0, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
+			World[] worlds = {null};
+			ClientWorldServer server = new ClientWorldServer(worlds);
+			ClientWorld world = new ClientWorld(server, 0);
+			worlds[0] = world;
 
-			text.vert().vec3f(1, 1, 1).uv(texture,1, 0).rgb(0xFFFFFF);
-			text.vert().vec3f(1, -1, 1).uv(texture,1, 1).rgb(0xFFFFFF);
-			text.vert().vec3f(-1, 1, 1).uv(texture,0, 0).rgb(0xFFFFFF);
+			ClientChunk value = new ClientChunk(world, 0, 0);
+			world.loadedChunkCache.put(0, value);
+			value.set(TileLayers.BLOCK, 1, 0, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 0, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 0, Tiles.TEST.getDefaultVariant());
 
-			RenderThread.addRenderStage(() -> text.render(Primitive.TRIANGLE), 10);
+			value.set(TileLayers.BLOCK, 0, 1, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 1, Tiles.TEST.getDefaultVariant());
+
+			value.set(TileLayers.BLOCK, 0, 2, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 2, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 2, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 2, Tiles.TEST.getDefaultVariant());
+
+			value.set(TileLayers.BLOCK, 0, 3, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 3, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 3, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 3, Tiles.TEST.getDefaultVariant());
+
+			value.set(TileLayers.BLOCK, 1, 4, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 4, Tiles.TEST.getDefaultVariant());
+
+
+			RenderThread.addRenderStage(() -> {
+				Matrix3f cartToIndexMat = new Matrix3f();
+				cartToIndexMat.offset(-1, 1);
+				cartToIndexMat.scale(2, -2);
+				cartToIndexMat.scale(ClientInit.dims[1] / (ClientInit.dims[0] * 8F), 1 / 8F);
+				value.render(cartToIndexMat);
+			}, 10);
 			// test code
 
 			RenderThread.startRender();

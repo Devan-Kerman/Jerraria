@@ -18,7 +18,8 @@ public interface TileRenderer {
 	 *                      and [1, 1] at the bottom right.
 	 *
 	 * @param localWorld A snapshot of the area surrounding the block,
-	 *                      it is safe to assume you will have access to chunk data at-least 127 blocks in each direction,
+	 *                      generally you will have access to chunk data at-least 127 blocks in each direction,
+	 *                      though this does not hold true for chunks on the edge of the client's render distance
 	 *                      uses absolute tile coordinates.
 	 * @param variant the current block
 	 * @param clientTileData the clientside view of the tile data

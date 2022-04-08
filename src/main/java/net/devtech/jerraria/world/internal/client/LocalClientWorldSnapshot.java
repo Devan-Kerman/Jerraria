@@ -46,7 +46,7 @@ public class LocalClientWorldSnapshot extends AbstractClientWorld {
 
 	@Override
 	public Chunk getChunk(int x, int y) {
-		if(this.cacheX >= x && this.cacheY >= y) {
+		if(x >= this.cacheX && y >= this.cacheY) {
 			int index = (x - this.cacheX) * 2 + (y - this.cacheY);
 			if(index < this.cache.length) {
 				return this.cache[index];
