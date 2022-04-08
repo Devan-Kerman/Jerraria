@@ -10,8 +10,6 @@ public interface Tiles {
 	AirTile AIR = new AirTile();
 	Registry<Tile> REGISTRY = new Registry.Fast<>(AIR);
 
-	Tile TEST = register(new Tile(), "test");
-
 	Void __CLINIT__ = Validate.create(() -> {
 		register(AIR, "air");
 		return null;

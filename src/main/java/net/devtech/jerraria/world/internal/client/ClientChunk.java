@@ -48,8 +48,8 @@ public class ClientChunk extends Chunk {
 
 	void scheduleQuadrantReRender(int quadrantX, int quadrantY, AutoBlockLayerInvalidation reason) {
 		BakedClientChunkQuadrant quadrant = this.quadrants[quadrantX * 2 + quadrantY];
+		int absQuadX = quadrantX + this.chunkX * 2, absQuadY = quadrantY + this.chunkY * 2;
 		if (quadrant == null || quadrant.minInvalidation.ordinal() < reason.ordinal()) {
-			int absQuadX = quadrantX + this.chunkX * 2, absQuadY = quadrantY + this.chunkY * 2;
 			ClientChunk[] cache = new ClientChunk[4];
 			int cacheX = (absQuadX - 1) >> 1, cacheY = (absQuadY - 1) >> 1;
 
@@ -95,6 +95,13 @@ public class ClientChunk extends Chunk {
 				cache
 			);
 
+			var baked = ClientChunkBakedTileQuadrantRenderer.bake(
+				snapshot,
+				absQuadX,
+				absQuadY
+			);
+
+			this.quadrants[quadrantX * 2 + quadrantY] = null;
 
 			// todo render
 		}
