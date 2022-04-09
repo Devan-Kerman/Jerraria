@@ -7,19 +7,6 @@ plugins {
 group 'net.devtech'
 version '1.0.0-SNAPSHOT'
 
-sourceSets {
-	client {
-		java {
-			compileClasspath += sourceSets.main.output
-			runtimeClasspath += sourceSets.main.output
-		}
-	}
-}
-
-configurations {
-	clientImplementation.extendsFrom(implementation)
-}
-
 repositories {
 	mavenCentral()
 
@@ -83,15 +70,15 @@ task startClient(type: JavaExec) {
 	group = 'run'
 	description = 'Starts a client'
 
-	classpath = sourceSets.client.output + sourceSets.client.runtimeClasspath
-	mainClass.set('net.devtech.jerraria.client.main.ClientMain')
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass.set('net.devtech.jerraria.client.ClientMain')
 }
 
 task startServer(type: JavaExec) {
 	group = 'run'
 	description = 'Starts a dedicated server'
 
-	classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+	classpath = sourceSets.main.runtimeClasspath
 	mainClass.set('net.devtech.jerraria.server.dedicated.ServerMain')
 }
 
