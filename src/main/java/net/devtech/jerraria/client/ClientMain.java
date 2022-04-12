@@ -99,13 +99,13 @@ public class ClientMain {
 			value.set(TileLayers.BLOCK, 1, 4, Tiles.TEST.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 3, 4, Tiles.TEST.getDefaultVariant());
 
-
 			RenderThread.addRenderStage(() -> {
 				Matrix3f cartToIndexMat = new Matrix3f();
 				cartToIndexMat.offset(-1, 1);
 				cartToIndexMat.scale(2, -2);
 				cartToIndexMat.scale(ClientInit.dims[1] / (ClientInit.dims[0] * 8F), 1 / 8F);
 				value.render(cartToIndexMat);
+
 			}, 10);
 			// test code
 
