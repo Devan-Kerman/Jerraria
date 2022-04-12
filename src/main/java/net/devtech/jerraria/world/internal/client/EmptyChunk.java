@@ -2,7 +2,7 @@ package net.devtech.jerraria.world.internal.client;
 
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.world.TileLayers;
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
@@ -21,7 +21,7 @@ public class EmptyChunk extends Chunk {
 	}
 
 	@Override
-	public void addEntity(BaseEntity entity) {
+	public void addEntity(Entity entity) {
 	}
 
 	@Override

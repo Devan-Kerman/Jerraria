@@ -3,6 +3,7 @@ package net.devtech.jerraria.world.tile;
 import static java.util.Objects.requireNonNullElse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -21,9 +22,11 @@ import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
+import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
 import net.devtech.jerraria.world.tile.func.TileProperty;
 import net.devtech.jerraria.world.tile.render.TileRenderer;
@@ -66,7 +69,12 @@ public abstract class Tile implements IdentifiedObject {
 	/**
 	 * @see TileLayer#scheduleTick(int, int, int)
 	 */
-	public void onScheduledTick(World world, TileVariant variant, @Nullable TileData data, TileLayers layers, int x, int y) {
+	public void onScheduledTick(World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
+	}
+
+	public Vec2d handleCollision(Entity entity, World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
+		// todo implement basic collision
+		return null;
 	}
 
 	// properties

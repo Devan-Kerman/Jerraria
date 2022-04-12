@@ -16,7 +16,7 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
@@ -57,7 +57,7 @@ public class ClientChunk extends Chunk {
 		var data = ChunkCodec.deserializeData(client.chunkX, client.chunkY, client.variants, view);
 		this.data.putAll(data);
 		var entityData = ChunkCodec.serializeEntities(client.entities);
-		Set<BaseEntity> entities = ChunkCodec.deserializeEntities(this.getWorld(), entityData);
+		Set<Entity> entities = ChunkCodec.deserializeEntities(this.getWorld(), entityData);
 		this.entities.addAll(entities);
 	}
 

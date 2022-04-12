@@ -7,11 +7,11 @@ import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.util.math.SimpleShape;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.Entity;
+import net.devtech.jerraria.world.entity.BaseEntity;
 import net.devtech.jerraria.world.entity.render.AbstractEntityRenderer;
 import net.devtech.jerraria.world.entity.render.EntityRenderer;
 
-public class PlayerEntity extends Entity {
+public class PlayerEntity extends BaseEntity {
 	public static final SimpleShape PLAYER_SHAPE = new SimpleShape.Rectangle(40, 40);
 	double packetX = Double.POSITIVE_INFINITY, packetY;
 

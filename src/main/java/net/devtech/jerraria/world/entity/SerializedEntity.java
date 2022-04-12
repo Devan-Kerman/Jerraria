@@ -1,10 +1,10 @@
 package net.devtech.jerraria.world.entity;
 
 import it.unimi.dsi.fastutil.Pair;
-import net.devtech.jerraria.util.math.Position;
+import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.jerracode.element.JCElement;
 
-public class SerializedEntity implements Pair<Position, JCElement> {
+public class SerializedEntity implements Pair<Vec2d, JCElement> {
 	public final double x;
 	public final double y;
 	public final JCElement data;
@@ -15,15 +15,15 @@ public class SerializedEntity implements Pair<Position, JCElement> {
 		this.data = data;
 	}
 
-	public SerializedEntity(Position pos, JCElement data) {
+	public SerializedEntity(Vec2d pos, JCElement data) {
 		this.x = pos.x();
 		this.y = pos.y();
 		this.data = data;
 	}
 
 	@Override
-	public Position left() {
-		return new Position(x, y);
+	public Vec2d left() {
+		return new Vec2d(x, y);
 	}
 
 	@Override

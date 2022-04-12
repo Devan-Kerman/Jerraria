@@ -102,7 +102,7 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 		});
 
 		return CompletableFuture.supplyAsync(() -> {
-			ChunkGroup group = ref.chunk.getGroup();
+			ChunkGroup group = ref.chunk.getBlockGroup();
 			return (World) group.local;
 		}, ref.chunk).whenComplete((world, throwable) -> {
 			for(Chunk chunk : chunks) {

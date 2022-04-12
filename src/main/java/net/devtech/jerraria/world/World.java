@@ -73,7 +73,7 @@ public interface World {
 	 *  then the action is executed immediately, otherwise it is executed at the end of the world tick
 	 */
 	default CompletableFuture<World> executeAt(int bx, int by) {
-		return this.linkAndExecute(access -> access.link(bx, by));
+		return this.linkAndExecute(access -> access.pos(bx, by));
 	}
 
 	/**
@@ -84,8 +84,8 @@ public interface World {
 	 */
 	default CompletableFuture<World> linkAndExecute(int fromX, int fromY, int bx, int by) {
 		return this.linkAndExecute(access -> {
-			access.link(fromX, fromY);
-			access.link(bx, by);
+			access.pos(fromX, fromY);
+			access.pos(bx, by);
 		});
 	}
 

@@ -15,12 +15,12 @@ import it.unimi.dsi.fastutil.ints.IntLongPair;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.jerracode.NativeJCType;
+import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.entity.EntityInternal;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.TickingWorld;
@@ -36,16 +36,14 @@ public class Chunk implements Executor {
 	 */
 	public final TileVariant[] variants = new TileVariant[World.CHUNK_SIZE * World.CHUNK_SIZE * TileLayers.COUNT];
 	public final Int2ObjectMap<TileData> data;
+	public final Set<Entity> entities;
 	protected final List<UnpositionedTileData> actions;
-	protected final Object2IntMap<Chunk> links;
 	protected final List<Runnable> immediateTasks = new ArrayList<>();
-	public final Set<BaseEntity> entities;
-	protected final Iterable<BaseEntity> filteredEntitiesView;
-
+	protected final Iterable<Entity> filteredEntitiesView;
+	protected final Object2IntMap<Chunk> links;
 	protected List<IntLongPair> unresolved;
-
 	protected int ticketCount;
-	protected ChunkGroup group;
+	protected ChunkGroup blockGroup;
 
 	public Chunk(AbstractWorld world, int chunkX, int chunkY) {
 		Arrays.fill(this.variants, Tiles.AIR.getDefaultVariant());
@@ -57,31 +55,31 @@ public class Chunk implements Executor {
 		this.chunkY = chunkY;
 		this.entities = new HashSet<>();
 		//noinspection StaticPseudoFunctionalStyleMethod
-		this.filteredEntitiesView = Iterables.filter(this.entities, BaseEntity::inWorld);
+		this.filteredEntitiesView = Iterables.filter(this.entities, Entity::inWorld);
 	}
 
 	public Chunk(AbstractWorld world, int chunkX, int chunkY, JCTagView tag) {
 		this.world = world;
 		this.chunkX = chunkX;
 		this.chunkY = chunkY;
-		ChunkCodec.populateTiles(variants, tag.get("tiles", NativeJCType.POOLED_TAG_LIST));
-		this.data = ChunkCodec.deserializeData(
-			chunkX,
+		ChunkCodec.populateTiles(this.variants, tag.get("tiles", NativeJCType.POOLED_TAG_LIST));
+		this.data = ChunkCodec.deserializeData(chunkX,
 			chunkY,
 			this.variants,
-			tag.get("data", NativeJCType.INT_ANY_LIST));
+			tag.get("data", NativeJCType.INT_ANY_LIST)
+		);
 		this.unresolved = tag.get("links", NativeJCType.INT_LONG_LIST);
-		this.links = new Object2IntOpenHashMap<>(unresolved.size());
+		this.links = new Object2IntOpenHashMap<>(this.unresolved.size());
 		this.actions = ChunkCodec.deserializeTemporaryData(this, tag.get("actions", NativeJCType.ID_ANY_LIST));
 		this.entities = ChunkCodec.deserializeEntities(world, tag.get("entities", NativeJCType.ENTITIES));
 		//noinspection StaticPseudoFunctionalStyleMethod
-		this.filteredEntitiesView = Iterables.filter(this.entities, BaseEntity::inWorld);
-		for(BaseEntity entity : this.entities) {
+		this.filteredEntitiesView = Iterables.filter(this.entities, Entity::inWorld);
+		for(Entity entity : this.entities) {
 			EntityInternal.setHomeChunk(entity, this);
 		}
 	}
 
-	public void addEntity(BaseEntity entity) {
+	public void addEntity(Entity entity) {
 		this.entities.add(entity);
 		EntityInternal.setHomeChunk(entity, this);
 	}
@@ -96,7 +94,8 @@ public class Chunk implements Executor {
 		return tag;
 	}
 
-	public <T extends UnpositionedTileData> T schedule(TemporaryTileData.Type<T> type,
+	public <T extends UnpositionedTileData> T schedule(
+		TemporaryTileData.Type<T> type,
 		TileLayers layer,
 		int x,
 		int y,
@@ -116,36 +115,53 @@ public class Chunk implements Executor {
 
 	public void ticket() {
 		this.ticketCount++;
-		if(this.group != null) {
-			this.group.ticket();
+		if(this.blockGroup != null) {
+			this.blockGroup.ticket();
 		}
 	}
 
 	public void unticket() {
 		this.ticketCount--;
-		if(this.group != null) {
-			this.group.unticket();
+		if(this.blockGroup != null) {
+			this.blockGroup.unticket();
 		} else if(this.ticketCount == 0) {
-			((TickingWorld)this.world).unloadIndividualChunk(this);
+			((TickingWorld) this.world).unloadIndividualChunk(this);
 		}
 	}
 
 	// todo less memory intensive linking system?
 
 	public void removeLink(Chunk chunk) {
-		if(chunk == this) return;
-		chunk.links.computeIntIfPresent(this, (c, i) -> i - 1);
-		if(this.links.computeIntIfPresent(chunk, (c, i) -> i - 1) <= 0) {
-			((TickingWorld)this.world).requiresRelinking(this);
-			this.group = null;
+		if(chunk == this) {
+			return;
 		}
+		synchronized(chunk.links) {
+			chunk.links.computeIntIfPresent(this, (c, i) -> i - 1);
+		}
+		int links;
+		synchronized(this.links) {
+			links = this.links.computeIntIfPresent(chunk, (c, i) -> i - 1);
+		}
+		if(links <= 0) {
+			((TickingWorld) this.world).requiresRelinking(this);
+			this.blockGroup = null;
+		}
+
 	}
 
 	public void addLink(Chunk chunk) {
-		if(chunk == this) return;
-		chunk.links.mergeInt(this, 1, (c, i) -> i + 1);
-		if(this.links.mergeInt(chunk, 1, (c, i) -> i + 1) == 1) {
-			((TickingWorld)this.world).requiresRelinking(this);
+		if(chunk == this) {
+			return;
+		}
+		synchronized(chunk.links) {
+			chunk.links.mergeInt(this, 1, (c, i) -> i + 1);
+		}
+		int links;
+		synchronized(this.links) {
+			links = this.links.mergeInt(chunk, 1, (c, i) -> i + 1);
+		}
+		if(links == 1) {
+			((TickingWorld) this.world).requiresRelinking(this);
 		}
 	}
 
@@ -158,11 +174,11 @@ public class Chunk implements Executor {
 			for(Chunk chunk : this.links.keySet()) {
 				chunk.appendToGroup(group);
 			}
-			if(this.group != null) {
-				this.group.remove(this);
+			if(this.blockGroup != null) {
+				this.blockGroup.remove(this);
 			}
-			this.group = group;
-			for(BaseEntity entity : this.entities) {
+			this.blockGroup = group;
+			for(Entity entity : this.entities) {
 				EntityInternal.setWorld(entity, group.local);
 			}
 		}
@@ -179,17 +195,21 @@ public class Chunk implements Executor {
 			}
 		} while(this.actions.size() > originals);
 
-		for(Iterator<BaseEntity> iterator = this.entities.iterator(); iterator.hasNext(); ) {
-			BaseEntity entity = iterator.next();
-			if(!EntityInternal.isHomeChunk(entity, this)) {
-				iterator.remove();
-			} else {
-				EntityInternal.tick(entity);
-			}
+		for(Entity entity : this.entities) {
+			EntityInternal.tick(entity);
 		}
 
-		for(BaseEntity entity : this.entities) {
-			EntityInternal.tickPos(entity); // allow entities to schedule chunk relocations
+		// todo remove when ticketless
+	}
+
+	public void moveEntities() {
+		Iterator<Entity> entities = this.entities.iterator();
+		while(entities.hasNext()) {
+			Entity entity = entities.next();
+			EntityInternal.tickPos(entity);
+			if(!EntityInternal.isHomeChunk(entity, this)) {
+				entities.remove();
+			}
 		}
 	}
 
@@ -258,7 +278,13 @@ public class Chunk implements Executor {
 		}
 
 		if(replacement != oldData && replacement != null) {
-			if(value.doesTick(this.getWorld(), oldData, layer, ((InternalTileData)replacement).absX, ((InternalTileData)replacement).absY)) {
+			if(value.doesTick(
+				this.getWorld(),
+				oldData,
+				layer,
+				((InternalTileData) replacement).absX,
+				((InternalTileData) replacement).absY
+			)) {
 				this.actions.add(replacement);
 			}
 		}
@@ -267,7 +293,7 @@ public class Chunk implements Executor {
 	}
 
 	public World getWorld() {
-		return this.group == null ? this.world : this.group.local;
+		return this.blockGroup == null ? this.world : this.blockGroup.local;
 	}
 
 	public TileData getData(TileLayers layers, int x, int y) {
@@ -283,14 +309,29 @@ public class Chunk implements Executor {
 		this.immediateTasks.add(command);
 	}
 
-	public ChunkGroup getGroup() {
-		return this.group;
+	public ChunkGroup getBlockGroup() {
+		return this.blockGroup;
 	}
 
 	public void attachToGroup() {
-		if(this.group == null) {
-			((TickingWorld)this.world).requiresRelinking(this);
+		if(this.blockGroup == null) {
+			((TickingWorld) this.world).requiresRelinking(this);
 		}
+	}
+
+	public int getChunkX() {
+		return this.chunkX;
+	}
+
+	public int getChunkY() {
+		return this.chunkY;
+	}
+
+	/**
+	 * @return these entities may not be actually in the chunk, those are updated prior to entity tick
+	 */
+	public Iterable<Entity> getRawEntities() {
+		return this.filteredEntitiesView;
 	}
 
 	static int getIndex(TileLayers layer, int x, int y) {
@@ -307,12 +348,18 @@ public class Chunk implements Executor {
 			if(variant.hasBlockData()) {
 				data = this.getData(action.getLayer(), action.getLocalX(), action.getLocalY());
 			}
-			t.tick(this, this.group.local, variant, data, action.getLayer(),
+			t.tick(this,
+				this.blockGroup.local,
+				variant,
+				data,
+				action.getLayer(),
 				this.chunkX * World.CHUNK_SIZE + action.getLocalX(),
-				this.chunkY * World.CHUNK_SIZE + action.getLocalY());
+				this.chunkY * World.CHUNK_SIZE + action.getLocalY()
+			);
 		}
 
-		boolean shouldEnd = action.getCounter() <= 0 || (action.getCounter() != Integer.MAX_VALUE && action.getAndDecrement() <= 0);
+		boolean shouldEnd =
+			action.getCounter() <= 0 || (action.getCounter() != Integer.MAX_VALUE && action.getAndDecrement() <= 0);
 		if(shouldEnd) {
 			if(variant == null) {
 				variant = this.get(action.getLayer(), action.getLocalX(), action.getLocalY());
@@ -321,29 +368,20 @@ public class Chunk implements Executor {
 				}
 			}
 
-			if(action instanceof TemporaryTileData t)
-			t.onInvalidated(this, this.group.local, variant, data,
-				action.getLayer(),
-				this.chunkX * World.CHUNK_SIZE + action.getLocalX(),
-				this.chunkY * World.CHUNK_SIZE + action.getLocalY());
+			if(action instanceof TemporaryTileData t) {
+				t.onInvalidated(
+					this,
+					this.blockGroup.local,
+					variant,
+					data,
+					action.getLayer(),
+					this.chunkX * World.CHUNK_SIZE + action.getLocalX(),
+					this.chunkY * World.CHUNK_SIZE + action.getLocalY()
+				);
+			}
 			tileActions.remove(index);
 			return false;
 		}
 		return true;
-	}
-
-	public int getChunkX() {
-		return this.chunkX;
-	}
-
-	public int getChunkY() {
-		return this.chunkY;
-	}
-
-	/**
-	 * @return these entities may not be actually in the chunk, those are updated prior to entity tick
-	 */
-	public Iterable<BaseEntity> getRawEntities() {
-		return this.filteredEntitiesView;
 	}
 }

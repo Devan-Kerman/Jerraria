@@ -1,9 +1,9 @@
 package net.devtech.jerraria.world.entity.render;
 
 import net.devtech.jerraria.world.EntitySearchType;
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 
-public abstract class AbstractEntityRenderer<T extends BaseEntity> implements EntityRenderer {
+public abstract class AbstractEntityRenderer<T extends Entity> implements EntityRenderer {
 	protected final T entity;
 
 	public AbstractEntityRenderer(T entity) {

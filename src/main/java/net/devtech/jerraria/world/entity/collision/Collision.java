@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.entity.collision;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.util.math.Polygon;
 
 public class Collision {
@@ -13,12 +13,12 @@ public class Collision {
 		/**
 		 * @return the remaining 'fraction of a tick' to tick the entity's movement
 		 */
-		float collide(BaseEntity entity);
+		float collide(Entity entity);
 	}
 
 	static class Solid implements Behavior {
 		@Override
-		public float collide(BaseEntity entity) {
+		public float collide(Entity entity) {
 
 			return 0;
 		}

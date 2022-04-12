@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.util.math.Position;
+import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.jerracode.bin.BinCodec;
 import net.devtech.jerraria.jerracode.bin.BinDecode;
 import net.devtech.jerraria.jerracode.bin.BinEncode;
@@ -110,8 +110,8 @@ public final class NativeJCType<T> implements JCType<T, T> {
 		IntLongImmutablePair::new);
 	public static final NativeJCType<List<Pair<Id.Full, JCElement>>> ID_ANY_LIST = listType(ID_ANY);
 	public static final NativeJCType<List<IntLongPair>> INT_LONG_LIST = listType(INT_LONG);
-	public static final NativeJCType<Position> POS = new NativeJCType<>((pool, input) -> {
-		return new Position(input.readDouble(), input.readDouble());
+	public static final NativeJCType<Vec2d> POS = new NativeJCType<>((pool, input) -> {
+		return new Vec2d(input.readDouble(), input.readDouble());
 	}, (pool, output, value) -> {
 		output.writeDouble(value.x());
 		output.writeDouble(value.y());

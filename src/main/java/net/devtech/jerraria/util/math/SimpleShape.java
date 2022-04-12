@@ -11,6 +11,8 @@ public interface SimpleShape {
 	 */
 	boolean doesIntersect(double fromX, double fromY, double toX, double toY);
 
+	Rectangle maxBounds();
+
 	record Rectangle(double width, double height) implements SimpleShape {
 		@Override
 		public boolean isEnclosed(double fromX, double fromY, double toX, double toY) {
@@ -22,5 +24,11 @@ public interface SimpleShape {
 			double width = this.width, height = this.height;
 			return fromX <= width && fromY <= height && toX >= width && toY >= height;
 		}
+
+		@Override
+		public Rectangle maxBounds() {
+			return this;
+		}
+
 	}
 }

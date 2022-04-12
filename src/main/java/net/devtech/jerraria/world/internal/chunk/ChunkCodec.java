@@ -26,7 +26,7 @@ import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.entity.EntityInternal;
 import net.devtech.jerraria.world.entity.SerializedEntity;
 import net.devtech.jerraria.world.internal.AbstractWorld;
@@ -95,21 +95,21 @@ public class ChunkCodec {
 		return tiles;
 	}
 
-	public static Set<BaseEntity> deserializeEntities(World world, List<Pair<Id.Full, List<SerializedEntity>>> entities) {
-		Set<BaseEntity> entitySet = new HashSet<>();
+	public static Set<Entity> deserializeEntities(World world, List<Pair<Id.Full, List<SerializedEntity>>> entities) {
+		Set<Entity> entitySet = new HashSet<>();
 		for(var ofTypes : entities) {
 			Id.Full id = ofTypes.first();
 			for(SerializedEntity entity : ofTypes.second()) {
-				BaseEntity deserialized = EntityInternal.deserialize(world, id, entity);
+				Entity deserialized = EntityInternal.deserialize(world, id, entity);
 				entitySet.add(deserialized);
 			}
 		}
 		return entitySet;
 	}
 
-	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Iterable<BaseEntity> entities) {
+	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Iterable<Entity> entities) {
 		ListMultimap<Id.Full, SerializedEntity> map = ArrayListMultimap.create();
-		for(BaseEntity entity : entities) {
+		for(Entity entity : entities) {
 			if(entity.doesSaveInChunk()) {
 				Id.Full id = Entities.REGISTRY.getId(entity.getType());
 				SerializedEntity serialize = EntityInternal.serialize(entity);

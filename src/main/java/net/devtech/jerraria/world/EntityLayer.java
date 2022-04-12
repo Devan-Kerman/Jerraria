@@ -2,20 +2,20 @@ package net.devtech.jerraria.world;
 
 import java.util.stream.Stream;
 
-import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 
 public interface EntityLayer {
 
 	/**
 	 * @return all the entities completely enclosed in the given area
 	 */
-	Stream<BaseEntity> getEntitiesEnclosed(EntitySearchType type, int fromX, int fromY, int toX, int toY);
+	Stream<Entity> getEntitiesEnclosed(EntitySearchType type, int fromX, int fromY, int toX, int toY);
 
 	/**
 	 * @param range how far out to search for entities that intersect, for example a large entity that spans multiple chunks
 	 *  may be stored too far out of range to notice, if this is acceptable, choose a low range value
 	 */
-	default Stream<BaseEntity> getEntitiesIntersect(EntitySearchType type, int fromX, int fromY, int toX, int toY, int range) {
+	default Stream<Entity> getEntitiesIntersect(EntitySearchType type, int fromX, int fromY, int toX, int toY, int range) {
 		return this.getEntitiesEnclosed(type, fromX - range, fromY - range, toX + range, toY + range)
 		           .filter(entity -> entity.doesIntersect(type, fromX, fromY, toX, toY));
 	}

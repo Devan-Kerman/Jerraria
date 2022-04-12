@@ -56,6 +56,10 @@ public class ChunkGroup {
 		for(Chunk value : this.chunks.values()) {
 			value.tick();
 		}
+		for(Chunk value : this.chunks.values()) {
+			value.moveEntities();
+		}
+		// todo unload when ticketless
 	}
 
 	public boolean runTasks() {
@@ -122,7 +126,7 @@ public class ChunkGroup {
 				return CompletableFuture.completedFuture(this);
 			} else {
 				return ChunkGroup.this.backing.linkAndExecute(acc -> {
-					list.forEach(l -> acc.link(Chunk.getA(l), Chunk.getB(l)));
+					list.forEach(l -> acc.pos(Chunk.getA(l), Chunk.getB(l)));
 				});
 			}
 		}
