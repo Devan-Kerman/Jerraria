@@ -25,6 +25,11 @@ Terraria clone in Java
  - [x] resource/data-driving system
  - [x] registry
  - [ ] worldgen
+   - [ ] base worldgen
+   - [ ] biomes
+   - [ ] hell?
+   - [ ] decorations (ores, trees)
+   - [ ] structures
 
 ## Client
  - [x] rendering api
