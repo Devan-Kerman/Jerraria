@@ -7,6 +7,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.world.internal.client.ClientChunk;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -32,6 +33,10 @@ public class RenderThread {
 			}
 			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 		}
+	}
+
+	static void shutdown() {
+		ClientChunk.EXECUTOR.shutdown();
 	}
 
 	public static void queueRenderTask(Runnable task) {

@@ -15,6 +15,7 @@ import java.util.List;
 
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
+import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.textures.Texture;
@@ -26,13 +27,14 @@ import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 import net.devtech.jerraria.world.internal.client.ClientWorldServer;
 
 public class ClientMain {
 	static {
-		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
+		//System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
 	}
 
 	public static OverlayDirectory clientResources;
@@ -98,19 +100,23 @@ public class ClientMain {
 
 			value.set(TileLayers.BLOCK, 1, 4, Tiles.TEST.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 3, 4, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 10, 4, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 11, 4, Tiles.TEST.getDefaultVariant());
+
+			Entity player = new PlayerEntity(null);
 
 			RenderThread.addRenderStage(() -> {
-				Matrix3f cartToIndexMat = new Matrix3f();
-				cartToIndexMat.offset(-1, 1);
-				cartToIndexMat.scale(2, -2);
-				cartToIndexMat.scale(ClientInit.dims[1] / (ClientInit.dims[0] * 8F), 1 / 8F);
-				value.render(cartToIndexMat);
-
+				Matrix3f mat = new Matrix3f();
+				mat.offset(-1, 1);
+				mat.scale(2, -2);
+				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
+				WorldRenderer renderer = new WorldRenderer(world);
+				renderer.render(mat, player, 100, 100);
 			}, 10);
 			// test code
 
 			RenderThread.startRender();
-
+			RenderThread.shutdown();
 			// close game
 		} catch(Throwable e) {
 			exceptions.add(e);

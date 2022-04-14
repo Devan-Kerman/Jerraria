@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
  * Terminology: shader layer refers to a specific gl shader with specific uniforms (and not a TileLayer)
  */
 public class ClientChunk extends Chunk {
-	static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(),
+	public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(),
 		4
 	));
 
