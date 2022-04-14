@@ -33,7 +33,7 @@ public class ChunkTests {
 	public void loadUnload() throws IOException {
 		SynchronousWorld world = setupServer(false);
 		Chunk chunk = world.getChunk(10, 10);
-		TileVariant variant = Tiles.TEST.getDefaultVariant();
+		TileVariant variant = Tiles.DIRT.getDefaultVariant();
 		chunk.ticket();
 		chunk.set(TileLayers.BLOCK, 0, 0, variant);
 		chunk.unticket();

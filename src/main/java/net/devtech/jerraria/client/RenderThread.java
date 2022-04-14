@@ -35,10 +35,6 @@ public class RenderThread {
 		}
 	}
 
-	static void shutdown() {
-		ClientChunk.EXECUTOR.shutdown();
-	}
-
 	public static void queueRenderTask(Runnable task) {
 		RENDER_QUEUE.add(task);
 	}

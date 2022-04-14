@@ -12,16 +12,22 @@ import net.devtech.jerraria.world.tile.render.ShaderSource;
 import net.devtech.jerraria.world.tile.render.TileRenderer;
 import org.jetbrains.annotations.Nullable;
 
-public class TestTile extends Tile {
-	public static final Texture WHITE = JerrariaClient.MAIN_ATLAS.getTexture("jerraria/textures/white");
-	public static final TestRenderer RENDERER = new TestRenderer();
+public class BasicTile extends Tile {
+	public final Texture texture;
+
+	public BasicTile(String name){
+		texture = JerrariaClient.MAIN_ATLAS.getTexture(name);
+	}
+
+	public final BasicRenderer render = new BasicRenderer();
+
 
 	@Override
 	public TileRenderer getRenderer(TileVariant variant) {
-		return RENDERER;
+		return render;
 	}
 
-	public static class TestRenderer implements TileRenderer {
+	public class BasicRenderer implements TileRenderer {
 		@Override
 		public void renderTile(
 			ShaderSource source,
@@ -32,7 +38,7 @@ public class TestTile extends Tile {
 			int x,
 			int y) {
 			ColoredTextureShader shader = source.computeIfAbsent(ColoredTextureShader.MAIN_ATLAS);
-			shader.square(tileMatrix, WHITE, 0, 0, 1, 1);
+			shader.square(tileMatrix, texture, 0, 0, 1, 1);
 		}
 	}
 }

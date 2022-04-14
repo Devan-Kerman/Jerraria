@@ -257,7 +257,11 @@ public class Atlas {
 	}
 
 	public Texture getTexture(String name) {
-		return this.textureMap.get(name).texture;
+		ExactTexture exactTexture = this.textureMap.get(name);
+		if(exactTexture == null) {
+			throw new IllegalArgumentException("Texture with name " + name + " not found, must be one of " + this.textureMap.keySet());
+		}
+		return exactTexture.texture;
 	}
 
 	public Texture asTexture() {

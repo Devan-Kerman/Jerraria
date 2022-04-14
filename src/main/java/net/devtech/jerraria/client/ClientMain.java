@@ -16,9 +16,6 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.api.Primitive;
-import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -31,6 +28,7 @@ import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 import net.devtech.jerraria.world.internal.client.ClientWorldServer;
+import org.lwjgl.glfw.GLFW;
 
 public class ClientMain {
 	static {
@@ -81,27 +79,29 @@ public class ClientMain {
 
 			ClientChunk value = new ClientChunk(world, 0, 0);
 			world.loadedChunkCache.put(0, value);
-			value.set(TileLayers.BLOCK, 1, 0, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 0, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 0, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 0, 1, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 1, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 1, Tiles.GRASS.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 1, Tiles.GRASS.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 0, 2, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 2, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 2, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 2, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 2, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 2, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 2, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 2, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 0, 3, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 3, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 3, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 3, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 3, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 1, 4, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 4, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 10, 4, Tiles.TEST.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 11, 4, Tiles.TEST.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 10, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 11, 4, Tiles.DIRT.getDefaultVariant());
 
 			Entity player = new PlayerEntity(null);
 
@@ -111,13 +111,13 @@ public class ClientMain {
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
-				renderer.render(mat, player, 100, 100);
+				renderer.render(mat, player, 10, 10);
 			}, 10);
 			// test code
 
 			RenderThread.startRender();
-			RenderThread.shutdown();
 			// close game
+			ClientChunk.EXECUTOR.shutdown();
 		} catch(Throwable e) {
 			exceptions.add(e);
 		} finally {
@@ -141,6 +141,7 @@ public class ClientMain {
 		if(firstFailure != null) {
 			throw Validate.rethrow(firstFailure);
 		}
+		GLFW.glfwDestroyWindow(JerrariaClient.MAIN_WINDOW_GL_ID);
 	}
 
 	private static void addResourcePack(List<File> args, List<VirtualFile.Directory> resources, List<Closeable> closeables) {

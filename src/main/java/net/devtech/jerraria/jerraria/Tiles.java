@@ -1,7 +1,7 @@
 package net.devtech.jerraria.jerraria;
 
 import net.devtech.jerraria.jerraria.tile.AirTile;
-import net.devtech.jerraria.jerraria.tile.TestTile;
+import net.devtech.jerraria.jerraria.tile.BasicTile;
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
@@ -11,7 +11,8 @@ public interface Tiles {
 	AirTile AIR = new AirTile();
 	Registry<Tile> REGISTRY = new Registry.Fast<>(AIR);
 
-	TestTile TEST = register(new TestTile(), "test");
+	BasicTile DIRT = register(new BasicTile("jerraria/textures/dirt"), "dirt");
+	BasicTile GRASS = register(new BasicTile("jerraria/textures/grass"), "grass");
 
 	Void __CLINIT__ = Validate.create(() -> {
 		register(AIR, "air");

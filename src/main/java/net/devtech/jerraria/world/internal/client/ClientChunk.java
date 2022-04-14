@@ -119,7 +119,8 @@ public class ClientChunk extends Chunk {
 							if(loaded) {
 								Chunk chunk = this.world.getChunk(ucx, ucy);
 								cache[(ucx - cacheX) * 2 + (ucy - cacheY)] = (ClientChunk) chunk;
-								((ClientChunk) chunk).scheduleQuadrantRender(ucqx & 1,
+								((ClientChunk) chunk).scheduleQuadrantRender(
+									ucqx & 1,
 									ucqy & 1,
 									AutoBlockLayerInvalidation.ON_NEIGHBOR_BLOCK_UPDATE
 								);
@@ -137,7 +138,7 @@ public class ClientChunk extends Chunk {
 					chunk = cache[i] = (ClientChunk) this.world.getChunk(x + cacheX, y + cacheY);
 				}
 				if(chunk != null) {
-					cache[i] = new ClientChunk(cache[i]);
+					cache[i] = new ClientChunk(chunk);
 				}
 			}
 
@@ -154,7 +155,6 @@ public class ClientChunk extends Chunk {
 						cacheY,
 						cache
 					);
-
 					var baked = ClientChunkBakedTileQuadrantRenderer.bake(snapshot, absQuadX, absQuadY);
 					if(Thread.currentThread().isInterrupted()) {
 						return;
