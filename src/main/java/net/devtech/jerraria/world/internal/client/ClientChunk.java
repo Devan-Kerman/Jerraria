@@ -106,7 +106,7 @@ public class ClientChunk extends Chunk {
 		int quadrantIndex = quadrantX * 2 + quadrantY;
 		BakedClientChunkQuadrant quadrant = this.quadrants.get(quadrantIndex);
 		int absQuadX = quadrantX + this.chunkX * 2, absQuadY = quadrantY + this.chunkY * 2;
-		if(quadrant == null || quadrant.minInvalidation.ordinal() < reason.ordinal()) {
+		if(quadrant == null || quadrant.minInvalidation.ordinal() <= reason.ordinal()) {
 			ClientChunk[] cache = new ClientChunk[4];
 			int cacheX = (absQuadX - 1) >> 1, cacheY = (absQuadY - 1) >> 1;
 			if(reason == AutoBlockLayerInvalidation.ON_BLOCK_UPDATE) {
@@ -169,12 +169,12 @@ public class ClientChunk extends Chunk {
 
 	private void cancelAndWait(Future<?> future) {
 		future.cancel(true);
-		try {
+		/*try {
 			future.get();
 		} catch(InterruptedException | CancellationException ignored) {
 		} catch(ExecutionException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	record BakedClientChunkQuadrantData<T extends Shader<?>>(AutoBlockLayerInvalidation invalidation,
