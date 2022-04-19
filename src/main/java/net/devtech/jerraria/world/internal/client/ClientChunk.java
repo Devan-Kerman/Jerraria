@@ -35,6 +35,7 @@ public class ClientChunk extends Chunk {
 		4
 	));
 
+	boolean delayUpdates;
 	final AtomicReferenceArray<@Nullable BakedClientChunkQuadrant> quadrants = new AtomicReferenceArray<>(4);
 	final @Nullable Future<?>[] futures = new Future[4];
 	final boolean isSnapshot;
@@ -59,6 +60,18 @@ public class ClientChunk extends Chunk {
 		var entityData = ChunkCodec.serializeEntities(client.entities);
 		Set<Entity> entities = ChunkCodec.deserializeEntities(this.getWorld(), entityData);
 		this.entities.addAll(entities);
+	}
+
+	public void setDelayUpdates() {
+		this.delayUpdates = true;
+	}
+
+	public void flushUpdates() {
+		this.delayUpdates = false;
+		this.scheduleQuadrantRender(0, 0, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
+		this.scheduleQuadrantRender(1, 0, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
+		this.scheduleQuadrantRender(0, 1, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
+		this.scheduleQuadrantRender(1, 1, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
 	}
 
 	@Override
@@ -90,7 +103,7 @@ public class ClientChunk extends Chunk {
 			int x = i / 2, y = i % 2;
 			Matrix3f copy = chunkMatrix
 				.copy()
-				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, y << World.LOG2_CHUNK_QUADRANT_SIZE);
+				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1-y) << World.LOG2_CHUNK_QUADRANT_SIZE);
 			for(BakedClientChunkQuadrantData layer : quadrant.opaqueLayers) {
 				layer.configurator.configureUniforms(copy, layer.vertexData);
 				layer.vertexData.render(Primitive.TRIANGLE);
@@ -99,7 +112,7 @@ public class ClientChunk extends Chunk {
 	}
 
 	void scheduleQuadrantRender(int quadrantX, int quadrantY, AutoBlockLayerInvalidation reason) {
-		if(isSnapshot) {
+		if(isSnapshot || delayUpdates) {
 			return;
 		}
 
@@ -144,7 +157,8 @@ public class ClientChunk extends Chunk {
 
 			Future<?> future = this.futures[quadrantIndex];
 			if(future != null) {
-				this.cancelAndWait(future);
+				future.cancel(true);
+				while(!(future.isCancelled() || future.isDone()));
 			}
 
 			this.futures[quadrantIndex] = EXECUTOR.submit(() -> {
@@ -165,16 +179,6 @@ public class ClientChunk extends Chunk {
 				}
 			});
 		}
-	}
-
-	private void cancelAndWait(Future<?> future) {
-		future.cancel(true);
-		/*try {
-			future.get();
-		} catch(InterruptedException | CancellationException ignored) {
-		} catch(ExecutionException e) {
-			e.printStackTrace();
-		}*/
 	}
 
 	record BakedClientChunkQuadrantData<T extends Shader<?>>(AutoBlockLayerInvalidation invalidation,

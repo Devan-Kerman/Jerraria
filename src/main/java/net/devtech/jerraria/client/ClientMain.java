@@ -25,6 +25,7 @@ import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
+import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 import net.devtech.jerraria.world.internal.client.ClientWorldServer;
@@ -79,6 +80,18 @@ public class ClientMain {
 
 			ClientChunk value = new ClientChunk(world, 0, 0);
 			world.loadedChunkCache.put(0, value);
+
+			ClientChunk test = new ClientChunk(world, 0, -1);
+			System.out.println(test);
+			world.loadedChunkCache.put(Chunk.combineInts(0, -1), test);
+			test.setDelayUpdates();
+			for (int x = 0; x < 256; x++) {
+				for (int y = 0; y < 256; y++) {
+					test.set(TileLayers.BLOCK, x, y, Tiles.DIRT.getDefaultVariant());
+				}
+			}
+			test.flushUpdates();
+
 			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 2, 0, Tiles.DIRT.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant());
@@ -104,6 +117,17 @@ public class ClientMain {
 			value.set(TileLayers.BLOCK, 11, 4, Tiles.DIRT.getDefaultVariant());
 
 			Entity player = new PlayerEntity(null);
+			GLFW.glfwSetKeyCallback(ClientInit.glMainWindow, (window, key, scancode, action, mods) -> {
+				if(action == GLFW.GLFW_PRESS) {
+					switch (key) {
+						case GLFW.GLFW_KEY_LEFT -> player.updatePosition(world, player.getX()-1, player.getY());
+						case GLFW.GLFW_KEY_RIGHT -> player.updatePosition(world, player.getX()+1, player.getY());
+						case GLFW.GLFW_KEY_UP -> player.updatePosition(world, player.getX(), player.getY()+1);
+						case GLFW.GLFW_KEY_DOWN -> player.updatePosition(world, player.getX(), player.getY()-1);
+					}
+					System.out.println(player.getBlockX() + " " + player.getBlockY());
+				}
+			});
 
 			RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();

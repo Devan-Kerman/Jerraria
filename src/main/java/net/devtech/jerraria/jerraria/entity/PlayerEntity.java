@@ -54,7 +54,7 @@ public class PlayerEntity extends BaseEntity {
 		public void renderEntity(Matrix3f matrix) {
 			ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
 			shader.texture.atlas(texture);
-			shader.square(matrix, texture, 0, 0, 8, 16);
+			shader.square(matrix, texture, 0, 0, 8, 16, 0xFFFFFF);
 		}
 	}
 }

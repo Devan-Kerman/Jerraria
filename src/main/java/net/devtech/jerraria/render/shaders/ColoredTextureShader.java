@@ -66,14 +66,15 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>>
 		float offX,
 		float offY,
 		float width,
-		float height) {
-		this.vert().vec3f(mat, offX, offY, 1).uv(texture, 0, 0).rgb(0xFFFFFF);
-		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(0xFFFFFF);
-		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(0xFFFFFF);
+		float height,
+		int color) {
+		this.vert().vec3f(mat, offX, offY, 1).uv(texture, 0, 0).rgb(color);
+		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(color);
+		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(color);
 
-		this.vert().vec3f(mat, offX + width, offY + height, 1).uv(texture, 1, 1).rgb(0xFFFFFF);
-		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(0xFFFFFF);
-		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(0xFFFFFF);
+		this.vert().vec3f(mat, offX + width, offY + height, 1).uv(texture, 1, 1).rgb(color);
+		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(color);
+		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(color);
 		return this;
 	}
 

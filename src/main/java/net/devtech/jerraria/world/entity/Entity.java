@@ -125,7 +125,11 @@ public abstract class Entity implements Positioned {
 		return true;
 	}
 
-	protected final void updatePosition(World world, double x, double y) {
+	public void setPos(double x, double y) {
+		this.updatePosition(this.world, x, y);
+	}
+
+	public void updatePosition(World world, double x, double y) {
 		Validate.notNull(world, "World cannot be null!");
 		boolean inWorld = this.inWorld();
 		this.world = world;
