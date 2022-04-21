@@ -25,8 +25,6 @@ public class WorldRenderer {
 
 		// block coordinate of top left corner
 		double fromBlockXScreen = player.getX() - blockScreenWidth / 2f, fromBlockYScreen = player.getY() + blockScreenHeight / 2f;
-
-		// y coordinates might be inverted idfk, this is literal hell
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
 			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy <= (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
 				int bx = cx * World.CHUNK_SIZE, topLeftY = World.CHUNK_SIZE + cy * World.CHUNK_SIZE;

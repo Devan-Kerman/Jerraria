@@ -89,6 +89,13 @@ public class Matrix3f implements AutoCloseable {
 		   .f(this.a13).f(this.a23).f(this.a33);
 	}
 
+	public void uploadMat4(GlData.Buf buf) {
+		buf.f(this.a11).f(this.a21).f(this.a31).f(0);
+		buf.f(this.a12).f(this.a22).f(this.a32).f(0);
+		buf.f(this.a13).f(this.a23).f(this.a33).f(0);
+		buf.f(0)       .f(0)       .f(0)       .f(1);
+	}
+
 	@Override
 	public void close() {
 
