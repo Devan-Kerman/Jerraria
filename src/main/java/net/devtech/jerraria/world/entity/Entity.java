@@ -26,8 +26,7 @@ public abstract class Entity implements Positioned {
 	Type<?> type;
 	double x, y;
 	World world;
-	double dx;
-	double dy;
+	double dx, dy;
 	EntityRenderer renderer;
 
 
@@ -177,8 +176,13 @@ public abstract class Entity implements Positioned {
 			this.oldChunkX = cx;
 			this.oldChunkY = cy;
 			this.world = w;
+			this.afterRelocation(world);
 		});
 		return true;
+	}
+
+	void afterRelocation(World world) {
+
 	}
 
 	void setHomeChunk(Chunk chunk) {

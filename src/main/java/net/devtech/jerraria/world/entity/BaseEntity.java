@@ -6,6 +6,8 @@ import net.devtech.jerraria.world.ChunkLinkingAccess;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 
+import static java.lang.Math.*;
+
 public abstract class BaseEntity extends Entity {
 	SimpleShape bounds;
 	int fx, fy, tx = -1, ty;
@@ -34,6 +36,12 @@ public abstract class BaseEntity extends Entity {
 	}
 
 	@Override
+	protected void tick() {
+		// move entity if linked properly, we do this in beginning because the entity changes
+		super.tick();
+	}
+
+	@Override
 	protected void remove() {
 		int oldX = this.oldChunkX, oldY = this.oldChunkY;
 		World oldWorld = this.world;
@@ -59,14 +67,18 @@ public abstract class BaseEntity extends Entity {
 			this.fx = this.getBlockX();
 			this.fy = this.getBlockY();
 			SimpleShape.Rectangle tx = this.bounds.maxBounds();
-			this.tx = (int) (tx.width() + fx);
-			this.ty = (int) (tx.height() + fy);
-
-			ChunkLinkingAccess link = this.world.getUnsafeLinkingAccess(oldX, oldY);
-			link.range(this.fx, this.fy, this.tx, this.ty);
-			this.linkedLocal = true;
+			this.tx = (int) ceil(tx.width() + fx);
+			this.ty = (int) ceil(tx.height() + fy);
 		}
 		return moved;
+	}
+
+	@Override
+	void afterRelocation(World world) {
+		super.afterRelocation(world);
+		ChunkLinkingAccess link = this.world.getUnsafeLinkingAccess(this.oldChunkX, this.oldChunkY);
+		link.range(this.fx, this.fy, this.tx, this.ty);
+		this.linkedLocal = true;
 	}
 
 	protected SimpleShape getBounds() {

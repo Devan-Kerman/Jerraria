@@ -63,7 +63,7 @@ public class SynchronousWorld extends TickingWorld {
 		return true;
 	}
 
-	private void unloadChunk(Chunk entry, long key) {
+	private void unloadChunk(Chunk entry, long key) { // todo unloaded cache
 		this.loadedChunkCache.remove(key);
 		Path chunkFile = SynchronousWorld.this.directory.resolve(Long.toHexString(key) + ".chunk");
 		// output doesn't need buffering cus it's already buffered

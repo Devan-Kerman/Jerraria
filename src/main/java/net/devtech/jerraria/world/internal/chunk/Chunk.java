@@ -29,6 +29,11 @@ import net.devtech.jerraria.world.tile.TileVariant;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {
+	/**
+	 * how many ticks the chunk should wait before scheduling an unlink, this is to avoid relinking every-other tick
+	 */
+	public static final int UNLINKING_RELUCTANCE = 75;
+
 	public final AbstractWorld world;
 	public final int chunkX, chunkY;
 	/**
@@ -43,6 +48,7 @@ public class Chunk implements Executor {
 	protected final Object2IntMap<Chunk> links;
 	protected List<IntLongPair> unresolved;
 	protected int ticketCount;
+	protected int unlinkTimer;
 	protected ChunkGroup blockGroup;
 
 	public Chunk(AbstractWorld world, int chunkX, int chunkY) {
@@ -129,7 +135,6 @@ public class Chunk implements Executor {
 		}
 	}
 
-	// todo less memory intensive linking system?
 
 	public void removeLink(Chunk chunk) {
 		if(chunk == this) {
@@ -138,15 +143,12 @@ public class Chunk implements Executor {
 		synchronized(chunk.links) {
 			chunk.links.computeIntIfPresent(this, (c, i) -> i - 1);
 		}
-		int links;
-		synchronized(this.links) {
-			links = this.links.computeIntIfPresent(chunk, (c, i) -> i - 1);
+		synchronized(this) {
+			int links = this.links.computeIntIfPresent(chunk, (c, i) -> i - 1);
+			if(links <= 0) {
+				this.unlinkTimer = 1;
+			}
 		}
-		if(links <= 0) {
-			((TickingWorld) this.world).requiresRelinking(this);
-			this.blockGroup = null;
-		}
-
 	}
 
 	public void addLink(Chunk chunk) {
@@ -156,12 +158,12 @@ public class Chunk implements Executor {
 		synchronized(chunk.links) {
 			chunk.links.mergeInt(this, 1, (c, i) -> i + 1);
 		}
-		int links;
-		synchronized(this.links) {
-			links = this.links.mergeInt(chunk, 1, (c, i) -> i + 1);
-		}
-		if(links == 1) {
-			((TickingWorld) this.world).requiresRelinking(this);
+		synchronized(this) {
+			int links = this.links.mergeInt(chunk, 1, (c, i) -> i + 1);
+			this.unlinkTimer = 0;
+			if(links == 1) {
+				((TickingWorld) this.world).requiresRelinking(this);
+			}
 		}
 	}
 
@@ -199,6 +201,10 @@ public class Chunk implements Executor {
 			EntityInternal.tick(entity);
 		}
 
+		if(this.unlinkTimer >= 1 && ++this.unlinkTimer >= UNLINKING_RELUCTANCE) {
+			((TickingWorld) this.world).requiresRelinking(this);
+			this.blockGroup = null;
+		}
 		// todo remove when ticketless
 	}
 

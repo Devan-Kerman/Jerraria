@@ -15,6 +15,7 @@ import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.TickingWorld;
 
 public class ChunkGroup {
+	// todo unloading reluctance
 	final TickingWorld backing;
 	public final WorldImpl local;
 	int totalTickets;

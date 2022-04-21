@@ -12,6 +12,9 @@ import net.devtech.jerraria.jerracode.pool.JCEncodePool;
 import org.jetbrains.annotations.NotNull;
 
 public class JCIO {
+	/**
+	 * @param output does not need buffering
+	 */
 	public static <T> void write(NativeJCType<T> type, T value, DataOutput output) throws IOException {
 		JCEncodePool pool = new JCEncodePool();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
