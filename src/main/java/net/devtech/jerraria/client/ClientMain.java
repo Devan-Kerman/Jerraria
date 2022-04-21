@@ -117,6 +117,8 @@ public class ClientMain {
 			value.set(TileLayers.BLOCK, 11, 0, Tiles.DIRT.getDefaultVariant());
 
 			Entity player = new PlayerEntity(null);
+
+			int[] scale = {256};
 			GLFW.glfwSetKeyCallback(ClientInit.glMainWindow, (window, key, scancode, action, mods) -> {
 				if(action == GLFW.GLFW_PRESS) {
 					switch (key) {
@@ -124,6 +126,8 @@ public class ClientMain {
 						case GLFW.GLFW_KEY_RIGHT -> player.updatePosition(world, player.getX()+1, player.getY());
 						case GLFW.GLFW_KEY_UP -> player.updatePosition(world, player.getX(), player.getY()+1);
 						case GLFW.GLFW_KEY_DOWN -> player.updatePosition(world, player.getX(), player.getY()-1);
+						case GLFW.GLFW_KEY_EQUAL -> scale[0] *= 2;
+						case GLFW.GLFW_KEY_MINUS -> scale[0] = Math.max(scale[0] / 2, 2);
 					}
 					System.out.println(player.getBlockX() + " " + player.getBlockY());
 				}
@@ -135,7 +139,7 @@ public class ClientMain {
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
-				renderer.render(mat, player, 256, 256);
+				renderer.render(mat, player, scale[0], scale[0]);
 			}, 10);
 			// test code
 
