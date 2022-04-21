@@ -30,7 +30,7 @@ public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N> impl
 		}
 
 		public N uv(Texture texture, float u, float v) {
-			return this.vec2f(texture.getOffX() + texture.getWidth() * u, texture.getOffY() + texture.getHeight() * v);
+			return this.vec2f(texture.getFudgedOffX() + texture.getFudgedWidth() * u, texture.getFudgedOffY() + texture.getFudgedHeight() * v);
 		}
 	}
 

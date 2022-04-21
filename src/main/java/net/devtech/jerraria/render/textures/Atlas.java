@@ -139,6 +139,7 @@ public class Atlas {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 			glTexImage2D(GL_TEXTURE_2D,
 				0,
 				GL_RGBA,
@@ -161,7 +162,7 @@ public class Atlas {
 			if(sprite instanceof RawImageSprite s) {
 				CompletableFuture<Void> after = glFuture.thenAcceptAsync(glId -> {
 					Texture texture = new Texture(glId,
-						rect.offX / fwidth,
+						rect.offX / fwidth, // it just works:tm:
 						rect.offY / fheight,
 						rect.width / fwidth,
 						rect.height / fheight);
@@ -315,7 +316,7 @@ public class Atlas {
 							buffer.flip();
 							String name = file.withoutExtension();
 							imageSprites.put(name, new RawImageSprite(name, buffer, decoder.getWidth(), decoder.getHeight()));
-						} catch(UnsupportedOperationException e) {
+						} catch(Exception e) {
 							System.out.println(e.getLocalizedMessage() + " " + file.name());
 						}
 					}
@@ -349,6 +350,14 @@ public class Atlas {
 	}
 
 	interface RawSprite {
+		default int allocWidth() {
+			return this.width() + 1;
+		}
+
+		default int allocHeight() {
+			return this.height() + 1;
+		}
+
 		int width();
 
 		int height();

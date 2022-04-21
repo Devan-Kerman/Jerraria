@@ -98,6 +98,22 @@ public final class Texture {
 		return this.offY;
 	}
 
+	public float getFudgedOffX() {
+		return this.offX + .001f;
+	}
+
+	public float getFudgedOffY() {
+		return this.offY + .001f;
+	}
+
+	public float getFudgedWidth() {
+		return this.width - .002f;
+	}
+
+	public float getFudgedHeight() {
+		return this.height - .002f;
+	}
+
 	/**
 	 * @return normalized [0-1] width
 	 */
