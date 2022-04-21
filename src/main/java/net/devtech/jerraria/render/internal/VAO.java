@@ -109,13 +109,16 @@ public class VAO extends GlData {
 		return this;
 	}
 
-	public void bindAndDraw(int mode) {
+	public void bindAndDraw(int mode, boolean forceReupload) {
 		this.bind();
-		this.drawArray(mode);
+		this.drawArray(mode, forceReupload);
 	}
 
-	public void drawArray(int mode) {
+	public void drawArray(int mode, boolean forceReupload) {
 		for(ElementGroup group : this.groups) {
+			if(forceReupload) {
+				group.reupload = true;
+			}
 			group.upload();
 		}
 		glDrawArrays(mode, 0, this.last.buffer.vertexCount);

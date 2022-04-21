@@ -38,15 +38,7 @@ public class BasicTile extends Tile {
 			int x,
 			int y) {
 			ColoredTextureShader shader = source.computeIfAbsent(ColoredTextureShader.MAIN_ATLAS);
-			int color = 0xFFFFFF;
-			if(x == 0 & y == 0) {
-				color = 0x0000FF;
-			} else if(x == 0) {
-				color = 0xFF0000;
-			} else if(y == 0) {
-				color = 0x00FF00;
-			}
-			shader.square(tileMatrix, texture, 0, 0, 1, 1, color);
+			shader.square(tileMatrix, texture, 0, 0, 1, 1, 0xFFFFFF);
 		}
 	}
 }

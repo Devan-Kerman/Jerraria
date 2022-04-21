@@ -24,13 +24,13 @@ public class WorldRenderer {
 		int toBlockX   = blockX + extendedOffX,   toBlockY = blockY + extendedOffY;
 
 		// block coordinate of top left corner
-		double fromBlockXScreen = player.getX() - blockScreenWidth / 2f, fromBlockYScreen = player.getY() - blockScreenHeight / 2f;
+		double fromBlockXScreen = player.getX() - blockScreenWidth / 2f, fromBlockYScreen = player.getY() + blockScreenHeight / 2f;
 
 		// y coordinates might be inverted idfk, this is literal hell
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
 			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy <= (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
-				int bx = cx * World.CHUNK_SIZE, by = cy * World.CHUNK_SIZE;
-				float offX = (float) (bx - fromBlockXScreen), offY = (float) (by - fromBlockYScreen);
+				int bx = cx * World.CHUNK_SIZE, topLeftY = World.CHUNK_SIZE + cy * World.CHUNK_SIZE;
+				float offX = (float) (bx - fromBlockXScreen), offY = (float) (fromBlockYScreen - topLeftY);
 				Matrix3f chunkMatrix = rel.copy().offset(offX, offY);
 				ClientChunk chunk = (ClientChunk) this.world.getChunk(cx, cy);
 				if(chunk != null) {

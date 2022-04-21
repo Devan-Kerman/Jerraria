@@ -82,9 +82,10 @@ public class BareShader {
 
 	public void draw(int primitive) {
 		glUseProgram(this.glId);
-		this.uniforms.bind(activeShader != this);
+		boolean forceReupload = activeShader != this;
+		this.uniforms.bind(forceReupload);
 		activeShader = this;
-		this.vao.bindAndDraw(primitive);
+		this.vao.bindAndDraw(primitive, forceReupload);
 	}
 
 	public static final class Uncompiled {

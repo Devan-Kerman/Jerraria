@@ -143,7 +143,6 @@ public class ClientChunk extends Chunk {
 				}
 			}
 
-
 			for(int i = 0; i < cache.length; i++) {
 				ClientChunk chunk = cache[i];
 				if(chunk == null) {

@@ -33,7 +33,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 					TileRenderer renderer = block.getRenderer();
 					renderer.renderTile(
 						source,
-						mat.identity().offset(x, World.LOG2_CHUNK_QUADRANT_SIZE - y), // display y and real y are inverted
+						mat.identity().offset(x - startX, World.CHUNK_QUADRANT_SIZE - (y-startY)), // display y and real y are inverted
 						localWorld,
 						block,
 						tileLayer.getBlockData(x, y),

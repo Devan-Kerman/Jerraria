@@ -92,29 +92,29 @@ public class ClientMain {
 			}
 			test.flushUpdates();
 
-			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 0, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 4, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 0, 1, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 1, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 1, Tiles.GRASS.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 1, Tiles.GRASS.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 3, Tiles.GRASS.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 3, Tiles.GRASS.getDefaultVariant());
 
 			value.set(TileLayers.BLOCK, 0, 2, Tiles.DIRT.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 1, 2, Tiles.DIRT.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 2, 2, Tiles.DIRT.getDefaultVariant());
 			value.set(TileLayers.BLOCK, 3, 2, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 0, 3, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 3, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 3, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 3, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 2, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 1, Tiles.DIRT.getDefaultVariant());
 
-			value.set(TileLayers.BLOCK, 1, 4, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 4, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 10, 4, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 11, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 10, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 11, 0, Tiles.DIRT.getDefaultVariant());
 
 			Entity player = new PlayerEntity(null);
 			GLFW.glfwSetKeyCallback(ClientInit.glMainWindow, (window, key, scancode, action, mods) -> {
@@ -135,7 +135,7 @@ public class ClientMain {
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
-				renderer.render(mat, player, 10, 10);
+				renderer.render(mat, player, 256, 256);
 			}, 10);
 			// test code
 
