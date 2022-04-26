@@ -3,7 +3,6 @@ package net.devtech.jerraria.world.tile;
 import static java.util.Objects.requireNonNullElse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -147,7 +146,7 @@ public abstract class Tile implements IdentifiedObject {
 		this.hasBlockEntity = true;
 	}
 
-	public boolean isCompatible(TileVariant variant, TileData data) {
+	public boolean isCompatible(TileVariant variant, TileData data, TileVariant oldVariant) {
 		if(this.hasBlockEntity) {
 			return variant.owner == this;
 		} else if(this.hasBlockData(variant)) {

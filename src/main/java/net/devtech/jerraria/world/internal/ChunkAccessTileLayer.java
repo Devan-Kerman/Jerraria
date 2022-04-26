@@ -9,7 +9,7 @@ import net.devtech.jerraria.world.internal.chunk.TemporaryTileData;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.tile.VariantConvertable;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public class ChunkAccessTileLayer implements TileLayer {
 	final TileLayers layers;
@@ -55,15 +55,20 @@ public class ChunkAccessTileLayer implements TileLayer {
 	}
 
 	@Override
-	public @Nullable TileData putBlock(TileVariant variant, int x, int y, int flags) {
+	public @NotNull VariantConvertable setBlock(TileVariant variant, int x, int y, int flags) {
+		return this.setBlock(variant, x, y, flags, true);
+	}
+
+	@Override
+	public VariantConvertable putBlock(TileVariant variant, int x, int y, int flags) {
+		return this.setBlock(variant, x, y, flags, false);
+	}
+
+	public @NotNull VariantConvertable setBlock(TileVariant variant, int x, int y, int flags, boolean newlyCreated) {
 		Chunk chunk = this.getter.getChunk(x >> World.LOG2_CHUNK_SIZE, y >> World.LOG2_CHUNK_SIZE);
 		int localX = x & World.CHUNK_MASK;
 		int localY = y & World.CHUNK_MASK;
-		TileData data = chunk.set(this.layers, localX, localY, variant);
-		if((flags & SKIP_ON_PLACE) == 0) {
-			//variant.onPlace(); todo, also todo onReplace
-		}
-		return data;
+		return chunk.set(this.layers, localX, localY, variant, flags, newlyCreated);
 	}
 
 	<T> T get(BlockGetter<T> getter, int x, int y) {

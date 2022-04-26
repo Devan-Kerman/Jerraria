@@ -8,6 +8,7 @@ import net.devtech.jerraria.jerraria.Items;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.util.math.Positioned;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.EntitySearchType;
@@ -26,9 +27,7 @@ public abstract class Entity implements Positioned {
 	Type<?> type;
 	double x, y;
 	World world;
-	double dx, dy;
 	EntityRenderer renderer;
-
 
 	public Entity(Type<?> type) {
 		this.type = type;
@@ -67,18 +66,7 @@ public abstract class Entity implements Positioned {
 		return renderer;
 	}
 
-	public void setVelocity(double dx, double dy) {
-		this.dx = dx;
-		this.dy = dy;
-	}
 
-	public double getDx() {
-		return this.dx;
-	}
-
-	public double getDy() {
-		return this.dy;
-	}
 
 	/**
 	 * @return true if the entity is entirely enclosed by the given bounding box
@@ -99,11 +87,11 @@ public abstract class Entity implements Positioned {
 	}
 
 	public int getBlockX() {
-		return (int) Math.floor(this.x);
+		return JMath.ifloor(this.x);
 	}
 
 	public int getBlockY() {
-		return (int) Math.floor(this.y);
+		return JMath.ifloor(this.y);
 	}
 
 	@Override

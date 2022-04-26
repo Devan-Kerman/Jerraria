@@ -30,7 +30,7 @@ public class EmptyChunk extends Chunk {
 	}
 
 	@Override
-	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
+	public TileData set(TileLayers layer, int x, int y, TileVariant value, int flags, boolean newlyCreated) {
 		return null;
 	}
 

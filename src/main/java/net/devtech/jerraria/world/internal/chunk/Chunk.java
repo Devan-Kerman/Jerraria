@@ -26,6 +26,7 @@ import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.world.tile.VariantConvertable;
 import org.jetbrains.annotations.NotNull;
 
 public class Chunk implements Executor {
@@ -252,7 +253,12 @@ public class Chunk implements Executor {
 
 	// todo get & set
 	// set & get (current + success/failure context)
-	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
+	public enum ReturnType {
+		NEWLY_CREATED,
+		REPLACED
+	}
+
+	public VariantConvertable set(TileLayers layer, int x, int y, TileVariant value, int flags, boolean newlyCreated) {
 		int index = getIndex(layer, x, y);
 		TileVariant old = this.variants[index];
 		TileData oldData = this.data.get(index);
@@ -260,7 +266,7 @@ public class Chunk implements Executor {
 		// todo when attach api is added, add stack 'onReplace' with TileData so mods can choose on an individual basis
 		//  whether or not
 		//  their data is compatible with the new block
-		if(value.isCompatible(oldData)) {
+		if(value.isCompatible(oldData, old)) {
 			replacement = oldData;
 		} else {
 			if(value.hasBlockData()) {
@@ -295,7 +301,11 @@ public class Chunk implements Executor {
 			}
 		}
 
-		return replacement;
+		if(newlyCreated) {
+			return replacement == null ? value : replacement;
+		} else {
+			return oldData == null ? old : oldData;
+		}
 	}
 
 	public World getWorld() {

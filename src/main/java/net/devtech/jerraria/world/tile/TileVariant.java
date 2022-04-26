@@ -23,8 +23,8 @@ public final class TileVariant implements VariantConvertable {
 		this.cacheIndex = index;
 	}
 
-	public boolean isCompatible(TileData data) {
-		return this.owner.isCompatible(this, data);
+	public boolean isCompatible(TileData data, TileVariant oldVariant) {
+		return this.owner.isCompatible(this, data, oldVariant);
 	}
 
 	public Tile getOwner() {

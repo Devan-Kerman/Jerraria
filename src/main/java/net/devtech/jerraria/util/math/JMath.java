@@ -5,6 +5,14 @@ public class JMath {
 	public static final float PI2 = (float) (Math.PI * 2);
 	static final byte[] LogTable256 = new byte[256];
 
+	public static int ifloor(double x) {
+		return (int) Math.floor(x);
+	}
+
+	public static int iceil(double x) {
+		return (int) Math.ceil(x);
+	}
+
 	public static int div(int numerator, int denominator) {
 		return (numerator + denominator - 1) / denominator;
 	}
@@ -50,7 +58,7 @@ public class JMath {
 	}
 
 	// lookup table is actually slower
-	
+
 	public static float cos(float theta) {
 		return (float) Math.cos(theta);
 	}

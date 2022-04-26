@@ -2,8 +2,6 @@ package net.devtech.jerraria.world.internal.client;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -22,6 +20,7 @@ import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkCodec;
 import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.world.tile.VariantConvertable;
 import net.devtech.jerraria.world.tile.render.AutoBlockLayerInvalidation;
 import net.devtech.jerraria.world.tile.render.ShaderSource;
 import org.jetbrains.annotations.Nullable;
@@ -75,9 +74,9 @@ public class ClientChunk extends Chunk {
 	}
 
 	@Override
-	public TileData set(TileLayers layer, int x, int y, TileVariant value) {
+	public VariantConvertable set(TileLayers layer, int x, int y, TileVariant value, int flags, boolean newlyCreated) {
 		int quadX = x >> World.LOG2_CHUNK_QUADRANT_SIZE, quadY = y >> World.LOG2_CHUNK_QUADRANT_SIZE;
-		TileData set = super.set(layer, x, y, value);
+		VariantConvertable set = super.set(layer, x, y, value, flags, newlyCreated);
 		this.scheduleQuadrantRender(quadX, quadY, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
 		return set;
 	}

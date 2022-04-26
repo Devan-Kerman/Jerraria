@@ -22,12 +22,12 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 	}
 
 	@Override
-	public Stream<Entity> getEntitiesEnclosed(EntitySearchType type, int fromX, int fromY, int toX, int toY) {
+	public Stream<Entity> getEntitiesEnclosed(EntitySearchType type, double fromX, double fromY, double toX, double toY) {
 		Spliterator<Entity> spliterator = this.getEntitySpliterator(
-			fromX << World.LOG2_CHUNK_SIZE,
-			fromY << World.LOG2_CHUNK_SIZE,
-			JMath.div(toX, World.CHUNK_SIZE),
-			JMath.div(toY, World.CHUNK_SIZE));
+			JMath.ifloor(fromX) << World.LOG2_CHUNK_SIZE,
+			JMath.ifloor(fromY) << World.LOG2_CHUNK_SIZE,
+			JMath.div(JMath.iceil(toX), World.CHUNK_SIZE),
+			JMath.div(JMath.iceil(toY), World.CHUNK_SIZE));
 		return StreamSupport.stream(spliterator, false).filter(entity -> entity.isEnclosed(type, fromX, fromY, toX, toY));
 	}
 
