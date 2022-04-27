@@ -24,7 +24,7 @@ public class PlayerEntity extends BaseEntity {
 	}
 
 	@Override
-	protected void tick() {
+	protected void baseTick() {
 		if(packetX != Double.POSITIVE_INFINITY) {
 			this.updatePosition(this.getWorld(), this.packetX, this.packetY);
 		}

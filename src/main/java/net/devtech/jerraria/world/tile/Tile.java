@@ -71,9 +71,16 @@ public abstract class Tile implements IdentifiedObject {
 	public void onScheduledTick(World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
 	}
 
-	public Vec2d handleCollision(Entity entity, World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
+	/**
+	 * @param entity the entity that is colliding with this tile
+	 * @param projectedTrajectory the direction the entity will go if there is no collision
+	 * @param world the world the block is in
+	 * @return null to cancel further block/entity collision handling, this means the block handles entity movement
+	 *  for example if the block is a portal, the block will just update the entity position and return null
+	 */
+	public Vec2d handleCollision(Entity entity, Vec2d projectedTrajectory, World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
 		// todo implement basic collision
-		return null;
+		return projectedTrajectory;
 	}
 
 	// properties
