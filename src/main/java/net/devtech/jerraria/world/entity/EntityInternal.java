@@ -14,7 +14,7 @@ public class EntityInternal {
 	}
 
 	public static SerializedEntity serialize(Entity entity) {
-		return new SerializedEntity(entity.getX(), entity.getY(), entity.type.serialize(entity));
+		return new SerializedEntity(entity.x(), entity.y(), entity.type.serialize(entity));
 	}
 
 	public static void setWorld(Entity entity, World world) {

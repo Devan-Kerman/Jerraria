@@ -75,8 +75,8 @@ class ClientInit {
 				try(var input = shaders.asRegular().read()) {
 					Properties properties = new Properties();
 					properties.load(input);
-					String frag = properties.getProperty("frag");
-					String vert = properties.getProperty("vert");
+					String frag = properties.getProperty("frag", id.toString());
+					String vert = properties.getProperty("vert", id.toString());
 					return new ShaderManager.ShaderPair(Id.parse(frag), Id.parse(vert));
 				} catch(IOException e) {
 					throw new IllegalArgumentException("Unable to parse " + shaders.name(), e);

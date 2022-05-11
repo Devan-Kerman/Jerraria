@@ -56,7 +56,6 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 
 		// execute immediate tasks
 		AtomicBoolean hasTasks = new AtomicBoolean();
-
 		do {
 			ticks.clear();
 			hasTasks.set(false);

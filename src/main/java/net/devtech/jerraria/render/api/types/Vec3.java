@@ -7,11 +7,19 @@ import net.devtech.jerraria.util.math.Matrix3f;
 
 public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.F<N>> f(String name) {
-		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32_VEC3, name);
+		return f(name, null);
 	}
 
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.I<N>> i(String name) {
-		return simple((data1, next1) -> new I<>(data1, next1, name), DataType.I32_VEC3, name);
+		return i(name, null);
+	}
+
+	public static <N extends GlValue<?>> GlValue.Type<Vec3.F<N>> f(String name, String groupName) {
+		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32_VEC3, name, groupName);
+	}
+
+	public static <N extends GlValue<?>> GlValue.Type<Vec3.I<N>> i(String name, String groupName) {
+		return simple((data1, next1) -> new I<>(data1, next1, name), DataType.I32_VEC3, name, groupName);
 	}
 
 	protected Vec3(GlData data, GlValue<?> next, String name) {

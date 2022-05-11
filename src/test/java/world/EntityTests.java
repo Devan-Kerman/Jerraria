@@ -2,6 +2,7 @@ package world;
 
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.EntitySearchType;
+import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public class EntityTests {
@@ -26,6 +27,11 @@ public class EntityTests {
 		@Override
 		public boolean doesIntersect(EntitySearchType type, double fromX, double fromY, double toX, double toY) {
 			return false;
+		}
+
+		@Override
+		protected EntityRenderer createRenderer() {
+			return null;
 		}
 	}
 }

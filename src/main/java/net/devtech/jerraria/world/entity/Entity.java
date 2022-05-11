@@ -9,7 +9,7 @@ import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
-import net.devtech.jerraria.util.math.Positioned;
+import net.devtech.jerraria.util.math.Pos2d;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
@@ -17,7 +17,7 @@ import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
-public abstract class Entity implements Positioned {
+public abstract class Entity implements Pos2d {
 	/**
 	 * this states the entity does not belong to a chunk
 	 */
@@ -95,12 +95,12 @@ public abstract class Entity implements Positioned {
 	}
 
 	@Override
-	public double getX() {
+	public double x() {
 		return this.x;
 	}
 
 	@Override
-	public double getY() {
+	public double y() {
 		return this.y;
 	}
 

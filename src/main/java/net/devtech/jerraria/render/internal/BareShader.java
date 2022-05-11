@@ -24,6 +24,8 @@ import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL40;
 
 public class BareShader {
 	public static BareShader activeShader;
@@ -47,8 +49,8 @@ public class BareShader {
 		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders = new Object2IntOpenHashMap<>();
 		Map<Id, BareShader> compiledShaders = new HashMap<>();
 		for(Uncompiled uncompiled : shaders) {
-			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled, GL_FRAGMENT_SHADER);
-			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled, GL_VERTEX_SHADER);
+			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
+			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
 			int program = glCreateProgram();
 			glAttachShader(program, vertexShader);
 			glAttachShader(program, fragmentShader);
@@ -58,8 +60,8 @@ public class BareShader {
 				System.err.println(glGetProgramInfoLog(program));
 			}
 
-			VAO vertex = new VAO(uncompiled.vertexFields, program);
-			UniformData uniform = new UniformData(uncompiled.uniformFields, program);
+			VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
+			UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
 			BareShader shader = new BareShader(program, vertex, uniform);
 			compiledShaders.put(uncompiled.id, shader);
 		}
@@ -70,22 +72,32 @@ public class BareShader {
 
 	private static int getOrCompileShader(Function<Id, String> src,
 		Object2IntMap<Id> cache,
-		Uncompiled shader, int type) {
-		return cache.computeIfAbsent(shader.vert, (Id id) -> {
+		Id sourceId, int type) {
+		return cache.computeIfAbsent(sourceId, (Id id) -> {
 			String source = src.apply(id);
-			int vertexShader = glCreateShader(type);
-			glShaderSource(vertexShader, source);
-			glCompileShader(vertexShader);
-			return vertexShader;
+			int glId = glCreateShader(type);
+			glShaderSource(glId, source);
+			glCompileShader(glId);
+			return glId;
 		});
 	}
 
-	public void draw(int primitive) {
+	private boolean setupDraw() {
 		glUseProgram(this.glId);
 		boolean forceReupload = activeShader != this;
 		this.uniforms.bind(forceReupload);
 		activeShader = this;
+		return forceReupload;
+	}
+
+	public void draw(int primitive) {
+		boolean forceReupload = this.setupDraw();
 		this.vao.bindAndDraw(primitive, forceReupload);
+	}
+
+	public void drawInstanced(int primitive, int count) {
+		boolean forceReupload = this.setupDraw();
+		this.vao.bindAndDrawInstanced(primitive, count, forceReupload);
 	}
 
 	public static final class Uncompiled {
@@ -110,13 +122,8 @@ public class BareShader {
 			this.uniformFields = new HashMap<>();
 		}
 
-		public Uncompiled vert(DataType type, String name) {
-			this.vertexFields.put(name, new Field(type, name));
-			return this;
-		}
-
-		public Uncompiled uniform(DataType type, String name) {
-			this.uniformFields.put(name, new Field(type, name));
+		public Uncompiled vert(DataType type, String name, String groupName) {
+			this.vertexFields.put(name, new Field(type, name, groupName));
 			return this;
 		}
 
@@ -125,11 +132,11 @@ public class BareShader {
 			return this;
 		}
 
-		public Uncompiled type(GlValue.Loc type, DataType local, String name) {
+		public Uncompiled type(GlValue.Loc type, DataType local, String name, String groupName) {
 			if(type == GlValue.Loc.UNIFORM) {
-				return uniform(local, name);
+				return uniform(local, name, groupName);
 			} else {
-				return vert(local, name);
+				return vert(local, name, groupName);
 			}
 		}
 	}

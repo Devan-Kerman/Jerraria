@@ -2,6 +2,7 @@ package net.devtech.jerraria.render.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.registry.Id;
@@ -73,16 +74,26 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public final void render(Primitive primitive) {
-		if(this.vertices % primitive.vertexCount != 0) {
-			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for rendering " + primitive + " but found " + this.vertices);
-		}
-		this.endOfVertex();
+		this.endVertex(primitive);
 		this.shader.draw(primitive.glId);
+	}
+
+	public final void renderInstanced(Primitive primitive, int count) {
+		this.endVertex(primitive);
+		this.shader.drawInstanced(primitive.glId, count);
 	}
 
 	public final void renderAndFlush(Primitive primitive) {
 		this.render(primitive);
-		this.shader.vao.flush();
+		this.flush();
+	}
+
+	private void endVertex(Primitive primitive) {
+		if(this.vertices % primitive.vertexCount != 0) {
+			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for " +
+			                                   "rendering " + primitive + " but found " + this.vertices);
+		}
+		this.endOfVertex();
 	}
 
 	public final void flush() {
@@ -154,7 +165,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		public GlData.Element getValue() {
 			GlData.Element value = this.value;
 			if(value == null) {
-				this.value = value = this.shader.shader.uniforms.getElement(this.name);
+				this.value = value = Objects.requireNonNull(this.shader.shader.uniforms.getElement(this.name), "unable to find element " + this.name);
 				this.name = null;
 				this.shader = null;
 			}

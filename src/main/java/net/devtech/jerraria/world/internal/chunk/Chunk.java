@@ -224,12 +224,15 @@ public class Chunk implements Executor {
 	 * @return if there are more tasks to execute
 	 */
 	public boolean runTasks() {
+		boolean run = false;
 		for(int i = this.immediateTasks.size() - 1; i >= 0; i--) {
 			Runnable runnable = this.immediateTasks.remove(i);
 			runnable.run();
+			run = true;
 		}
-		return !this.immediateTasks.isEmpty();
+		return run;
 	}
+
 
 	public long getId() {
 		return combineInts(this.chunkX, this.chunkY);
@@ -361,7 +364,7 @@ public class Chunk implements Executor {
 		TileVariant variant = data != null ? data.getVariant() : null;
 		if(action instanceof TemporaryTileData.Tickable t) {
 			variant = this.get(action.getLayer(), action.getLocalX(), action.getLocalY());
-			if(variant.hasBlockData()) {
+			if(variant.hasBlockData() && data == null) {
 				data = this.getData(action.getLayer(), action.getLocalX(), action.getLocalY());
 			}
 			t.tick(this,

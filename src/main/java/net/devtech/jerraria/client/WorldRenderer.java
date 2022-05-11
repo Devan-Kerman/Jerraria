@@ -3,7 +3,6 @@ package net.devtech.jerraria.client;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
-import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 
@@ -24,7 +23,7 @@ public class WorldRenderer {
 		int toBlockX   = blockX + extendedOffX,   toBlockY = blockY + extendedOffY;
 
 		// block coordinate of top left corner
-		double fromBlockXScreen = player.getX() - blockScreenWidth / 2f, fromBlockYScreen = player.getY() + blockScreenHeight / 2f;
+		double fromBlockXScreen = player.x() - blockScreenWidth / 2f, fromBlockYScreen = player.y() + blockScreenHeight / 2f;
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
 			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy <= (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
 				int bx = cx * World.CHUNK_SIZE, topLeftY = World.CHUNK_SIZE + cy * World.CHUNK_SIZE;

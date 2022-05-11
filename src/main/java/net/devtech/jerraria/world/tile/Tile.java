@@ -21,6 +21,7 @@ import net.devtech.jerraria.util.access.internal.AccessImpl;
 import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
+import net.devtech.jerraria.util.math.Rectangle;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
@@ -72,15 +73,11 @@ public abstract class Tile implements IdentifiedObject {
 	}
 
 	/**
-	 * @param entity the entity that is colliding with this tile
-	 * @param projectedTrajectory the direction the entity will go if there is no collision
-	 * @param world the world the block is in
-	 * @return null to cancel further block/entity collision handling, this means the block handles entity movement
-	 *  for example if the block is a portal, the block will just update the entity position and return null
+	 * @param timeToGridIntersection the time until the rectangle intersects the blocks area (not it's hitbox)
+	 * @return The time it will take the given rectangle to intersect something important in this block
 	 */
-	public Vec2d handleCollision(Entity entity, Vec2d projectedTrajectory, World world, TileVariant variant, @Nullable TileData data, TileLayers layer, int x, int y) {
-		// todo implement basic collision
-		return projectedTrajectory;
+	public float timeToIntersection(World world, TileVariant variant, TileLayers layer, int x, int y, Entity entity, Rectangle box, float timeToGridIntersection) {
+		return timeToGridIntersection;
 	}
 
 	// properties

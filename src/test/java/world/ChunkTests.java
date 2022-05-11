@@ -35,7 +35,7 @@ public class ChunkTests {
 		Chunk chunk = world.getChunk(10, 10);
 		TileVariant variant = Tiles.DIRT.getDefaultVariant();
 		chunk.ticket();
-		chunk.set(TileLayers.BLOCK, 0, 0, variant);
+		chunk.set(TileLayers.BLOCK, 0, 0, variant, 0, true);
 		chunk.unticket();
 		Chunk after = world.getChunk(10, 10);
 		Assertions.assertEquals(variant, after.get(TileLayers.BLOCK, 0, 0));

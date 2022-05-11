@@ -1,8 +1,10 @@
 package net.devtech.jerraria.render.internal;
 
 import static org.lwjgl.opengl.GL20.glGetAttribLocation;
+import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL31.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL31.glDrawArrays;
+import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.devtech.jerraria.registry.Id;
 import org.lwjgl.opengl.GL30;
 
 public class VAO extends GlData {
@@ -19,14 +22,14 @@ public class VAO extends GlData {
 	final List<ElementGroup> groups;
 	final ElementGroup last;
 
-	public VAO(Map<String, BareShader.Field> fields, int program) {
+	public VAO(Map<String, BareShader.Field> fields, int program, Id id) {
 		Map<String, Element> elements = new HashMap<>();
 		Map<String, ElementGroup> groups = new LinkedHashMap<>();
 		ElementGroup last = null;
 		for(BareShader.Field field : fields.values()) {
 			int location = glGetAttribLocation(program, field.name());
 			if(location == -1) {
-				throw new IllegalArgumentException("Could not find field by name " + field.name());
+				throw new IllegalArgumentException("Could not find field by name " + field.name() + " in " + id);
 			}
 
 			last = groups.computeIfAbsent(field.groupName(false), ElementGroup::new);
@@ -115,13 +118,22 @@ public class VAO extends GlData {
 	}
 
 	public void drawArray(int mode, boolean forceReupload) {
+		this.updateGroups(forceReupload);
+		glDrawArrays(mode, 0, this.last.buffer.vertexCount);
+	}
+
+	public void bindAndDrawInstanced(int mode, int count, boolean reupload) {
+		this.updateGroups(reupload);
+		glDrawArraysInstanced(mode, 0, this.last.buffer.vertexCount, count);
+	}
+
+	private void updateGroups(boolean forceReupload) {
 		for(ElementGroup group : this.groups) {
 			if(forceReupload) {
 				group.reupload = true;
 			}
 			group.upload();
 		}
-		glDrawArrays(mode, 0, this.last.buffer.vertexCount);
 	}
 
 	static int bindVAO() {

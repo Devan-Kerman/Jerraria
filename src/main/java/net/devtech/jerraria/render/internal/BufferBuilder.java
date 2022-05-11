@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
+import static org.lwjgl.opengl.GL15.glBufferSubData;
 import static org.lwjgl.opengl.GL20.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.glBufferData;
 import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
@@ -38,31 +39,6 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.buffer = allocateBuffer(JMath.nearestPowerOf2(expectedSize));
 	}
 
-	/*public interface VertexComparator {
-		int compareTo(float[] primitiveA, float[] primitiveB);
-	}
-
-	public void sortQuads(VertexComparator comparator, GlData.Element vertex, int vertexes) {
-		VAO.Element element = (VAO.Element) vertex; // todo sorts the vertices and not the shapes, uh cope
-		if(element.type() != DataType.F32_VEC3) {
-			throw new UnsupportedOperationException("Coordinates must be of type " + DataType.F32_VEC3);
-		}
-
-		int len = this.vertexLength;
-		byte[] swapBuf = new byte[len];
-		ByteBuffer buffer = this.buffer;
-		Arrays.quickSort(0, this.vertexCount, (k1, k2) -> {
-			int indexA = k1 * len * vertexes;
-			buffer.get(indexA, bufA);
-			int indexB = k2 * len * vertexes;
-			return comparator.compareTo(x1, y1, z1, x2, y2, z2);
-		}, (a, b) -> {
-			buffer.get(len * a, swapBuf, 0, len); // move bytes from a into temp array
-			buffer.put(len * a, buffer, len * b, len); // copy from a -> b
-			buffer.put(len * a, swapBuf);
-		});
-	}*/
-
 	int vertexOffset() {
 		return this.vertexCount * this.vertexLength;
 	}
@@ -86,6 +62,19 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		glBufferData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
 		buffer.limit(lim);
 	}
+
+	void subUpload(boolean isUniform, long offset, int vertexLimit) {
+		if(this.vertexCount >= vertexLimit) {
+			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
+		}
+		ByteBuffer buffer = this.buffer;
+		int lim = buffer.limit();
+		buffer.limit(this.vertexCount * this.vertexLength);
+		buffer.position(0); // restore position to 0
+		glBufferSubData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, offset, buffer);
+		buffer.limit(lim);
+	}
+
 
 	/**
 	 * Ensure the BufferBuilder has enough space to add the given amount of bytes to it

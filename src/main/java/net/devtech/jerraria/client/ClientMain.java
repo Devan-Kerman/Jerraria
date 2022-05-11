@@ -16,6 +16,9 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
+import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.types.Vec3;
+import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -33,7 +36,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class ClientMain {
 	static {
-		//System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
+		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
 	}
 
 	public static OverlayDirectory clientResources;
@@ -87,34 +90,34 @@ public class ClientMain {
 			test.setDelayUpdates();
 			for (int x = 0; x < 256; x++) {
 				for (int y = 0; y < 256; y++) {
-					test.set(TileLayers.BLOCK, x, y, Tiles.DIRT.getDefaultVariant());
+					test.set(TileLayers.BLOCK, x, y, Tiles.DIRT.getDefaultVariant(), 0, false);
 				}
 			}
 			test.flushUpdates();
 
-			value.set(TileLayers.BLOCK, 1, 4, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 4, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 4, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 4, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 2, 4, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 3, 4, Tiles.DIRT.getDefaultVariant(), 0, false);
 
-			value.set(TileLayers.BLOCK, 0, 3, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 3, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 3, Tiles.GRASS.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 3, Tiles.GRASS.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 3, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 1, 3, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 2, 3, Tiles.GRASS.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 3, 3, Tiles.GRASS.getDefaultVariant(), 0, false);
 
-			value.set(TileLayers.BLOCK, 0, 2, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 2, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 2, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 2, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 2, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 1, 2, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 2, 2, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 3, 2, Tiles.DIRT.getDefaultVariant(), 0, false);
 
-			value.set(TileLayers.BLOCK, 0, 1, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 1, 1, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 2, 1, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 1, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 0, 1, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 1, 1, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 2, 1, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 3, 1, Tiles.DIRT.getDefaultVariant(), 0, false);
 
-			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 10, 0, Tiles.DIRT.getDefaultVariant());
-			value.set(TileLayers.BLOCK, 11, 0, Tiles.DIRT.getDefaultVariant());
+			value.set(TileLayers.BLOCK, 1, 0, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 3, 0, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 10, 0, Tiles.DIRT.getDefaultVariant(), 0, false);
+			value.set(TileLayers.BLOCK, 11, 0, Tiles.DIRT.getDefaultVariant(), 0, false);
 
 			Entity player = new PlayerEntity(null);
 
@@ -122,10 +125,10 @@ public class ClientMain {
 			GLFW.glfwSetKeyCallback(ClientInit.glMainWindow, (window, key, scancode, action, mods) -> {
 				if(action == GLFW.GLFW_PRESS) {
 					switch (key) {
-						case GLFW.GLFW_KEY_LEFT -> player.updatePosition(world, player.getX()-1, player.getY());
-						case GLFW.GLFW_KEY_RIGHT -> player.updatePosition(world, player.getX()+1, player.getY());
-						case GLFW.GLFW_KEY_UP -> player.updatePosition(world, player.getX(), player.getY()+1);
-						case GLFW.GLFW_KEY_DOWN -> player.updatePosition(world, player.getX(), player.getY()-1);
+						case GLFW.GLFW_KEY_LEFT -> player.updatePosition(world, player.x() - 1, player.y());
+						case GLFW.GLFW_KEY_RIGHT -> player.updatePosition(world, player.x() + 1, player.y());
+						case GLFW.GLFW_KEY_UP -> player.updatePosition(world, player.x(), player.y() + 1);
+						case GLFW.GLFW_KEY_DOWN -> player.updatePosition(world, player.x(), player.y() - 1);
 						case GLFW.GLFW_KEY_EQUAL -> scale[0] *= 2;
 						case GLFW.GLFW_KEY_MINUS -> scale[0] = Math.max(scale[0] / 2, 2);
 					}
@@ -133,14 +136,25 @@ public class ClientMain {
 				}
 			});
 
-			RenderThread.addRenderStage(() -> {
+			/*RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
 				renderer.render(mat, player, scale[0], scale[0]);
-			}, 10);
+			}, 10);*/
+
+			Matrix3f mat = new Matrix3f();
+			RenderThread.addRenderStage(() -> {
+				InstancedSolidColorShader shader = InstancedSolidColorShader.INSTANCE;
+				shader.drawRect(mat, 0, 0, .1f, .1f, 0xFFFFFFFF);
+				for(Vec3.F<?> offset : shader.offsets) {
+					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
+				}
+				shader.renderInstanced(Primitive.TRIANGLE, 32);
+				shader.flush();
+			}, 100);
 			// test code
 
 			RenderThread.startRender();
