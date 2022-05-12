@@ -53,7 +53,7 @@ public abstract class Id implements Comparable<Id> {
 		return this.packedNamespace;
 	}
 
-	public final String unpackNamespace() {
+	public final String mod() {
 		return IdentifierPacker.unpack(this.packedNamespace);
 	}
 
@@ -62,7 +62,7 @@ public abstract class Id implements Comparable<Id> {
 	 */
 	public abstract long getPath();
 
-	public abstract String getUnpackedPath();
+	public abstract String path();
 
 	public long getPackedNamespace() {
 		return packedNamespace;
@@ -82,7 +82,7 @@ public abstract class Id implements Comparable<Id> {
 		}
 
 		@Override
-		public String getUnpackedPath() {
+		public String path() {
 			return IdentifierPacker.unpack(this.path);
 		}
 
@@ -134,7 +134,7 @@ public abstract class Id implements Comparable<Id> {
 		}
 
 		@Override
-		public String getUnpackedPath() {
+		public String path() {
 			return this.packed;
 		}
 
@@ -183,6 +183,6 @@ public abstract class Id implements Comparable<Id> {
 
 	@Override
 	public String toString() {
-		return this.unpackNamespace() + ":" + this.getUnpackedPath();
+		return this.mod() + ":" + this.path();
 	}
 }

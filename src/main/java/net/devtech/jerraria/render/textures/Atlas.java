@@ -300,9 +300,9 @@ public class Atlas {
 		List<VirtualFile.Regular> animations = new ArrayList<>(); // process at end
 		List<VirtualFile> toProcess = new ArrayList<>();
 		List<VirtualFile> atlasDefinitions = source
-			.resolveDirectory(atlasId.unpackNamespace())
+			.resolveDirectory(atlasId.mod())
 			.resolveDirectory("atlas")
-			.resolveAll(atlasId.getUnpackedPath() + ".txt");
+			.resolveAll(atlasId.path() + ".txt");
 
 		LoadRender definitions = render.substage("Reading definitions [%d/%d]", atlasDefinitions.size());
 		for(VirtualFile definition : atlasDefinitions) {

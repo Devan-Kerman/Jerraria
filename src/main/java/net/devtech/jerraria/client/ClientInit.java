@@ -67,9 +67,9 @@ class ClientInit {
 		ShaderManager.VERT_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".vert"));
 		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
 			VirtualFile shaders = directory
-				.resolveDirectory(id.unpackNamespace())
+				.resolveDirectory(id.mod())
 				.resolveDirectory("shaders")
-				.resolve(id.getUnpackedPath() + "." + Validate.PROPERTIES_FILE_EXTENSION);
+				.resolve(id.path() + "." + Validate.PROPERTIES_FILE_EXTENSION);
 			if(shaders != null) {
 				try(var input = shaders.asRegular().read()) {
 					Properties properties = new Properties();
@@ -137,9 +137,9 @@ class ClientInit {
 	@NotNull
 	private static String findShaderSource(VirtualFile.Directory directory, Id shaderId, String extension) {
 		VirtualFile.Regular shader = directory
-			.resolveDirectory(shaderId.unpackNamespace())
+			.resolveDirectory(shaderId.mod())
 			.resolveDirectory("shaders")
-			.resolveFile(shaderId.getUnpackedPath() + extension);
+			.resolveFile(shaderId.path() + extension);
 		String source;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(shader.read()))) {
 			source = reader.lines().collect(Collectors.joining("\n"));
