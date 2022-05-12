@@ -1,7 +1,7 @@
 package net.devtech.jerraria.world.entity;
 
 import net.devtech.jerraria.jerraria.Entities;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import org.jetbrains.annotations.ApiStatus;

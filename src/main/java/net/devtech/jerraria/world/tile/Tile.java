@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.jerraria.Tiles;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.hacks.Func;
@@ -22,7 +22,6 @@ import net.devtech.jerraria.util.access.priority.PriorityKey;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.func.ArrayFunc;
 import net.devtech.jerraria.util.math.Rectangle;
-import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;

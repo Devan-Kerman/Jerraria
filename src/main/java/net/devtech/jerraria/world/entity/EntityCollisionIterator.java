@@ -3,7 +3,6 @@ package net.devtech.jerraria.world.entity;
 import java.util.Iterator;
 import java.util.List;
 
-import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.util.math.Pos2d;
 import net.devtech.jerraria.util.math.Rectangle;
 import net.devtech.jerraria.util.math.Vec2d;

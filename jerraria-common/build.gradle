@@ -1,0 +1,6 @@
+version '1.0.0'
+
+dependencies {
+	api 'it.unimi.dsi:fastutil:8.5.8'
+	api 'org.jetbrains:annotations:23.0.0'
+}

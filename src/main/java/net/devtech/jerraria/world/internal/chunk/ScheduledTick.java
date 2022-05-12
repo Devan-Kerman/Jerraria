@@ -1,6 +1,6 @@
 package net.devtech.jerraria.world.internal.chunk;
 
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.world.TileLayers;

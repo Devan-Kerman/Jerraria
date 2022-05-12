@@ -1,6 +1,6 @@
 package net.devtech.jerraria.jerraria;
 
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.world.entity.Entity;

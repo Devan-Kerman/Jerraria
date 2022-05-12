@@ -10,14 +10,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.render.textures.Textures;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.render.textures.Atlas;
-import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.collect.RandomCollection;
 import net.devtech.jerraria.util.Validate;
@@ -86,7 +86,7 @@ class ClientInit {
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
 
 		try {
-			asciiAtlasId = Texture.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
+			asciiAtlasId = Textures.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}

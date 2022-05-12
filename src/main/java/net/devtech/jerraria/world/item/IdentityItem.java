@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.item;
 import java.util.function.Function;
 
 import net.devtech.jerraria.jerraria.Items;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.util.Validate;

@@ -1,11 +1,11 @@
 package net.devtech.jerraria.render.shaders;
 
-import net.devtech.jerraria.registry.Id;
-import net.devtech.jerraria.render.api.types.Color;
-import net.devtech.jerraria.render.api.types.End;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
+import net.devtech.jerraria.render.api.types.Color;
+import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.math.Matrix3f;
 

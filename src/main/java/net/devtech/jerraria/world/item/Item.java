@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.devtech.jerraria.jerraria.item.AirItem;
 import net.devtech.jerraria.jerraria.Items;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.registry.IdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
 import net.devtech.jerraria.jerracode.NativeJCType;

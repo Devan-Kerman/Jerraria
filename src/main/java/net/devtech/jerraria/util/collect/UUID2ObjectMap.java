@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import it.unimi.dsi.fastutil.HashCommon;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 
 public final class UUID2ObjectMap<T> extends AbstractMap<Id.Full, T> {
 	private final float loadFactor;

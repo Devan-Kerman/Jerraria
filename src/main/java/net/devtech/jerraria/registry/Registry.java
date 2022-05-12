@@ -3,6 +3,8 @@ package net.devtech.jerraria.registry;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.IdentifierPacker;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.collect.UUID2ObjectMap;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +18,7 @@ public abstract class Registry<T> {
 	}
 
 	public <C extends T> C register(Id.Full id, C value) {
-		T put = this.map.put(id.packedNamespace, id.getPath(), value);
+		T put = this.map.put(id.getPackedNamespace(), id.getPath(), value);
 		Validate.isNull(put, "multiple values for same id " + id + " " + value + " " + put);
 		return value;
 	}
@@ -25,7 +27,7 @@ public abstract class Registry<T> {
 		if(id instanceof Id.Partial) {
 			return null;
 		} else {
-			return this.getForId(id.packedNamespace, id.getPath());
+			return this.getForId(id.getPackedNamespace(), id.getPath());
 		}
 	}
 

@@ -1,2 +1,4 @@
 rootProject.name = 'Jerraria'
-
+include 'jerraria-common'
+include 'jerraria-rendering'
+include 'jerraria-access'

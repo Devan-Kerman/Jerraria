@@ -18,7 +18,7 @@ import it.unimi.dsi.fastutil.ints.IntObjectImmutablePair;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.jerracode.bin.BinCodec;
 import net.devtech.jerraria.jerracode.bin.BinDecode;
@@ -85,7 +85,7 @@ public final class NativeJCType<T> implements JCType<T, T> {
 	public static final NativeJCType<Id.Full> PACKED_ID = new NativeJCType<>((pool, input) -> {
 		return Id.create(input.readLong(), input.readLong());
 	}, (pool, output, value) -> {
-		output.writeLong(value.packedNamespace);
+		output.writeLong(value.getPackedNamespace());
 		output.writeLong(value.getPath());
 	});
 	public static final NativeJCType<Id.Full> POOLED_PACKED_ID = pooled(PACKED_ID);

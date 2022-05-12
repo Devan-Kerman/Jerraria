@@ -3,7 +3,7 @@ package net.devtech.jerraria.world.tile.render;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.tile.render.ShaderSource.ShaderConfigurator;
 
 public record ShaderKey<T extends Shader<?>>(Id id,

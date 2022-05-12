@@ -3,7 +3,7 @@ package net.devtech.jerraria.render.shaders;
 import java.util.function.Supplier;
 
 import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
@@ -55,7 +55,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>>
 
 	public static ShaderKey<ColoredTextureShader> keyFor(Id name, Supplier<Atlas> atlasSupplier) {
 		return new ShaderKey<>(name, (c, s) -> {
-			s.texture.atlas(atlasSupplier.get());
+			s.texture.atlas(atlasSupplier.get().asTexture());
 			s.mat.mat(c);
 		}, INSTANCE);
 	}

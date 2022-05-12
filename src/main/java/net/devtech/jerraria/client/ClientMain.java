@@ -20,7 +20,6 @@ import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.types.Vec3;
-import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -138,48 +137,14 @@ public class ClientMain {
 				}
 			});
 
-			/*RenderThread.addRenderStage(() -> {
+			RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
 				renderer.render(mat, player, scale[0], scale[0]);
-			}, 10);*/
-
-			Matrix3f mat = new Matrix3f();
-			RenderThread.addRenderStage(() -> {
-				InstancedSolidColorShader shader = InstancedSolidColorShader.INSTANCE;
-				shader.drawRect(mat, 0, 0, .1f, .1f);
-				for(Vec3.F<?> offset : shader.offsets) {
-					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
-				}
-
-				for(Vec3.F<?> color : shader.colors) {
-					color.vec3f(1, 1, 1);
-				}
-
-				shader.renderInstanced(Primitive.TRIANGLE, 32);
-				shader.deleteVertexData();
-
-				InstancedSolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH);
-				copy.renderInstanced(Primitive.TRIANGLE, 32);
-				copy.deleteVertexData();
-
-				for(Vec3.F<?> offset : shader.offsets) {
-					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
-				}
-
-				for(Vec3.F<?> color : shader.colors) {
-					color.vec3f(.5f, 1, 1);
-				}
-
-				shader.deleteVertexData();
-				shader.drawRect(mat, 0, 0, .1f, .1f);
-				shader.renderInstanced(Primitive.TRIANGLE, 32);
-				shader.deleteVertexData();
-			}, 100);
-			// test code
+			}, 10);
 
 			RenderThread.startRender();
 			// close game

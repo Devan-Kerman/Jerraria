@@ -6,7 +6,7 @@ import java.util.Set;
 
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
 

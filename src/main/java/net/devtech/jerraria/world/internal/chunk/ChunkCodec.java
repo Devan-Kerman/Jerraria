@@ -21,7 +21,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.devtech.jerraria.jerraria.Entities;
 import net.devtech.jerraria.jerraria.Tiles;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.jerracode.NativeJCType;

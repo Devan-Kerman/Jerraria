@@ -2,6 +2,7 @@ package net.devtech.jerraria.registry;
 
 import java.util.function.Function;
 
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 
 public abstract class DefaultIdentifiedObject implements IdentifiedObject {

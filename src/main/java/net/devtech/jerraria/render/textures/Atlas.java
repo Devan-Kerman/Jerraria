@@ -1,6 +1,25 @@
 package net.devtech.jerraria.render.textures;
 
-import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL31.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL31.GL_NEAREST;
+import static org.lwjgl.opengl.GL31.GL_READ_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL31.GL_RGBA;
+import static org.lwjgl.opengl.GL31.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL31.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL31.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL31.GL_UNPACK_ALIGNMENT;
+import static org.lwjgl.opengl.GL31.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL31.glBindFramebuffer;
+import static org.lwjgl.opengl.GL31.glBindTexture;
+import static org.lwjgl.opengl.GL31.glCopyTexSubImage2D;
+import static org.lwjgl.opengl.GL31.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL31.glGenFramebuffers;
+import static org.lwjgl.opengl.GL31.glGenTextures;
+import static org.lwjgl.opengl.GL31.glPixelStorei;
+import static org.lwjgl.opengl.GL31.glTexImage2D;
+import static org.lwjgl.opengl.GL31.glTexParameterf;
+import static org.lwjgl.opengl.GL31.glTexSubImage2D;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +41,7 @@ import java.util.concurrent.Executor;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.LoadRender;
-import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
 
