@@ -29,6 +29,7 @@ ext.lwjglNatives = 'natives-windows'
 
 dependencies {
 	api project(":jerraria-rendering")
+	api project(":jerraria-access")
 	implementation 'org.ow2.asm:asm:9.3'
 	implementation 'org.ow2.asm:asm-commons:9.3'
 	implementation 'com.google.guava:guava:31.1-jre'
