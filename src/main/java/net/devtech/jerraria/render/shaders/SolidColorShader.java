@@ -12,11 +12,11 @@ import net.devtech.jerraria.util.math.Matrix3f;
 public class SolidColorShader extends Shader<Color.RGB<Vec3.F<End>>> {
 	public static final SolidColorShader INSTANCE = createShader(Id.create("jerraria", "solid_color"), SolidColorShader::new, SolidColorShader::new);
 
-	public SolidColorShader(Id id, VFBuilder<End> builder, Object function) {
+	protected SolidColorShader(Id id, VFBuilder<End> builder, Object function) {
 		super(id, builder.add(Vec3.f("pos")).add(Color.rgb("color")), function);
 	}
 
-	public SolidColorShader(SolidColorShader shader, SCopy copy) {
+	protected SolidColorShader(SolidColorShader shader, SCopy copy) {
 		super(shader, copy);
 	}
 

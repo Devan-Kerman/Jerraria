@@ -1,25 +1,39 @@
 package net.devtech.jerraria.render.api.types;
 
+import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.util.math.Matrix3f;
 
+/**
+ * A 3d vector of a primitive gl value
+ */
 public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
+	/**
+	 * A 3d float vector vertex attribute or uniform
+	 * @param name the full path of the vertex attribute or uniform in the shader {@link #simple(SimpleType, DataType, String)}
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.F<N>> f(String name) {
 		return f(name, null);
 	}
 
+	/**
+	 * A 3d int vector vertex attribute or uniform
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.I<N>> i(String name) {
 		return i(name, null);
 	}
 
+	/**
+	 * @see #simple(SimpleType, DataType, String, String)
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.F<N>> f(String name, String groupName) {
-		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32_VEC3, name, groupName);
+		return simple(F::new, DataType.F32_VEC3, name, groupName);
 	}
 
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.I<N>> i(String name, String groupName) {
-		return simple((data1, next1) -> new I<>(data1, next1, name), DataType.I32_VEC3, name, groupName);
+		return simple(I::new, DataType.I32_VEC3, name, groupName);
 	}
 
 	protected Vec3(GlData data, GlValue<?> next, String name) {

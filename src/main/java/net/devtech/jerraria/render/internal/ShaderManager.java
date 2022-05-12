@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.api.GlValue;
+import net.devtech.jerraria.render.api.SCopy;
 
 public class ShaderManager {
 	public static final List<Function<Id, String>> FRAG_SOURCES = new ArrayList<>(), VERT_SOURCES = new ArrayList<>();
@@ -20,7 +21,13 @@ public class ShaderManager {
 	public record ShaderPair(Id frag, Id vert) {}
 
 	public static BareShader getBareShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms) {
-		return SHADER_CACHE.computeIfAbsent(id, id2 -> getShader(id2, vertex, uniforms));
+		BareShader shader = SHADER_CACHE.get(id);
+		if(shader == null) {
+			SHADER_CACHE.put(id, shader = getShader(id, vertex, uniforms));
+		} else {
+			shader = new BareShader(shader, SCopy.PRESERVE_NEITHER);
+		}
+		return shader;
 	}
 
 	private static <T> Function<Id, T> findFirst(List<Function<Id, T>> list) {

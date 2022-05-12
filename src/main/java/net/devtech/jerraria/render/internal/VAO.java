@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
+import static org.lwjgl.opengl.GL14.glMultiDrawArrays;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL31.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL31.glBindBuffer;

@@ -14,6 +14,10 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
 import org.lwjgl.opengl.GL20;
 
+/**
+ * Un-abstracted view of a "shader object" (think VAO or UBO) thing.
+ *  The shader object has its own VAO and its own UBO.
+ */
 public class BareShader {
 	public static final Cleaner GL_CLEANUP = Cleaner.create();
 	public static BareShader activeShader;
@@ -72,7 +76,12 @@ public class BareShader {
 	}
 
 	private void setupDraw() {
-		glUseProgram(this.glId); // maybe ignore this part
+		int id = this.glId;
+		BareShader active = activeShader;
+		if(active == null || active.glId != id) {
+			glUseProgram(id);
+			activeShader = this;
+		}
 		this.uniforms.upload();
 	}
 

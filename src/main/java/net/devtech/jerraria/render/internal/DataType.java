@@ -1,6 +1,7 @@
 package net.devtech.jerraria.render.internal;
 
 import static org.lwjgl.opengl.GL31.*;
+
 public enum DataType {
 	BOOL(GL_BOOL, 1, "bool"),
 	I8(GL_BYTE, 1, "int"),

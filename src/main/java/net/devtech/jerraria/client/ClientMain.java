@@ -19,7 +19,6 @@ import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.render.api.Primitive;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
@@ -161,11 +160,11 @@ public class ClientMain {
 				}
 
 				shader.renderInstanced(Primitive.TRIANGLE, 32);
-				shader.flush();
+				shader.deleteVertexData();
 
 				InstancedSolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH);
 				copy.renderInstanced(Primitive.TRIANGLE, 32);
-				copy.flush();
+				copy.deleteVertexData();
 
 				for(Vec3.F<?> offset : shader.offsets) {
 					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
@@ -175,10 +174,10 @@ public class ClientMain {
 					color.vec3f(.5f, 1, 1);
 				}
 
-				shader.flush();
+				shader.deleteVertexData();
 				shader.drawRect(mat, 0, 0, .1f, .1f);
 				shader.renderInstanced(Primitive.TRIANGLE, 32);
-				shader.flush();
+				shader.deleteVertexData();
 			}, 100);
 			// test code
 

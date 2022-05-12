@@ -65,7 +65,6 @@ class ClientInit {
 
 		ShaderManager.FRAG_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".frag"));
 		ShaderManager.VERT_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".vert"));
-
 		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
 			VirtualFile shaders = directory
 				.resolveDirectory(id.unpackNamespace())
@@ -85,6 +84,7 @@ class ClientInit {
 			return null;
 		});
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
+
 		try {
 			asciiAtlasId = Texture.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
 		} catch(IOException e) {
@@ -115,8 +115,8 @@ class ClientInit {
 			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
 
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
-			box.renderAndFlush(Primitive.TRIANGLE);
-			text.renderAndFlush(Primitive.TRIANGLE);
+			box.renderAndDelete(Primitive.TRIANGLE);
+			text.renderAndDelete(Primitive.TRIANGLE);
 			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 			GLFW.glfwPollEvents();
 

@@ -123,8 +123,39 @@ public class UniformData extends GlData {
 			group.reupload = true;
 			BufferBuilder buffer = group.buffer;
 			ByteBuffer byteBuf = buffer.buffer;
-			byteBuf.position(((VAO.Element) element).byteOffset());
+			byteBuf.position(e.byteOffset());
 			return buffer;
+		}
+	}
+
+	public void copyTo(Element from, UniformData toData, Element to) {
+		if(from instanceof LazyElement l) {
+			from = l.getValue();
+		}
+		if(to instanceof LazyElement l) {
+			to = l.getValue();
+		}
+
+		if(to.getClass() != from.getClass()) {
+			throw new IllegalArgumentException("Either both or neither uniforms must be in an interface block");
+		}
+		if(from instanceof StandardUniform standard) {
+			Uniform fromUniform = this.uniforms.get(standard.uniformIndex);
+			Uniform toUniform = this.uniforms.get(((StandardUniform) to).uniformIndex);
+			fromUniform.copyTo(toUniform);
+			toUniform.rebind = true;
+		} else {
+			VAO.Element fromE = (VAO.Element) from;
+			VAO.Element toE = (VAO.Element) to;
+			if(fromE.type() != toE.type()) {
+				throw new IllegalArgumentException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
+			}
+			UniformBufferBlock fromGroup = this.groups.get(fromE.groupIndex());
+			UniformBufferBlock toGroup = toData.groups.get(toE.groupIndex());
+			ByteBuffer fromBuffer = fromGroup.buffer.buffer;
+			ByteBuffer toBuffer = toGroup.buffer.buffer;
+			toBuffer.put(toE.byteOffset(), fromBuffer, fromE.byteOffset(), fromE.type().byteCount);
+			toGroup.reupload = true;
 		}
 	}
 

@@ -1,21 +1,33 @@
 package net.devtech.jerraria.render.api.types;
 
+import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.util.math.Matrix3f;
 
-public abstract class Mat3<N extends GlValue<?>> extends GlValue<N> implements GlValue.Attribute, GlValue.Uniform {
-	final String name;
-	final GlData.Element element;
+/**
+ * A 3xn matrix value.
+ * @see AbstractGlValue
+ */
+public abstract class Mat3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
 	protected Mat3(GlData data, GlValue next, String name) {
-		super(data, next);
-		this.name = name;
-		this.element = data.getElement(name);
+		super(data, next, name);
 	}
 
+	/**
+	 * A 3x3 matrix vertex attribute or uniform
+	 * @param name the full path of the vertex attribute or uniform in the shader {@link #simple(SimpleType, DataType, String)}
+	 */
 	public static <N extends GlValue<?>> Type<Mat3.x3<N>> mat3(String name) {
-		return simple((data1, next1) -> new Mat3.x3<>(data1, next1, name), DataType.MAT3, name);
+		return mat3(name, null);
+	}
+
+	/**
+	 * @see #simple(SimpleType, DataType, String, String)
+	 */
+	public static <N extends GlValue<?>> Type<Mat3.x3<N>> mat3(String name, String groupName) {
+		return simple(Mat3.x3::new, DataType.MAT3, name, groupName);
 	}
 
 	public static class x3<N extends GlValue<?>> extends Mat3<N> {

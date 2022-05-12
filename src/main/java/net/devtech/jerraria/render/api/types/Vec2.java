@@ -1,22 +1,44 @@
 package net.devtech.jerraria.render.api.types;
 
+import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.render.textures.Texture;
 
-public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
-
-	public static <N extends GlValue<?>> Type<Vec2.F<N>> f(String name) {
-		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32_VEC2, name);
-	}
-
-	public static <N extends GlValue<?>> Type<Vec2.I<N>> i(String name) {
-		return simple((data1, next1) -> new I<>(data1, next1, name), DataType.I32_VEC2, name);
-	}
-
+/**
+ * A 2d vector of a primitive gl value
+ */
+public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N>
+	implements GlValue.Attribute, GlValue.Uniform {
 	protected Vec2(GlData data, GlValue<?> next, String name) {
 		super(data, next, name);
+	}
+
+	/**
+	 * A 2d float vector vertex attribute or uniform
+	 * @param name the full path of the vertex attribute or uniform in the shader {@link #simple(SimpleType, DataType, String)}
+	 */
+	public static <N extends GlValue<?>> Type<Vec2.F<N>> f(String name) {
+		return f(name, null);
+	}
+
+	/**
+	 * A 2d int vector vertex attribute or uniform
+	 */
+	public static <N extends GlValue<?>> Type<Vec2.I<N>> i(String name) {
+		return i(name, null);
+	}
+
+	/**
+	 * @see #simple(SimpleType, DataType, String, String)
+	 */
+	public static <N extends GlValue<?>> Type<Vec2.F<N>> f(String name, String groupName) {
+		return simple(F::new, DataType.F32_VEC2, name, groupName);
+	}
+
+	public static <N extends GlValue<?>> Type<Vec2.I<N>> i(String name, String groupName) {
+		return simple(I::new, DataType.I32_VEC2, name, groupName);
 	}
 
 	public static class F<N extends GlValue<?>> extends Vec2<N> {
@@ -30,7 +52,10 @@ public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N> impl
 		}
 
 		public N uv(Texture texture, float u, float v) {
-			return this.vec2f(texture.getFudgedOffX() + texture.getFudgedWidth() * u, texture.getFudgedOffY() + texture.getFudgedHeight() * v);
+			return this.vec2f(
+				texture.getFudgedOffX() + texture.getFudgedWidth() * u,
+				texture.getFudgedOffY() + texture.getFudgedHeight() * v
+			);
 		}
 	}
 

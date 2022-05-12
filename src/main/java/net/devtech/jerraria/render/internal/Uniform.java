@@ -43,7 +43,10 @@ public abstract class Uniform implements GlData.Buf {
 	}
 
 	public static Uniform copy(Uniform uniform) {
-		return uniform.copy();
+		Uniform copy = createNew(uniform);
+		uniform.copyTo(copy);
+		copy.rebind = true;
+		return copy;
 	}
 
 	@Override
@@ -81,11 +84,11 @@ public abstract class Uniform implements GlData.Buf {
 		throw new UnsupportedOperationException();
 	}
 
+	abstract void copyTo(Uniform uniform);
+
 	abstract void reset();
 
 	abstract void upload();
-
-	abstract Uniform copy();
 
 	static class Matrix extends Uniform {
 		final FloatBuffer buf;
@@ -102,6 +105,12 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
+		void copyTo(Uniform uniform) {
+			Matrix matrix = (Matrix) uniform;
+			matrix.buf.put(this.buf);
+		}
+
+		@Override
 		void reset() {
 			this.buf.position(0);
 		}
@@ -115,13 +124,6 @@ public abstract class Uniform implements GlData.Buf {
 				case 16 -> glUniformMatrix4fv(this.location, false, this.buf);
 				default -> throw new UnsupportedOperationException("Unsupported matrix size " + this.type.elementCount);
 			}
-		}
-
-		@Override
-		Uniform copy() {
-			Matrix matrix = new Matrix(this.type, this.location);
-			matrix.buf.put(this.buf);
-			return matrix;
 		}
 	}
 
@@ -153,10 +155,9 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		Uniform copy() {
-			Sampler texture = new Sampler(this.type, this.location, this.textureUnit);
+		void copyTo(Uniform uniform) {
+			Sampler texture = (Sampler) uniform;
 			texture.textureId = this.textureId;
-			return texture;
 		}
 	}
 
@@ -201,6 +202,16 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
+		void copyTo(Uniform uniform) {
+			Int copy = (Int) uniform;
+			copy.index = this.index;
+			copy.a = this.a;
+			copy.b = this.b;
+			copy.c = this.c;
+			copy.d = this.d;
+		}
+
+		@Override
 		void reset() {
 			this.index = 0;
 		}
@@ -215,16 +226,6 @@ public abstract class Uniform implements GlData.Buf {
 			}
 		}
 
-		@Override
-		Uniform copy() {
-			Int copy = new Int(this.type, this.location);
-			copy.index = this.index;
-			copy.a = this.a;
-			copy.b = this.b;
-			copy.c = this.c;
-			copy.d = this.d;
-			return copy;
-		}
 	}
 
 	static class Float extends Uniform {
@@ -263,14 +264,13 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		Uniform copy() {
-			Float copy = new Float(this.type, this.location);
+		void copyTo(Uniform uniform) {
+			Float copy = (Float) uniform;
 			copy.index = this.index;
 			copy.a = this.a;
 			copy.b = this.b;
 			copy.c = this.c;
 			copy.d = this.d;
-			return copy;
 		}
 	}
 }

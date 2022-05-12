@@ -1,0 +1,29 @@
+package net.devtech.jerraria.render.internal;
+
+import java.util.Objects;
+
+import net.devtech.jerraria.render.api.Shader;
+
+public final class LazyElement implements GlData.Element {
+	Shader<?> shader;
+	String name;
+	GlData.Element value;
+
+	public LazyElement(Shader<?> shader, String name) {
+		this.shader = shader;
+		this.name = name;
+	}
+
+	public GlData.Element getValue() {
+		GlData.Element value = this.value;
+		if(value == null) {
+			this.value = value = Objects.requireNonNull(
+				this.shader.getShader().uniforms.getElement(this.name),
+				"unable to find element " + this.name
+			);
+			this.name = null;
+			this.shader = null;
+		}
+		return value;
+	}
+}

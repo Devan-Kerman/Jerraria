@@ -1,28 +1,41 @@
 package net.devtech.jerraria.render.api.types;
 
+import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 
 /**
+ * A packed RGB or ARGB color that is sent to the GPU as an int for efficiency.
+ *
  * For uniform Colors, use an int and https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/unpackUnorm.xhtml in your shader.
- * @param <N>
  */
 public abstract class Color<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
+
+	/**
+	 * A non-translucent color vertex attribute or uniform
+	 * @param name the full path of the vertex attribute or uniform in the shader {@link #simple(SimpleType, DataType, String)}
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<RGB<N>> rgb(String name) {
 		return rgb(name, null);
 	}
 
+	/**
+	 * A translucent color vertex attribute or uniform, accepts alpha values
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<ARGB<N>> argb(String name) {
 		return argb(name, null);
 	}
 
+	/**
+	 * @see #simple(SimpleType, DataType, String, String)
+	 */
 	public static <N extends GlValue<?>> GlValue.Type<RGB<N>> rgb(String name, String groupName) {
-		return simple((data1, next1) -> new RGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC3, name, groupName);
+		return simple(RGB::new, DataType.NORMALIZED_F8_VEC3, name, groupName);
 	}
 
 	public static <N extends GlValue<?>> GlValue.Type<ARGB<N>> argb(String name, String groupName) {
-		return simple((data1, next1) -> new ARGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC4, name, groupName);
+		return simple(ARGB::new, DataType.NORMALIZED_F8_VEC4, name, groupName);
 	}
 
 	protected Color(GlData data, GlValue<?> next, String name) {
