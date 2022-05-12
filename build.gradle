@@ -30,9 +30,6 @@ ext.lwjglNatives = 'natives-windows'
 dependencies {
 	api project(":jerraria-rendering")
 	api project(":jerraria-access")
-	implementation 'org.ow2.asm:asm:9.3'
-	implementation 'org.ow2.asm:asm-commons:9.3'
-	implementation 'com.google.guava:guava:31.1-jre'
 	implementation 'io.netty:netty-handler:4.1.76.Final'
 	implementation 'io.netty:netty-codec-http:4.1.76.Final'
 	implementation 'io.netty:netty-transport-native-epoll:4.1.76.Final'
