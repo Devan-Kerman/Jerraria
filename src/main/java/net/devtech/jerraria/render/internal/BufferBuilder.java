@@ -1,15 +1,10 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL15.glBufferSubData;
-import static org.lwjgl.opengl.GL20.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL20.glBufferData;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-
+import static org.lwjgl.opengl.GL31.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import net.devtech.jerraria.util.math.JMath;
-import org.lwjgl.opengl.GL20;
 
 public final class BufferBuilder extends ByteBufferGlDataBuf {
 	final int vertexLength;
@@ -59,12 +54,12 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		int lim = buffer.limit();
 		buffer.limit(this.vertexCount * this.vertexLength);
 		buffer.position(0); // restore position to 0
-		glBufferData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, buffer, GL20.GL_STATIC_DRAW);
+		glBufferData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 		buffer.limit(lim);
 	}
 
 	void subUpload(boolean isUniform, long offset, int vertexLimit) {
-		if(this.vertexCount >= vertexLimit) {
+		if(this.vertexCount > vertexLimit) {
 			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
 		}
 		ByteBuffer buffer = this.buffer;

@@ -36,6 +36,9 @@ public abstract class GlValue<N extends GlValue<?>> {
 	public interface Attribute {
 	}
 
+	public interface Uniform {
+	}
+
 	protected static <N extends GlValue<?>> Simple<N> simple(SimpleType<N> type, DataType dataType, String name) {
 		return new Simple<>(type, dataType, name, null);
 	}

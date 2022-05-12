@@ -4,7 +4,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 
-public abstract class V<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
+public abstract class V<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
 
 	public static <N extends GlValue<?>> GlValue.Type<V.F<N>> f(String name) {
 		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32, name);

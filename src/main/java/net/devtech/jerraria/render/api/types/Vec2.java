@@ -5,7 +5,7 @@ import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.render.textures.Texture;
 
-public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
+public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
 
 	public static <N extends GlValue<?>> Type<Vec2.F<N>> f(String name) {
 		return simple((data1, next1) -> new F<>(data1, next1, name), DataType.F32_VEC2, name);

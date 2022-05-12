@@ -1,23 +1,50 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL20.glGetAttribLocation;
-import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL31.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL31.glBindBuffer;
+import static org.lwjgl.opengl.GL31.glBindVertexArray;
+import static org.lwjgl.opengl.GL31.glDeleteBuffers;
 import static org.lwjgl.opengl.GL31.glDrawArrays;
 import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL31.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL31.glGenBuffers;
+import static org.lwjgl.opengl.GL31.glGenVertexArrays;
+import static org.lwjgl.opengl.GL31.glGetAttribLocation;
+import static org.lwjgl.opengl.GL31.glVertexAttribPointer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.devtech.jerraria.registry.Id;
-import org.lwjgl.opengl.GL30;
 
 public class VAO extends GlData {
-	final int glId;
+	static final IntArrayList RECLAIM_VAO_IDS = new IntArrayList(), RECLAIM_VBO_IDS = new IntArrayList();
+	static class ShaderVAOState {
+		/**
+		 * The id of the VAO currently bound to the shader
+		 */
+		int currentlyBoundId;
+
+		public void bind(int id, boolean force) {
+			int current = this.currentlyBoundId;
+			if(current != id || force) {
+				glBindVertexArray(id);
+				this.currentlyBoundId = id;
+			}
+		}
+	}
+
+	static class VAOReference {int vaoGlId; boolean initialized;}
+
+	final ShaderVAOState manager;
+	final VAOReference reference;
 	final Map<String, Element> elements;
 	final List<ElementGroup> groups;
 	final ElementGroup last;
@@ -34,39 +61,21 @@ public class VAO extends GlData {
 
 			last = groups.computeIfAbsent(field.groupName(false), ElementGroup::new);
 			int groupIndex = new ArrayList<>(groups.values()).indexOf(last);
-			var element = new Element(groupIndex, field.name(), field.type(), location, last.len);
+			var element = new Element(groupIndex, field.name(), field.type(), location, last.byteLength);
 			elements.put(field.name(), element);
 			last.elements.add(element);
-			last.len += element.type.byteCount;
+			last.byteLength += element.type.byteCount;
 		}
 
 		this.last = last;
 		this.elements = elements;
-		this.groups = new ArrayList<>(groups.values());
-		this.glId = bindVAO();
-
-		for(ElementGroup group : groups.values()) {
-			group.buffer = new BufferBuilder(group.len);
-			group.bind();
-			for(GlData.Element v : group.elements) {
-				Element value = (Element) v;
-				DataType type = value.type;
-				GL30.glVertexAttribPointer(
-					value.location,
-					type.elementCount,
-					type.elementType,
-					type.normalized,
-					type.byteCount,
-					value.byteOffset
-				);
-				GL30.glEnableVertexAttribArray(value.location);
-			}
-		}
-		this.init_();
+		this.groups = List.copyOf(groups.values());
+		this.manager = new ShaderVAOState();
+		this.reference = new VAOReference();
+		this.reference.vaoGlId = genVAO(this.groups, true);
 	}
 
 	public VAO(VAO vao, boolean copyContents) {
-		this.glId = vao.glId;
 		List<ElementGroup> groups = new ArrayList<>();
 		ElementGroup last = null;
 		for(ElementGroup group : vao.groups) {
@@ -75,6 +84,32 @@ public class VAO extends GlData {
 		this.groups = groups;
 		this.elements = vao.elements;
 		this.last = last;
+		this.manager = vao.manager;
+
+		synchronized(RECLAIM_VAO_IDS) {
+			if(!RECLAIM_VAO_IDS.isEmpty()) {
+				glDeleteVertexArrays(RECLAIM_VAO_IDS.toIntArray());
+				RECLAIM_VAO_IDS.clear();
+			}
+			if(!RECLAIM_VBO_IDS.isEmpty()) {
+				glDeleteBuffers(RECLAIM_VBO_IDS.toIntArray());
+				RECLAIM_VBO_IDS.clear();
+			}
+		}
+
+		VAOReference reference = this.reference = new VAOReference();
+		BareShader.GL_CLEANUP.register(this, () -> {
+			synchronized(RECLAIM_VAO_IDS) {
+				if(reference.initialized) {
+					RECLAIM_VAO_IDS.add(reference.vaoGlId);
+				}
+				for(ElementGroup group : groups) {
+					if(group.validGlId) {
+						RECLAIM_VBO_IDS.add(group.glId);
+					}
+				}
+			}
+		});
 	}
 
 	@Override
@@ -108,38 +143,60 @@ public class VAO extends GlData {
 	}
 
 	public VAO bind() {
-		GL30.glBindVertexArray(this.glId);
+		int id = this.reference.vaoGlId;
+		if(!this.reference.initialized) {
+			id = this.reference.vaoGlId = genVAO(this.groups, false);
+		}
+		this.manager.bind(id, false);
 		return this;
 	}
 
-	public void bindAndDraw(int mode, boolean forceReupload) {
+	public void bindAndDraw(int mode) {
 		this.bind();
-		this.drawArray(mode, forceReupload);
-	}
-
-	public void drawArray(int mode, boolean forceReupload) {
-		this.updateGroups(forceReupload);
+		this.updateGroups();
 		glDrawArrays(mode, 0, this.last.buffer.vertexCount);
 	}
 
-	public void bindAndDrawInstanced(int mode, int count, boolean reupload) {
-		this.updateGroups(reupload);
+	public void bindAndDrawInstanced(int mode, int count) {
+		this.bind();
+		this.updateGroups();
 		glDrawArraysInstanced(mode, 0, this.last.buffer.vertexCount, count);
 	}
 
-	private void updateGroups(boolean forceReupload) {
-		for(ElementGroup group : this.groups) {
-			if(forceReupload) {
-				group.reupload = true;
+	private static int genVAO(Collection<ElementGroup> groups, boolean initialize) {
+		final int glId = bindVAO();
+		for(ElementGroup group : groups) {
+			if(initialize) {
+				group.buffer = new BufferBuilder(group.byteLength);
 			}
-			group.upload();
+			group.bind();
+			for(GlData.Element v : group.elements) {
+				Element value = (Element) v;
+				DataType type = value.type;
+				glVertexAttribPointer(
+					value.location,
+					type.elementCount,
+					type.elementType,
+					type.normalized,
+					type.byteCount,
+					value.byteOffset
+				);
+				glEnableVertexAttribArray(value.location);
+			}
 		}
+		return glId;
 	}
 
 	static int bindVAO() {
-		int vao = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(vao);
+		int vao = glGenVertexArrays();
+		glBindVertexArray(vao);
 		return vao;
+	}
+
+	private void updateGroups() {
+		for(ElementGroup group : this.groups) {
+			group.upload();
+		}
 	}
 
 	static class ElementGroup {
@@ -148,23 +205,26 @@ public class VAO extends GlData {
 		BufferBuilder buffer;
 		boolean reupload;
 		int glId;
-		int len;
+		boolean validGlId;
+		int byteLength;
 
 		public ElementGroup(String name) {
 			this.name = name;
 			this.elements = new ArrayList<>();
+			this.glId = this.initGlId();
+			this.validGlId = true;
 		}
 
 		public ElementGroup(ElementGroup group, boolean copyContents) {
 			this.name = group.name;
 			this.elements = group.elements;
-			this.len = group.len;
+			this.byteLength = group.byteLength;
 			if(copyContents) {
 				this.buffer = new BufferBuilder(group.buffer);
+				this.reupload = true;
 			} else {
-				this.buffer = new BufferBuilder(group.len);
+				this.buffer = new BufferBuilder(group.byteLength);
 			}
-			this.glId = group.glId;
 		}
 
 		void upload() {
@@ -176,10 +236,15 @@ public class VAO extends GlData {
 		}
 
 		void bind() {
-			if(this.glId == 0) {
-				this.glId = GL30.glGenBuffers();
+			if(!this.validGlId) {
+				this.glId = this.initGlId();
+				this.validGlId = true;
 			}
-			GL30.glBindBuffer(GL_ARRAY_BUFFER, this.glId);
+			glBindBuffer(GL_ARRAY_BUFFER, this.glId);
+		}
+
+		protected int initGlId() {
+			return glGenBuffers();
 		}
 	}
 

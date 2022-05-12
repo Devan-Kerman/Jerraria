@@ -1,37 +1,20 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL20.GL_FLOAT_VEC3;
-import static org.lwjgl.opengl.GL20.glGetActiveUniform;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_ARRAY_STRIDE;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_DATA_SIZE;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_OFFSET;
-import static org.lwjgl.opengl.GL31.glBindBuffer;
-import static org.lwjgl.opengl.GL31.glBindBufferBase;
-import static org.lwjgl.opengl.GL31.glGenBuffers;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformBlockiv;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformsi;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformsiv;
-import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
-import static org.lwjgl.opengl.GL31.glGetUniformIndices;
-import static org.lwjgl.opengl.GL31.glGetUniformLocation;
-import static org.lwjgl.opengl.GL31.glUniformBlockBinding;
-
+import static org.lwjgl.opengl.GL31.*;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.devtech.jerraria.registry.Id;
+import net.devtech.jerraria.util.math.JMath;
 
 
 public class UniformData extends GlData {
+	public static final int UBO_PADDING = glGetInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
 	final Map<String, Element> elements;
 	final List<UniformBufferBlock> groups;
 	final List<Uniform> uniforms;
@@ -62,10 +45,12 @@ public class UniformData extends GlData {
 				element = new StandardUniform(value.name(), value.type(), location, uniforms.size());
 				uniforms.add(Uniform.create(value.type(), location));
 			} else {
-				group = groups.computeIfAbsent(value.groupName(true), s -> new UniformBufferBlock(s, program,
-					groups.size()));
+				group = groups.computeIfAbsent(
+					value.groupName(true),
+					s -> new UniformBufferBlock(s, program, groups.size())
+				);
 
-					// for nested arrays or arrays of a vanilla type, we must start at the [0] index and calculate forward!
+				// for nested arrays or arrays of a vanilla type, we must start at the [0] index and calculate forward!
 				int location, byteOffset;
 				String name = value.name();
 				int endIndex = name.length() - 1;
@@ -74,7 +59,7 @@ public class UniformData extends GlData {
 					String zero = name.substring(0, open) + "[0]";
 					location = glGetUniformIndices(program, zero);
 					int stride = glGetActiveUniformsi(program, location, GL_UNIFORM_ARRAY_STRIDE);
-					int index = Integer.parseInt(name.substring(open+1, endIndex));
+					int index = Integer.parseInt(name.substring(open + 1, endIndex));
 					int offset = glGetActiveUniformsi(program, location, GL_UNIFORM_OFFSET);
 					byteOffset = stride * index + offset;
 				} else {
@@ -96,7 +81,6 @@ public class UniformData extends GlData {
 		this.groups = new ArrayList<>(groups.values());
 		this.elements = elements;
 		this.uniforms = uniforms;
-		this.init_();
 	}
 
 	public UniformData(UniformData data, boolean preserveUniforms) {
@@ -107,7 +91,10 @@ public class UniformData extends GlData {
 			list.add(uniformBufferBlock);
 		}
 		this.groups = list;
-		this.uniforms = data.uniforms.stream().map(u -> preserveUniforms ? Uniform.copy(u) : Uniform.createNew(u)).toList();
+		this.uniforms = data.uniforms
+			.stream()
+			.map(u -> preserveUniforms ? Uniform.copy(u) : Uniform.createNew(u))
+			.toList();
 	}
 
 
@@ -119,11 +106,9 @@ public class UniformData extends GlData {
 		}
 		for(VAO.ElementGroup group : this.groups) {
 			group.reupload = true;
-			group.buffer.vertexCount = 0;
 		}
 		return this;
 	}
-
 
 	@Override
 	public Buf element(Element element) {
@@ -148,81 +133,162 @@ public class UniformData extends GlData {
 		return this.elements.get(name);
 	}
 
-	public UniformData bind(boolean forceReupload) {
+	public UniformData upload() {
 		for(UniformBufferBlock group : this.groups) {
-			if(forceReupload) {
-				group.reupload = true;
-			}
 			group.upload();
 		}
 		for(Uniform uniform : this.uniforms) {
-			if(forceReupload) {
-				uniform.rebind = true;
+			if(uniform.rebind) {
+				uniform.upload();
 			}
-			uniform.bind();
 		}
 		return this;
 	}
 
-	static class UniformBufferBlock extends VAO.ElementGroup {
+	static class UniformBufferBlockManager {
 		final int uniformBlockIndex;
 		final int[] uniformIndexes;
-		final int groupIndex;
+		final int groupBinding;
+		final int byteLength;
+		final int paddedByteLength;
+		final IntArrayList available;
+		int currentlyBoundIndex;
+		int uboGlId;
+		int bufferLength;
 
-		public UniformBufferBlock(String name, int program, int index) {
-			super(name);
-			this.groupIndex = index;
+		UniformBufferBlockManager(String name, int program, int binding, int length) {
+			this.groupBinding = binding;
 			this.uniformBlockIndex = glGetUniformBlockIndex(program, name);
-			int[] count = {0};
-			glGetActiveUniformBlockiv(program, this.uniformBlockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, count);
-			this.uniformIndexes = new int[count[0]];
+			glUniformBlockBinding(program, this.uniformBlockIndex, binding);
+
+			int[] buf = {0};
+			glGetActiveUniformBlockiv(program, this.groupBinding, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, buf);
+			this.uniformIndexes = new int[buf[0]];
 			glGetActiveUniformBlockiv(program,
-				this.uniformBlockIndex,
+				this.groupBinding,
 				GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
 				this.uniformIndexes
 			);
 
-			glGetActiveUniformBlockiv(program, this.uniformBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, count);
-			this.len = count[0];
+			glGetActiveUniformBlockiv(program, this.groupBinding, GL_UNIFORM_BLOCK_DATA_SIZE, buf);
+			this.byteLength = buf[0];
+			this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
 
-			glUniformBlockBinding(program, this.uniformBlockIndex, this.groupIndex);
-			this.bind();
-			glBindBufferBase(GL_UNIFORM_BUFFER, this.groupIndex, this.glId);
-			this.buffer = new BufferBuilder(this.len);
+			this.available = new IntArrayList(length);
+			for(int i = length - 1; i >= 0; i--) {
+				this.available.add(i);
+			}
+
+			this.bufferLength = length;
+			this.allocateBuffer();
+			this.bind(0, true);
+		}
+
+		public void bind(int index, boolean force) {
+			int current = this.currentlyBoundIndex;
+			if(current != index || force) {
+				glBindBufferRange(
+					GL_UNIFORM_BUFFER,
+					this.groupBinding,
+					this.uboGlId,
+					(long) index * this.paddedByteLength,
+					this.byteLength
+				);
+				this.currentlyBoundIndex = index;
+			}
+		}
+
+		public int allocate(UniformBufferBlock block, boolean permanent) {
+			int allocated;
+			IntArrayList available = this.available;
+			synchronized(available) {
+				if(available.isEmpty()) {
+					int oldBuffer = this.uboGlId;
+					int oldLength = this.bufferLength;
+					int newLength = oldLength * 2;
+					this.bufferLength = newLength;
+					int newBuffer = this.allocateBuffer();
+					glCopyBufferSubData(oldBuffer, newBuffer, 0, 0, oldLength);
+					glDeleteBuffers(oldBuffer);
+					for(int i = newLength - 1; i >= oldLength; i--) {
+						available.add(i);
+					}
+				}
+				allocated = available.popInt();
+			}
+
+			if(!permanent) {
+				BareShader.GL_CLEANUP.register(block, () -> {
+					synchronized(available) {
+						available.add(allocated);
+					}
+				});
+			}
+
+			return allocated;
+		}
+
+		protected int allocateBuffer() {
+			int id = this.uboGlId = glGenBuffers();
+			glBindBufferBase(GL_UNIFORM_BUFFER, this.groupBinding, this.uboGlId);
+			int bufferLength = this.paddedByteLength * this.bufferLength;
+			glBufferData(GL_UNIFORM_BUFFER, bufferLength, GL_STATIC_DRAW);
+			return id;
+		}
+	}
+
+	static class UniformBufferBlock extends VAO.ElementGroup {
+		final UniformBufferBlockManager manager;
+		final int index;
+		final int groupIndex;
+
+		public UniformBufferBlock(String name, int program, int index) {
+			super(name);
+			this.manager = new UniformBufferBlockManager(name, program, index, 4);
+			this.byteLength = this.manager.paddedByteLength;
+			this.glId = this.manager.uboGlId;
+
+			this.buffer = new BufferBuilder(this.byteLength);
 			this.buffer.vertexCount = 1;
+
+			this.index = this.manager.allocate(this, true);
+			this.groupIndex = this.manager.groupBinding;
 		}
 
 		public UniformBufferBlock() {
 			super("default");
 			this.groupIndex = -1;
-			this.uniformBlockIndex = -1;
-			this.uniformIndexes = null;
+			this.manager = null;
+			this.index = -1;
 		}
 
 		public UniformBufferBlock(UniformBufferBlock group, boolean preserveUniforms) {
 			super(group, preserveUniforms);
+			this.manager = group.manager;
+			this.index = this.manager.allocate(this, false);
 			this.groupIndex = group.groupIndex;
-			this.uniformBlockIndex = group.uniformBlockIndex;
-			this.uniformIndexes = group.uniformIndexes;
 			this.glId = group.glId;
+			this.reupload = true;
 		}
 
 		@Override
 		void upload() {
+			this.manager.bind(this.index, false);
 			if(this.reupload) {
-				this.bind();
 				this.buffer.uniformCount();
-				this.buffer.upload(true);
+				this.buffer.subUpload(true, (long) this.index * this.byteLength, 1);
 				this.reupload = false;
 			}
 		}
 
 		@Override
 		void bind() {
-			if(this.glId == 0) {
-				this.glId = glGenBuffers();
-			}
-			glBindBuffer(GL_UNIFORM_BUFFER, this.glId);
+			this.manager.bind(this.index, false);
+		}
+
+		@Override
+		protected int initGlId() {
+			return this.glId;
 		}
 	}
 

@@ -1,17 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL20.glUniform1f;
-import static org.lwjgl.opengl.GL20.glUniform1i;
-import static org.lwjgl.opengl.GL20.glUniform2f;
-import static org.lwjgl.opengl.GL20.glUniform2i;
-import static org.lwjgl.opengl.GL20.glUniform3f;
-import static org.lwjgl.opengl.GL20.glUniform3i;
-import static org.lwjgl.opengl.GL20.glUniform4f;
-import static org.lwjgl.opengl.GL20.glUniform4i;
-import static org.lwjgl.opengl.GL20.glUniformMatrix2fv;
-import static org.lwjgl.opengl.GL20.glUniformMatrix3fv;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
-
+import static org.lwjgl.opengl.GL31.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -94,7 +83,7 @@ public abstract class Uniform implements GlData.Buf {
 
 	abstract void reset();
 
-	abstract void bind();
+	abstract void upload();
 
 	abstract Uniform copy();
 
@@ -118,7 +107,7 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void bind() {
+		void upload() {
 			this.reset();
 			switch(this.type.elementCount) {
 				case 4 -> glUniformMatrix2fv(this.location, false, this.buf);
@@ -157,7 +146,7 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void bind() {
+		void upload() {
 			GL13.glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
 			GL13.glBindTexture(this.type.elementType, this.textureId);
 			glUniform1i(this.location, this.textureUnit);
@@ -217,7 +206,7 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void bind() {
+		void upload() {
 			switch(this.type.elementCount) {
 				case 1 -> glUniform1i(this.location, this.a);
 				case 2 -> glUniform2i(this.location, this.a, this.b);
@@ -264,7 +253,7 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void bind() {
+		void upload() {
 			switch(this.type.elementCount) {
 				case 1 -> glUniform1f(this.location, this.a);
 				case 2 -> glUniform2f(this.location, this.a, this.b);

@@ -4,14 +4,25 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 
+/**
+ * For uniform Colors, use an int and https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/unpackUnorm.xhtml in your shader.
+ * @param <N>
+ */
 public abstract class Color<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
-
 	public static <N extends GlValue<?>> GlValue.Type<RGB<N>> rgb(String name) {
-		return simple((data1, next1) -> new RGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC3, name);
+		return rgb(name, null);
 	}
 
 	public static <N extends GlValue<?>> GlValue.Type<ARGB<N>> argb(String name) {
-		return simple((data1, next1) -> new ARGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC4, name);
+		return argb(name, null);
+	}
+
+	public static <N extends GlValue<?>> GlValue.Type<RGB<N>> rgb(String name, String groupName) {
+		return simple((data1, next1) -> new RGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC3, name, groupName);
+	}
+
+	public static <N extends GlValue<?>> GlValue.Type<ARGB<N>> argb(String name, String groupName) {
+		return simple((data1, next1) -> new ARGB<>(data1, next1, name), DataType.NORMALIZED_F8_VEC4, name, groupName);
 	}
 
 	protected Color(GlData data, GlValue<?> next, String name) {

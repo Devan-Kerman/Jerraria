@@ -1,18 +1,7 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL20.glAttachShader;
-import static org.lwjgl.opengl.GL20.glCompileShader;
-import static org.lwjgl.opengl.GL20.glCreateProgram;
-import static org.lwjgl.opengl.GL20.glCreateShader;
-import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
-import static org.lwjgl.opengl.GL20.glGetProgrami;
-import static org.lwjgl.opengl.GL20.glLinkProgram;
-import static org.lwjgl.opengl.GL20.glShaderSource;
-import static org.lwjgl.opengl.GL20.glUseProgram;
-
+import static org.lwjgl.opengl.GL31.*;
+import java.lang.ref.Cleaner;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +13,9 @@ import net.devtech.jerraria.registry.Id;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL40;
 
 public class BareShader {
+	public static final Cleaner GL_CLEANUP = Cleaner.create();
 	public static BareShader activeShader;
 	public final int glId;
 	public final VAO vao;
@@ -60,6 +48,7 @@ public class BareShader {
 				System.err.println(glGetProgramInfoLog(program));
 			}
 
+			//glUseProgram(program);
 			VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
 			UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
 			BareShader shader = new BareShader(program, vertex, uniform);
@@ -82,22 +71,19 @@ public class BareShader {
 		});
 	}
 
-	private boolean setupDraw() {
-		glUseProgram(this.glId);
-		boolean forceReupload = activeShader != this;
-		this.uniforms.bind(forceReupload);
-		activeShader = this;
-		return forceReupload;
+	private void setupDraw() {
+		glUseProgram(this.glId); // maybe ignore this part
+		this.uniforms.upload();
 	}
 
 	public void draw(int primitive) {
-		boolean forceReupload = this.setupDraw();
-		this.vao.bindAndDraw(primitive, forceReupload);
+		this.setupDraw();
+		this.vao.bindAndDraw(primitive);
 	}
 
 	public void drawInstanced(int primitive, int count) {
-		boolean forceReupload = this.setupDraw();
-		this.vao.bindAndDrawInstanced(primitive, count, forceReupload);
+		this.setupDraw();
+		this.vao.bindAndDrawInstanced(primitive, count);
 	}
 
 	public static final class Uncompiled {

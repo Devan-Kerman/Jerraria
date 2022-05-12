@@ -66,4 +66,9 @@ public class JMath {
 	public static float sin(float theta) {
 		return (float) Math.sin(theta);
 	}
+
+	public static int ceil(int value, int base) {
+		return ((value + (base-1))/base) * base;
+	}
+
 }

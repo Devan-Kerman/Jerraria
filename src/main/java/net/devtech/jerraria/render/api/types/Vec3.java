@@ -5,7 +5,7 @@ import net.devtech.jerraria.render.internal.DataType;
 import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.util.math.Matrix3f;
 
-public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute {
+public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
 	public static <N extends GlValue<?>> GlValue.Type<Vec3.F<N>> f(String name) {
 		return f(name, null);
 	}

@@ -1,7 +1,6 @@
 package net.devtech.jerraria.render.textures;
 
-import static org.lwjgl.opengl.GL30.*;
-
+import static org.lwjgl.opengl.GL31.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -6,7 +6,7 @@ import net.devtech.jerraria.render.internal.GlData;
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.render.textures.Texture;
 
-public class Tex<N extends GlValue<?>> extends AbstractGlValue<N> {
+public class Tex<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Uniform {
 
 	public static <N extends GlValue<?>> GlValue.Type<Tex<N>> tex2d(String name) {
 		return simple((data, next) -> new Tex<>(data, next, name), DataType.TEXTURE_2D, name);

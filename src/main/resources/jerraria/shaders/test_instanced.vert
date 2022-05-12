@@ -1,15 +1,18 @@
 #version 430 core
 
-uniform data {
+uniform Offsets {
 	vec3 offsets[32];
 };
 
+uniform Colors {
+	vec3 colors[32];
+};
+
 in vec3 pos;
-in vec3 color;
 
 out vec3 vertexColor;
 
 void main() {
 	gl_Position = vec4(pos + offsets[gl_InstanceID], 1.0);
-	vertexColor = color;
+	vertexColor = colors[gl_InstanceID];
 }

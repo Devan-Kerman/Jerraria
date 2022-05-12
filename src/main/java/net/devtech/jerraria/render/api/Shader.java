@@ -116,7 +116,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		return this.compiled;
 	}
 
-	protected final <U extends GlValue<End>> U uni(GlValue.Type<U> type) {
+	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
 		if(!this.isCopy) {
 			if(this.shader == null) {
 				this.uniforms.add(type);

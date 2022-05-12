@@ -1,18 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL11.GL_BYTE;
-import static org.lwjgl.opengl.GL11.GL_SHORT;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_1D;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_3D;
-import static org.lwjgl.opengl.GL20.GL_BOOL;
-import static org.lwjgl.opengl.GL20.GL_DOUBLE;
-import static org.lwjgl.opengl.GL20.GL_FLOAT;
-import static org.lwjgl.opengl.GL20.GL_INT;
-import static org.lwjgl.opengl.GL20.GL_UNSIGNED_INT;
-
+import static org.lwjgl.opengl.GL31.*;
 public enum DataType {
 	BOOL(GL_BOOL, 1, "bool"),
 	I8(GL_BYTE, 1, "int"),

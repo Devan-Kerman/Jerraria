@@ -1,14 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
 public abstract class GlData {
-	public Element color;
-	public Element pos;
-
-	void init_() {
-		color = getElement("color");
-		pos = getElement("pos");
-	}
-
 	public abstract GlData flush();
 
 	public Buf element(String name) {
