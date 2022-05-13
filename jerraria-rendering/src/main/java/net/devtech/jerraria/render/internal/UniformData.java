@@ -193,6 +193,7 @@ public class UniformData extends GlData {
 			if(uniform.rebind) {
 				uniform.upload();
 			}
+			uniform.alwaysUpload();
 		}
 		return this;
 	}

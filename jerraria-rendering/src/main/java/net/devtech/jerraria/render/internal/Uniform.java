@@ -101,6 +101,8 @@ public abstract class Uniform implements GlData.Buf {
 
 	abstract void upload();
 
+	void alwaysUpload() {}
+
 	static class Matrix extends Uniform {
 		final FloatBuffer buf;
 
@@ -160,8 +162,6 @@ public abstract class Uniform implements GlData.Buf {
 
 		@Override
 		void upload() {
-			GL13.glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
-			GL13.glBindTexture(this.type.elementType, this.textureId);
 			glUniform1i(this.location, this.textureUnit);
 		}
 
@@ -169,6 +169,12 @@ public abstract class Uniform implements GlData.Buf {
 		void copyTo(Uniform uniform) {
 			Sampler texture = (Sampler) uniform;
 			texture.textureId = this.textureId;
+		}
+
+		@Override
+		void alwaysUpload() {
+			GL13.glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
+			GL13.glBindTexture(this.type.elementType, this.textureId);
 		}
 	}
 
