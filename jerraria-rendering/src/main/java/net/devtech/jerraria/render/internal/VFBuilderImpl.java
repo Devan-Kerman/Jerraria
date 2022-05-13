@@ -26,6 +26,7 @@ public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
 
 	@Override
 	public <N extends GlValue<T> & GlValue.Attribute> VFBuilderImpl<N> add(GlValue.Type<N> type) {
+		type.validateAttribute();
 		return new VFBuilderImpl<>(this, type);
 	}
 
