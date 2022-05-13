@@ -67,13 +67,13 @@ public enum DataType {
 	NORMALIZED_F16_VEC4(NORMALIZED_F16, 4, "vec4"),
 	NORMALIZED_F32_VEC4(NORMALIZED_F32, 4, "vec4"),
 
-	MAT2(F32, 4, "mat2"),
+	MAT2(F32, 4, "mat2", "matrix2x2"),
 	MAT2x3(F32, 6, "mat2x3"),
 	MAT2x4(F32, 8, "mat2x4"),
-	MAT3(F32, 9, "mat3"),
+	MAT3(F32, 9, "mat3", "matrix3x3"),
 	MAT3x2(F32, 6, "mat3x2"),
 	MAT3x4(F32, 12, "mat3x4"),
-	MAT4(F32, 16, "mat4"),
+	MAT4(F32, 16, "mat4", "matrix4x4"),
 	MAT4x3(F32, 12, "mat4x3"),
 	MAT4x2(F32, 8, "mat4x2"),
 
@@ -117,29 +117,41 @@ public enum DataType {
 	NORMALIZED_F32_MAT4x3(NORMALIZED_F32, 12, "mat4x3"),
 	NORMALIZED_F32_MAT4x2(NORMALIZED_F32, 8, "mat4x2"),
 
-	TEXTURE_1D(GL_TEXTURE_1D, 4, false, "sampler1D"),
-	TEXTURE_2D(GL_TEXTURE_2D, 4, false, "sampler2D"),
-	TEXTURE_3D(GL_TEXTURE_3D, 4, false, "sampler3D");
+	TEXTURE_1D(GL_TEXTURE_1D, 4, false, "sampler1D", true),
+	TEXTURE_2D(GL_TEXTURE_2D, 4, false, "sampler2D", true),
+	TEXTURE_3D(GL_TEXTURE_3D, 4, false, "sampler3D", true);
 
-	public final String glslName;
+	public final String glslName, minecraftElementName;
 	public final boolean normalized;
 	public final int byteCount, elementCount, elementType;
-	public final boolean isMatrix, isSampler;
+	public final boolean isMatrix, isSampler, uniformOnly;
 
+	DataType(int glslType, int byteCount, boolean normalized, String name, boolean uniformOnly) {
+		this(name, name, normalized, byteCount, 1, glslType, uniformOnly);
+	}
 
 	DataType(int glslType, int byteCount, boolean normalized, String name) {
-		this(name, normalized, byteCount, 1, glslType);
+		this(name, name, normalized, byteCount, 1, glslType, false);
 	}
 
 	DataType(DataType type, int elementCount, String name) {
-		this(name, type.normalized, type.byteCount * elementCount, elementCount, type.elementType);
+		this(type.minecraftElementName, name, type.normalized, type.byteCount * elementCount, elementCount, type.elementType, false);
+	}
+
+	DataType(DataType type, int elementCount, String name, String minecraftName) {
+		this(minecraftName, name, type.normalized, type.byteCount * elementCount, elementCount, type.elementType, false);
 	}
 
 	DataType(int glslType, int byteCount, String name) {
-		this(name, false, byteCount, 1, glslType);
+		this(name, name, false, byteCount, 1, glslType, false);
 	}
 
 	DataType(String name, boolean normalized, int byteCount, int elementCount, int elementType) {
+		this(name, name, normalized, byteCount, elementCount, elementType, false);
+	}
+
+	DataType(String minecraftName, String name, boolean normalized, int byteCount, int elementCount, int elementType, boolean uniformOnly) {
+		this.minecraftElementName = minecraftName;
 		this.glslName = name;
 		this.normalized = normalized;
 		this.byteCount = byteCount;
@@ -147,6 +159,7 @@ public enum DataType {
 		this.elementType = elementType;
 		this.isMatrix = this.name().contains("MAT");
 		this.isSampler = name.contains("sampler");
+		this.uniformOnly = uniformOnly;
 	}
 
 	public boolean isFloating() {

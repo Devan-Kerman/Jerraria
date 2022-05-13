@@ -11,7 +11,11 @@ public abstract class GlData {
 
 	public abstract Element getElement(String name);
 
-	public interface Element {}
+	public interface Element {
+		default Element getSelf() {
+			return this;
+		}
+	}
 
 	public interface Buf {
 		Buf f(float f);

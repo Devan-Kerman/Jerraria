@@ -151,10 +151,10 @@ public class UniformData extends GlData {
 
 	public void copyTo(Element from, UniformData toData, Element to) {
 		if(from instanceof LazyElement l) {
-			from = l.getValue();
+			from = l.getSelf();
 		}
 		if(to instanceof LazyElement l) {
-			to = l.getValue();
+			to = l.getSelf();
 		}
 
 		if(to.getClass() != from.getClass()) {

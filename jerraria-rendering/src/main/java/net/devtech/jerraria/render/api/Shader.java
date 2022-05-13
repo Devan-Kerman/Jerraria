@@ -134,6 +134,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 */
 	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
 		if(!this.isCopy) {
+			type.validateUniform();
 			if(this.shader == null) {
 				this.uniforms.add(type);
 			} else {
@@ -186,7 +187,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		@Override
 		public Buf element(Element element) {
 			if(element instanceof LazyElement l) {
-				element = l.getValue();
+				element = l.getSelf();
 			}
 			return Shader.this.shader.uniforms.element(element);
 		}

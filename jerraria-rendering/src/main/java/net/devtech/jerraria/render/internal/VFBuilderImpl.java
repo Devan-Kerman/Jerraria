@@ -10,6 +10,9 @@ import net.devtech.jerraria.render.api.types.End;
 public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
 	public final List<GlValue.Type<?>> attributes;
 
+	public static VFBuilderImpl<End> create() {
+		return new VFBuilderImpl<>();
+	}
 	public VFBuilderImpl() {
 		this.attributes = new ArrayList<>();
 	}

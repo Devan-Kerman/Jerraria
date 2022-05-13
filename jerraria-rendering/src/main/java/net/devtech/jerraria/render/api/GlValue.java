@@ -71,6 +71,10 @@ public abstract class GlValue<N extends GlValue<?>> { // todo .fillDefaults()
 		N create(GlData data, GlValue<?> next);
 
 		void attach(BareShader.Uncompiled uncompiled, Loc isUniform);
+
+		default void validateUniform() {}
+
+		default void validateAttribute() {}
 	}
 
 	public interface SimpleType<N extends GlValue<?>> {
@@ -96,6 +100,20 @@ public abstract class GlValue<N extends GlValue<?>> { // todo .fillDefaults()
 				groupName = "default";
 			}
 			uncompiled.type(isUniform, this.dataType, this.name, groupName);
+		}
+
+		@Override
+		public void validateUniform() {
+			if(this.dataType.normalized) {
+				throw new IllegalArgumentException("Normalized data cannot be used as Uniform! (" + this.dataType + ")" );
+			}
+		}
+
+		@Override
+		public void validateAttribute() {
+			if(this.dataType.uniformOnly) {
+				throw new IllegalArgumentException(this.dataType + " cannot be used as a uniform!!");
+			}
 		}
 	}
 }
