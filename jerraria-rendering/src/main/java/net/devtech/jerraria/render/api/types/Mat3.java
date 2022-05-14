@@ -44,8 +44,7 @@ public abstract class Mat3<N extends GlValue<?>> extends AbstractGlValue<N> impl
 			this.data.element(this.element)
 			         .f(1).f(0).f(0)
 			         .f(0).f(1).f(0)
-			         .f(0).f(0).f(1)
-			         .f(0).f(0).f(0);
+			         .f(0).f(0).f(1);
 			return this.getNext();
 		}
 	}
