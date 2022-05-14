@@ -39,5 +39,14 @@ public abstract class Mat3<N extends GlValue<?>> extends AbstractGlValue<N> impl
 			mat.upload(this.data.element(this.element));
 			return this.getNext();
 		}
+
+		public N identity() {
+			this.data.element(this.element)
+			         .f(1).f(0).f(0)
+			         .f(0).f(1).f(0)
+			         .f(0).f(0).f(1)
+			         .f(0).f(0).f(0);
+			return this.getNext();
+		}
 	}
 }
