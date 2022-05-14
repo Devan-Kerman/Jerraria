@@ -91,8 +91,8 @@ public class BareShader {
 
 	public void draw() { // todo fully write EBO
 		int mode = this.strategy.getDrawMethod().glId;
-		int type = this.setupDraw();
 		this.vao.bind();
+		int type = this.setupDraw();
 		if(type == -1) {
 			this.vao.drawArrays(mode);
 		} else {
@@ -102,8 +102,8 @@ public class BareShader {
 
 	public void drawInstanced(int count) {
 		int mode = this.strategy.getDrawMethod().glId;
-		int type = this.setupDraw();
 		this.vao.bind();
+		int type = this.setupDraw();
 		if(type == -1) {
 			this.vao.drawArraysInstanced(mode, count);
 		} else {
