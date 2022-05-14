@@ -185,6 +185,16 @@ public class UniformData extends GlData {
 		return this.elements.get(name);
 	}
 
+	public UniformData markForReupload() {
+		for(UniformBufferBlock group : this.groups) {
+			group.reupload = true;
+		}
+		for(Uniform uniform : this.uniforms) {
+			uniform.rebind = true;
+		}
+		return this;
+	}
+
 	public UniformData upload() {
 		for(UniformBufferBlock group : this.groups) {
 			group.upload();
@@ -321,7 +331,7 @@ public class UniformData extends GlData {
 			this.index = this.manager.allocate(this, false);
 			this.groupIndex = group.groupIndex;
 			this.glId = group.glId;
-			this.reupload = true;
+			this.reupload = preserveUniforms;
 		}
 
 		@Override

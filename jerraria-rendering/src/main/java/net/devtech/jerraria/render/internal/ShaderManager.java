@@ -1,5 +1,15 @@
 package net.devtech.jerraria.render.internal;
 
+import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL20.glAttachShader;
+import static org.lwjgl.opengl.GL20.glCreateProgram;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL20.glGetProgrami;
+import static org.lwjgl.opengl.GL20.glLinkProgram;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +26,7 @@ public class ShaderManager {
 	public static final List<Function<Id, ShaderPair>> SHADER_PROVIDERS = new ArrayList<>();
 	private static final Function<Id, String> FRAG_SRC = findFirst(FRAG_SOURCES), VERT_SRC = findFirst(VERT_SOURCES);
 	private static final Function<Id, ShaderPair> SHADER_PAIRS = findFirst(SHADER_PROVIDERS);
-	private static final Map<Id, BareShader> SHADER_CACHE = new HashMap<>();
+	public static final Map<Id, BareShader> SHADER_CACHE = new HashMap<>();
 
 	public record ShaderPair(Id frag, Id vert) {}
 
@@ -44,5 +54,25 @@ public class ShaderManager {
 			uniform.attach(uncompiled, GlValue.Loc.UNIFORM);
 		}
 		return BareShader.compileShaders(FRAG_SRC, VERT_SRC, List.of(uncompiled)).get(id);
+	}
+
+	public static void reloadShader(BareShader shader, Id id) {
+		int fragmentShader = BareShader.createProgram(FRAG_SRC, GL_FRAGMENT_SHADER, id);
+		int vertexShader = BareShader.createProgram(FRAG_SRC, GL_VERTEX_SHADER, id);
+		int oldId = shader.id.glId;
+		shader.id.glId = compileShader(fragmentShader, vertexShader);
+		glDeleteProgram(oldId);
+	}
+
+	static int compileShader(int fragmentShader, int vertexShader) {
+		int program = glCreateProgram();
+		glAttachShader(program, vertexShader);
+		glAttachShader(program, fragmentShader);
+		glLinkProgram(program);
+		if(glGetProgrami(program, GL_LINK_STATUS) == 0) {
+			System.err.println("Error compiling shader!");
+			System.err.println(glGetProgramInfoLog(program));
+		}
+		return program;
 	}
 }

@@ -124,6 +124,13 @@ public class VAO extends GlData {
 		return this.elements.get(name);
 	}
 
+	public VAO markForReupload() {
+		for(ElementGroup group : this.groups) {
+			group.reupload = true;
+		}
+		return this;
+	}
+
 	public VAO next() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.next();

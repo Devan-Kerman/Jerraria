@@ -150,6 +150,10 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		this.compiled = this.builder.build(shader);
 	}
 
+	public void reload() {
+		ShaderManager.reloadShader(this.shader, this.id);
+	}
+
 	void endVertex(Primitive primitive) {
 		if(this.vertices % primitive.vertexCount != 0) {
 			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for " +

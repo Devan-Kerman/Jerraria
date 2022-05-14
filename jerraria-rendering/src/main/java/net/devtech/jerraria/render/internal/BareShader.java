@@ -1,15 +1,10 @@
 package net.devtech.jerraria.render.internal;
 
 import static org.lwjgl.opengl.GL31.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL31.GL_LINK_STATUS;
 import static org.lwjgl.opengl.GL31.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL31.glAttachShader;
 import static org.lwjgl.opengl.GL31.glCompileShader;
-import static org.lwjgl.opengl.GL31.glCreateProgram;
 import static org.lwjgl.opengl.GL31.glCreateShader;
 import static org.lwjgl.opengl.GL31.glGetProgramInfoLog;
-import static org.lwjgl.opengl.GL31.glGetProgrami;
-import static org.lwjgl.opengl.GL31.glLinkProgram;
 import static org.lwjgl.opengl.GL31.glShaderSource;
 import static org.lwjgl.opengl.GL31.glUseProgram;
 
@@ -33,18 +28,26 @@ import org.lwjgl.opengl.GL20;
 public class BareShader {
 	public static final Cleaner GL_CLEANUP = Cleaner.create();
 	public static BareShader activeShader;
-	public final int glId;
+	public static final class GlIdReference {
+		int glId;
+	}
+
+	GlIdReference id;
+	int currentGlId;
 	public final VAO vao;
 	public final UniformData uniforms;
 
-	public BareShader(int id, VAO data, UniformData uniformData) {
-		this.glId = id;
+	public BareShader(int glId, VAO data, UniformData uniformData) {
+		this.id = new GlIdReference();
+		this.id.glId = glId;
+		this.currentGlId = glId;
 		this.vao = data;
 		this.uniforms = uniformData;
 	}
 
 	public BareShader(BareShader shader, SCopy method) {
-		this.glId = shader.glId;
+		this.id = shader.id;
+		this.currentGlId = shader.currentGlId;
 		this.vao = new VAO(shader.vao, method.preserveVertexData);
 		this.uniforms = new UniformData(shader.uniforms, method.preserveUniforms);
 	}
@@ -55,14 +58,7 @@ public class BareShader {
 		for(Uncompiled uncompiled : shaders) {
 			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
 			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
-			int program = glCreateProgram();
-			glAttachShader(program, vertexShader);
-			glAttachShader(program, fragmentShader);
-			glLinkProgram(program);
-			if(glGetProgrami(program, GL_LINK_STATUS) == 0) {
-				System.err.println("Error compiling shader!");
-				System.err.println(glGetProgramInfoLog(program));
-			}
+			int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 
 			//glUseProgram(program);
 			VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
@@ -78,21 +74,28 @@ public class BareShader {
 	private static int getOrCompileShader(Function<Id, String> src,
 		Object2IntMap<Id> cache,
 		Id sourceId, int type) {
-		return cache.computeIfAbsent(sourceId, (Id id) -> {
-			String source = src.apply(id);
-			int glId = glCreateShader(type);
-			glShaderSource(glId, source);
-			glCompileShader(glId);
-			return glId;
-		});
+		return cache.computeIfAbsent(sourceId, (Id id) -> createProgram(src, type, id));
+	}
+
+	public static int createProgram(Function<Id, String> src, int type, Id id) {
+		String source = src.apply(id);
+		int glId = glCreateShader(type);
+		glShaderSource(glId, source);
+		glCompileShader(glId);
+		return glId;
 	}
 
 	private void setupDraw() {
-		int id = this.glId;
+		int id = this.id.glId;
 		BareShader active = activeShader;
-		if(active == null || active.glId != id) {
+		if(active == null || active.currentGlId != id) {
 			glUseProgram(id);
 			activeShader = this;
+		}
+		if(id != this.currentGlId) {
+			this.vao.markForReupload();
+			this.uniforms.markForReupload();
+			this.currentGlId = id;
 		}
 		this.uniforms.upload();
 	}
