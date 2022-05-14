@@ -103,11 +103,12 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
 			this.shader.vao.next();
 		}
-		this.endedVertex = false;
+
 		if(this.shader.ebo != null && this.getStrategy() instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
 			this.shader.ebo.append(vertexId);
 		} else {
 			this.shader.vao.copy(vertexId);
+			this.endedVertex = false;
 		}
 		this.verticesSinceStrategy++;
 	}

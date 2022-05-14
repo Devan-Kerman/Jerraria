@@ -142,7 +142,7 @@ public class BareShader {
 				return;
 			}
 
-			if(current.getDrawMethod() != strategy.getDrawMethod()) {
+			if(current.getDrawMethod() != strategy.getDrawMethod() && current.getDrawMethod() != null && strategy.getDrawMethod() != null) {
 				throw new UnsupportedOperationException("Cannot render one half of vertex data in " + current.getDrawMethod() + " and the other in " + strategy.getDrawMethod());
 			}
 
@@ -154,6 +154,8 @@ public class BareShader {
 				int elements = current.elementsForVertexData(count);
 				if(elements != 0) {
 					this.ebo = new EBO(family.forCount(count), elements);
+				} else {
+					this.ebo = new EBO();
 				}
 			} else {
 				int len = current.elementsForVertexData(count - this.lastCopiedVertex);

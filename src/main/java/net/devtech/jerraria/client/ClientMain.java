@@ -139,19 +139,17 @@ public class ClientMain {
 
 			RenderThread.addRenderStage(() -> {
 				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
-				ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
-				//shader.strategy(AutoStrat.QUADS);
-				shader.mat.identity();
-				shader.texture.tex(ClientInit.asciiAtlasId);
-				shader.vert().vec3f(0, 0, 0).vec2f(1, 0);
-				shader.vert().vec3f(0, 1, 0).vec2f(1, 0);
-				shader.vert().vec3f(1, 1, 0).vec2f(1, 0);
-				//shader.vert().vec3f(1, 0, 0).vec2f(1, 0);
-
-				//shader.strategy(AutoStrat.sequence(DrawMethod.LINE_LOOP));
-				//shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0);
-				//shader.vert().rgb(0xAAFFFF).vec3f(0, -1, 0);
-				//shader.vert().rgb(0xAAFFFF).vec3f(-1, 0, 0);
+				SolidColorShader shader = SolidColorShader.INSTANCE;
+				shader.strategy(AutoStrat.DATA_UPLOAD);
+				int a = shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0).id();
+				int b = shader.vert().rgb(0xAAFFFF).vec3f(1, 0, 0).id();
+				int c = shader.vert().rgb(0xAAFFFF).vec3f(0, 1, 0).id();
+				int d = shader.vert().rgb(0xAAFFFF).vec3f(1, 1, 0).id();
+				shader.strategy(AutoStrat.sequence(DrawMethod.LINES));
+				shader.copy(a);
+				shader.copy(b);
+				shader.copy(c);
+				shader.copy(d);
 				shader.renderAndDelete();
 			}, 10);
 
