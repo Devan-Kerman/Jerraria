@@ -151,11 +151,16 @@ public class BareShader {
 			AutoElementFamily family = (AutoElementFamily) current;
 			int count = this.vao.last.buffer.vertexCount;
 			if(this.ebo == null) {
-				this.ebo = new EBO(family.forCount(count), current.elementsForVertexData(count));
+				int elements = current.elementsForVertexData(count);
+				if(elements != 0) {
+					this.ebo = new EBO(family.forCount(count), elements);
+				}
 			} else {
-				int start = current.elementsForVertexData(this.lastCopiedVertex);
 				int len = current.elementsForVertexData(count - this.lastCopiedVertex);
-				this.ebo.append(family.forCount(count), start, len);
+				if(len != 0) {
+					int start = current.elementsForVertexData(this.lastCopiedVertex);
+					this.ebo.append(family.forCount(count), start, len);
+				}
 			}
 			this.lastCopiedVertex = count;
 		}

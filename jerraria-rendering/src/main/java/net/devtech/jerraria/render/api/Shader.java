@@ -26,8 +26,9 @@ import org.jetbrains.annotations.Contract;
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	// todo EBOs
-		// copy vertex based on ID (both with EBO and without)
 		// add vertex data in EBOs without creating element (so u can add all the vertex data and then manually copy)
+		// basically just make an AutoElementStrategy that maps to no elements, then u can active the strategy, upload ur vertex data, and then
+		// switch to the sequence mode
 
 	public final Id id;
 	final List<GlValue.Type<?>> uniforms;
