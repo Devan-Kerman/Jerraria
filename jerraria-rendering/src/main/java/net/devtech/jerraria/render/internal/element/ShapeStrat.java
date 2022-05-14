@@ -1,0 +1,63 @@
+package net.devtech.jerraria.render.internal.element;
+
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
+import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
+
+import java.nio.ByteBuffer;
+
+import net.devtech.jerraria.render.internal.BufferBuilder;
+
+public abstract class ShapeStrat {
+	public static final BufferInserter BYTE = (b, i) -> b.put((byte) i);
+	public static final BufferInserter SHORT = (b, i) -> b.putShort((short) i);
+	public static final BufferInserter INT = ByteBuffer::putInt;
+	public final BufferBuilder builder;
+	final BufferInserter inserter;
+	final int elementBufferObject;
+	final int type;
+	boolean isDirty;
+
+	protected ShapeStrat(BufferBuilder builder, BufferInserter inserter, int type) {
+		this.builder = builder;
+		this.inserter = inserter;
+		this.type = type;
+		this.elementBufferObject = glGenBuffers();
+	}
+
+	public void ensureCapacity(int vertices) {
+		this.ensureCapacity0(vertices);
+		this.isDirty = true;
+	}
+
+	public abstract int elementsForVertexData(int count);
+
+	abstract void ensureCapacity0(int vertices);
+
+	public void bind() {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.elementBufferObject);
+		if(this.isDirty) {
+			this.builder.upload(GL_ELEMENT_ARRAY_BUFFER);
+		}
+	}
+
+	public int getType() {
+		return this.type;
+	}
+
+	public int maxSize() {
+		return switch(this.type) {
+			case GL_UNSIGNED_BYTE -> 256;
+			case GL_UNSIGNED_SHORT -> 65536;
+			case GL_UNSIGNED_INT -> Integer.MAX_VALUE;
+			default -> 0;
+		};
+	}
+
+	public interface BufferInserter {
+		void insert(ByteBuffer buffer, int value);
+	}
+}

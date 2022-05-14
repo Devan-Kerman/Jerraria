@@ -1,8 +1,6 @@
-package net.devtech.jerraria.render.internal;
+package net.devtech.jerraria.render.api.basic;
 
 public abstract class GlData {
-	public abstract GlData flush();
-
 	public Buf element(String name) {
 		return element(getElement(name));
 	}

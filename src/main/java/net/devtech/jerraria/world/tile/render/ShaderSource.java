@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -43,5 +43,5 @@ public class ShaderSource {
 	public record Value<T extends Shader<?>>(T copied,
 	                                         ShaderConfigurator<T> configurator,
 	                                         AutoBlockLayerInvalidation invalidation,
-	                                         Primitive primitive) {}
+	                                         DrawMethod primitive) {}
 }

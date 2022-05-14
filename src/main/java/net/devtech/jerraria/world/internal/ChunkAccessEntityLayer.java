@@ -26,8 +26,8 @@ public class ChunkAccessEntityLayer implements EntityLayer {
 		Spliterator<Entity> spliterator = this.getEntitySpliterator(
 			JMath.ifloor(fromX) << World.LOG2_CHUNK_SIZE,
 			JMath.ifloor(fromY) << World.LOG2_CHUNK_SIZE,
-			JMath.div(JMath.iceil(toX), World.CHUNK_SIZE),
-			JMath.div(JMath.iceil(toY), World.CHUNK_SIZE));
+			JMath.ceilDiv(JMath.iceil(toX), World.CHUNK_SIZE),
+			JMath.ceilDiv(JMath.iceil(toY), World.CHUNK_SIZE));
 		return StreamSupport.stream(spliterator, false).filter(entity -> entity.isEnclosed(type, fromX, fromY, toX, toY));
 	}
 

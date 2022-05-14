@@ -16,79 +16,70 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 	int vertexCount;
 	ByteBuffer buffer;
 
-	public BufferBuilder(int length) {
-		this.vertexLength = length;
-		this.buffer = allocateBuffer(Math.max(1024, JMath.nearestPowerOf2(length)));
+	public BufferBuilder(int vertexLength) {
+		this.vertexLength = vertexLength;
+		this.buffer = allocateBuffer(1024);
 	}
 
 	public BufferBuilder(BufferBuilder builder) {
+		this(builder, builder.vertexLength);
+	}
+
+	public BufferBuilder(BufferBuilder builder, int vertices) {
 		this.vertexLength = builder.vertexLength;
-		this.vertexCount = builder.vertexCount;
+		this.vertexCount = vertices;
 		ByteBuffer buffer = builder.buffer;
 		if(buffer != null) {
-			int limit = buffer.limit();
-			ByteBuffer copy = allocateBuffer(limit);
-			copy.put(0, buffer, 0, Math.min(this.vertexLength * (this.vertexCount + 1), limit)); // account for unflushed
+			int toCopy = this.vertexLength * (vertices + 1);
+			ByteBuffer copy = allocateBuffer(JMath.nearestPowerOf2(toCopy));
+			copy.put(0, buffer, 0, toCopy); // account for unflushed
 			this.buffer = copy;
 		}
 	}
 
-	public BufferBuilder(int expectedSize, int length) {
-		this.vertexLength = length;
+	public BufferBuilder(int vertexLength, int expectedSize) {
+		this.vertexLength = vertexLength;
 		// compute the next highest power of 2 of 32-bit v
 		this.buffer = allocateBuffer(JMath.nearestPowerOf2(expectedSize));
 	}
 
-	int vertexOffset() {
-		return this.vertexCount * this.vertexLength;
+	public void copyVertexes(BufferBuilder builder, int from, int len) {
+		if(builder.vertexLength != this.vertexLength) {
+			throw new UnsupportedOperationException("cannot copy from " + builder.vertexLength + " to " + this.vertexLength);
+		}
+		int bytesToCopy = len * this.vertexLength;
+		this.allocate(bytesToCopy);
+		ByteBuffer src = builder.buffer, current = this.buffer;
+		int offset = current.position();
+		current.put(offset, src, from * this.vertexLength, bytesToCopy);
+		current.position(offset + bytesToCopy);
 	}
 
-	BufferBuilder next() {
+	public BufferBuilder next() {
 		// the order here is correct, looks wrong but it's right
 		this.vertexCount++;
 		this.allocate(this.vertexLength);
 		return this;
 	}
 
-	void uniformCount() {
-		this.vertexCount = 1;
-	}
-
-	void upload(boolean isUniform) {
+	public void upload(int type) {
 		ByteBuffer buffer = this.buffer;
 		int lim = buffer.limit();
 		buffer.limit(this.vertexCount * this.vertexLength);
+		int pos = buffer.position();
 		buffer.position(0); // restore position to 0
-		glBufferData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+		glBufferData(type, buffer, GL_STATIC_DRAW);
 		buffer.limit(lim);
+		buffer.position(pos);
 	}
 
-	void subUpload(boolean isUniform, long offset, int vertexLimit) {
-		if(this.vertexCount > vertexLimit) {
-			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
-		}
-		ByteBuffer buffer = this.buffer;
-		int lim = buffer.limit();
-		buffer.limit(this.vertexCount * this.vertexLength);
-		buffer.position(0); // restore position to 0
-		glBufferSubData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, offset, buffer);
-		buffer.limit(lim);
+	@Override
+	public ByteBuffer getBuffer() {
+		return this.buffer;
 	}
 
-
-	/**
-	 * Ensure the BufferBuilder has enough space to add the given amount of bytes to it
-	 */
-	ByteBuffer allocate(int bytes) {
-		ByteBuffer buffer = this.buffer;
-		if(buffer.remaining() < bytes) {
-			ByteBuffer old = buffer;
-			int oldCount = buffer.limit();
-			buffer = allocateBuffer(oldCount << 1);
-			buffer.put(0, old, 0, oldCount);
-			this.buffer = buffer;
-		}
-		return buffer;
+	public int getVertexCount() {
+		return this.vertexCount;
 	}
 
 	private static ByteBuffer allocateBuffer(int size) {
@@ -97,8 +88,41 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		return buffer;
 	}
 
-	@Override
-	protected ByteBuffer getBuffer() {
-		return this.buffer;
+	int vertexOffset() {
+		return this.vertexCount * this.vertexLength;
+	}
+
+	void uniformCount() {
+		this.vertexCount = 1;
+	}
+
+	void subUpload(boolean isUniform, long offset, int vertexLimit) {
+		if(this.vertexCount > vertexLimit) {
+			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
+		}
+		ByteBuffer buffer = this.buffer;
+		int lim = buffer.limit();
+		int pos = buffer.position();
+		buffer.limit(this.vertexCount * this.vertexLength);
+		buffer.position(0); // restore position to 0
+		glBufferSubData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, offset, buffer);
+		buffer.limit(lim);
+		buffer.position(pos);
+	}
+
+	/**
+	 * Ensure the BufferBuilder has enough space to add the given amount of bytes to it
+	 */
+	ByteBuffer allocate(int neededForNext) {
+		ByteBuffer buffer = this.buffer;
+		if(buffer.remaining() < neededForNext) {
+			ByteBuffer old = buffer;
+			int oldCount = buffer.limit();
+			buffer = allocateBuffer(oldCount << 1);
+			buffer.put(0, old, 0, oldCount);
+			buffer.position(old.position());
+			this.buffer = buffer;
+		}
+		return buffer;
 	}
 }

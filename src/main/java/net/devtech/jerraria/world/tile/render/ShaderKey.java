@@ -1,6 +1,6 @@
 package net.devtech.jerraria.world.tile.render;
 
-import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.Id;
@@ -11,30 +11,30 @@ public record ShaderKey<T extends Shader<?>>(Id id,
                                              T shader,
                                              SCopy copy,
                                              AutoBlockLayerInvalidation invalidation,
-                                             Primitive primitive) {
+                                             DrawMethod primitive) {
 	public ShaderKey(
 		Id id,
 		ShaderConfigurator<? super T> config,
 		T shader,
 		AutoBlockLayerInvalidation invalidation,
-		Primitive primitive) {
+		DrawMethod primitive) {
 		this(id, config, shader, SCopy.PRESERVE_NEITHER, invalidation, primitive);
 	}
 
 	public ShaderKey(
 		Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		this(id, config, shader, copy, invalidation, Primitive.TRIANGLE);
+		this(id, config, shader, copy, invalidation, DrawMethod.TRIANGLE);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy, Primitive primitive) {
+	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy, DrawMethod primitive) {
 		this(id, config, shader, copy, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE, primitive);
 	}
 
 	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy) {
-		this(id, config, shader, copy, Primitive.TRIANGLE);
+		this(id, config, shader, copy, DrawMethod.TRIANGLE);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, Primitive primitive) {
+	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, DrawMethod primitive) {
 		this(id, config, shader, SCopy.PRESERVE_NEITHER, primitive);
 	}
 
@@ -47,32 +47,32 @@ public record ShaderKey<T extends Shader<?>>(Id id,
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation, Primitive primitive) {
-		return new ShaderKey<T>(id, shader, shader, copy, invalidation, primitive);
+		Id id, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation, DrawMethod drawMethod) {
+		return new ShaderKey<T>(id, shader, shader, copy, invalidation, drawMethod);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, AutoBlockLayerInvalidation invalidation, Primitive primitive) {
-		return key(id, shader, SCopy.PRESERVE_NEITHER, invalidation, primitive);
+		Id id, T shader, AutoBlockLayerInvalidation invalidation, DrawMethod drawMethod) {
+		return key(id, shader, SCopy.PRESERVE_NEITHER, invalidation, drawMethod);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
 		Id id, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		return key(id, shader, copy, invalidation, Primitive.TRIANGLE);
+		return key(id, shader, copy, invalidation, DrawMethod.TRIANGLE);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, SCopy copy, Primitive prim) {
+		Id id, T shader, SCopy copy, DrawMethod prim) {
 		return key(id, shader, copy, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE, prim);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(Id id, T shader, SCopy copy) {
-		return key(id, shader, copy, Primitive.TRIANGLE);
+		return key(id, shader, copy, DrawMethod.TRIANGLE);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, Primitive primitive) {
-		return key(id, shader, SCopy.PRESERVE_NEITHER, primitive);
+		Id id, T shader, DrawMethod drawMethod) {
+		return key(id, shader, SCopy.PRESERVE_NEITHER, drawMethod);
 	}
 
 	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(

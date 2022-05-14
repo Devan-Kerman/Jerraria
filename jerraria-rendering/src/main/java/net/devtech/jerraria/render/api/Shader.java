@@ -3,11 +3,14 @@ package net.devtech.jerraria.render.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.api.types.TypesInternalAccess;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.GlData;
+import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.LazyElement;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.UniformData;
@@ -19,6 +22,11 @@ import org.jetbrains.annotations.ApiStatus;
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
+	// todo EBOs
+		// copy vertex based on ID (both with EBO and without)
+		// AutoElementStrategy for automatic quads, support hotswapping AutoElementStrategies
+		// add vertex data in EBOs without creating element (so u can add all the vertex data and then manually copy)
+
 	public final Id id;
 	final List<GlValue.Type<?>> uniforms;
 	final GlData uniformData;
@@ -29,6 +37,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	T compiled;
 	boolean isCopy;
 	private BareShader shader;
+	private End end;
 
 	/**
 	 * @param builder the builder that has been configured for the generics of this class
@@ -52,7 +61,9 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		this.shader = bare;
 		this.uniformData = bare.uniforms;
 		this.uniforms = shader.uniforms;
-		this.compiled = shader.builder.build(bare);
+		Pair<T, End> build = shader.builder.build(bare);
+		this.compiled = build.first();
+		this.end = build.second();
 		this.builder = shader.builder;
 		this.isCopy = true;
 	}
@@ -77,31 +88,39 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 			this.shader.vao.next();
 		}
 		this.endedVertex = false;
-		this.vertices++;
+		TypesInternalAccess.setVertexId(this.end, this.vertices++);
 		return this.compiled;
+	}
+
+	public Shader<T> strategy(AutoStrat strategy) {
+		this.shader.hotswapStrategy(strategy, false);
+		return this;
 	}
 
 	/**
 	 * Bind the shader and render its contents
 	 */
-	public final void render(Primitive primitive) {
-		this.endVertex(primitive);
-		this.shader.draw(primitive.glId);
+	public final void render() {
+		if(this.vertices == 0) return;
+		this.preRender(this.shader.strategy.getDrawMethod());
+		this.shader.draw();
 	}
 
 	/**
 	 * Bind the shader and render its contents X times using opengl's instanced rendering
 	 */
-	public final void renderInstanced(Primitive primitive, int count) {
-		this.endVertex(primitive);
-		this.shader.drawInstanced(primitive.glId, count);
+	public final void renderInstanced(int count) {
+		if(this.vertices == 0) return;
+		this.preRender(this.shader.strategy.getDrawMethod());
+		this.shader.drawInstanced(count);
 	}
 
 	/**
 	 * Bind the shader, render its contents, and then delete all it's vertex data
 	 */
-	public final void renderAndDelete(Primitive primitive) {
-		this.render(primitive);
+	public final void renderAndDelete() {
+		if(this.vertices == 0) return;
+		this.render();
 		this.deleteVertexData();
 	}
 
@@ -112,11 +131,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public final void deleteVertexData() {
-		this.shader.vao.flush();
+		this.shader.deleteVertexData();
 	}
 
 	public final void deleteUniformData() {
-		this.shader.uniforms.flush();
+		this.shader.deleteVertexData();
 	}
 
 	/**
@@ -127,6 +146,10 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	public static <T extends Shader<?>> T copy(T shader, SCopy method) {
 		//noinspection unchecked
 		return (T) shader.copyFunction.copy(shader, method);
+	}
+
+	public AutoStrat getStrategy() {
+		return this.shader.strategy;
 	}
 
 	/**
@@ -147,16 +170,22 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	void compile() {
 		BareShader shader = ShaderManager.getBareShader(this.id, this.builder.attributes, this.uniforms);
 		this.shader = shader;
-		this.compiled = this.builder.build(shader);
+		Pair<T, End> build = this.builder.build(shader);
+		this.compiled = build.first();
+		this.end = build.second();
 	}
 
 	public void reload() {
 		ShaderManager.reloadShader(this.shader, this.id);
 	}
 
-	void endVertex(Primitive primitive) {
+	void preRender(DrawMethod primitive) {
 		if(this.vertices % primitive.vertexCount != 0) {
 			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for " +
+			                                   "rendering " + primitive + " but found " + this.vertices);
+		}
+		if(this.vertices < primitive.minimumVertices) {
+			throw new IllegalArgumentException("Expected atleast " + primitive.minimumVertices + " vertexes for " +
 			                                   "rendering " + primitive + " but found " + this.vertices);
 		}
 		this.endOfVertex();
@@ -183,10 +212,6 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	final class LazyUniformData extends GlData {
-		@Override
-		public GlData flush() {
-			return Shader.this.shader.uniforms.flush();
-		}
 
 		@Override
 		public Buf element(Element element) {

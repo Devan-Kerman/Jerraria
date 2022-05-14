@@ -3,8 +3,8 @@ package net.devtech.jerraria.render.api;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.DataType;
-import net.devtech.jerraria.render.internal.GlData;
+import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.basic.GlData;
 
 /**
  * A GlValue provides a java-friendly interface to a vertex attribute or uniform. <br>

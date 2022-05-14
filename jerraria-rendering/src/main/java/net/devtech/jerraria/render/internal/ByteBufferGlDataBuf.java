@@ -2,6 +2,8 @@ package net.devtech.jerraria.render.internal;
 
 import java.nio.ByteBuffer;
 
+import net.devtech.jerraria.render.api.basic.GlData;
+
 public abstract class ByteBufferGlDataBuf implements GlData.Buf {
 	protected abstract ByteBuffer getBuffer();
 

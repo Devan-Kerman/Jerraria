@@ -11,11 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.util.Id;
 import org.lwjgl.opengl.GL20;
 
 public class VAO extends GlData {
 	static final IntArrayList RECLAIM_VAO_IDS = new IntArrayList(), RECLAIM_VBO_IDS = new IntArrayList();
+
 	static class ShaderVAOState {
 		/**
 		 * The id of the VAO currently bound to the shader
@@ -102,7 +105,6 @@ public class VAO extends GlData {
 		});
 	}
 
-	@Override
 	public VAO flush() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.vertexCount = 0;
@@ -148,16 +150,28 @@ public class VAO extends GlData {
 		return this;
 	}
 
-	public void bindAndDraw(int mode) {
+	public void bindAndDrawArray(int mode) {
 		this.bind();
 		this.updateGroups();
 		glDrawArrays(mode, 0, this.last.buffer.vertexCount);
 	}
 
-	public void bindAndDrawInstanced(int mode, int count) {
+	public void bindAndDrawInstancedArray(int mode, int count) {
 		this.bind();
 		this.updateGroups();
 		glDrawArraysInstanced(mode, 0, this.last.buffer.vertexCount, count);
+	}
+
+	public void bindAndDrawElements(int mode, int elements, int type) {
+		this.bind();
+		this.updateGroups();
+		glDrawElements(mode, elements, type,0L);
+	}
+
+	public void bindAndDrawInstancedElements(int mode, int elements, int type, int count) {
+		this.bind();
+		this.updateGroups();
+		glDrawElementsInstanced(mode, elements, type, 0L, count);
 	}
 
 	private static int genVAO(Collection<ElementGroup> groups, boolean initialize) {
@@ -227,7 +241,7 @@ public class VAO extends GlData {
 		void upload() {
 			if(this.reupload) {
 				this.bind();
-				this.buffer.upload(false);
+				this.buffer.upload(GL_ARRAY_BUFFER);
 				this.reupload = false;
 			}
 		}

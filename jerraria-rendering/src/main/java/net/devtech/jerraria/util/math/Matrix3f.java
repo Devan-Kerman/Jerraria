@@ -1,6 +1,6 @@
 package net.devtech.jerraria.util.math;
 
-import net.devtech.jerraria.render.internal.GlData;
+import net.devtech.jerraria.render.api.basic.GlData;
 
 public class Matrix3f implements AutoCloseable {
 	private float a11, a12, a13, a21, a22, a23, a31, a32, a33;

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.internal;
+package net.devtech.jerraria.render.api.basic;
 
 import static org.lwjgl.opengl.GL31.GL_BOOL;
 import static org.lwjgl.opengl.GL31.GL_BYTE;

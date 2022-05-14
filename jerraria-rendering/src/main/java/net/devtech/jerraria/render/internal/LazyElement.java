@@ -3,6 +3,7 @@ package net.devtech.jerraria.render.internal;
 import java.util.Objects;
 
 import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.render.api.basic.GlData;
 
 public final class LazyElement implements GlData.Element {
 	Shader<?> shader;

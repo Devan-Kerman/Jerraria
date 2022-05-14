@@ -13,7 +13,7 @@ public class JMath {
 		return (int) Math.ceil(x);
 	}
 
-	public static int div(int numerator, int denominator) {
+	public static int ceilDiv(int numerator, int denominator) {
 		return (numerator + denominator - 1) / denominator;
 	}
 
@@ -70,5 +70,4 @@ public class JMath {
 	public static int ceil(int value, int base) {
 		return ((value + (base-1))/base) * base;
 	}
-
 }

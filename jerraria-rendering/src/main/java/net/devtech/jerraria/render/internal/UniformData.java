@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.JMath;
 
@@ -119,7 +121,6 @@ public class UniformData extends GlData {
 	}
 
 
-	@Override
 	public UniformData flush() {
 		for(Uniform uniform : this.uniforms) {
 			uniform.rebind = true;

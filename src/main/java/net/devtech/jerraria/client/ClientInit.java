@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.render.api.Primitive;
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
@@ -115,8 +115,8 @@ class ClientInit {
 			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
 
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
-			box.renderAndDelete(Primitive.TRIANGLE);
-			text.renderAndDelete(Primitive.TRIANGLE);
+			box.renderAndDelete();
+			text.renderAndDelete();
 			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 			GLFW.glfwPollEvents();
 

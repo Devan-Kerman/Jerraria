@@ -16,6 +16,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.basic.GlData;
 import org.lwjgl.opengl.GL13;
 
 /**
