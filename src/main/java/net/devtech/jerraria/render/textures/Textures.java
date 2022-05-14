@@ -46,15 +46,9 @@ public class Textures {
 
 		//bind the texture
 		glBindTexture(GL_TEXTURE_2D, id);
-
-		//tell opengl how to unpack bytes
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-		//set the texture parameters, can be GL_LINEAR or GL_NEAREST
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		//upload texture
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 		return new Texture(id, 0, 0, 1, 1);
 	}

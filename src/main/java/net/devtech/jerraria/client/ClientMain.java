@@ -18,6 +18,7 @@ import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
@@ -138,17 +139,19 @@ public class ClientMain {
 
 			RenderThread.addRenderStage(() -> {
 				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
-				SolidColorShader shader = SolidColorShader.INSTANCE;
-				shader.strategy(AutoStrat.LINE_STRIP);
-				shader.vert().rgb(0xFFFFFF).vec3f(1, 0, 0);
-				shader.vert().rgb(0xFFFFFF).vec3f(1, 1, 0);
-				shader.vert().rgb(0xFFFFFF).vec3f(0, 0, 0);
-				shader.vert().rgb(0xFFFFFF).vec3f(0, 1, 0);
+				ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
+				//shader.strategy(AutoStrat.QUADS);
+				shader.mat.identity();
+				shader.texture.tex(ClientInit.asciiAtlasId);
+				shader.vert().vec3f(0, 0, 0).vec2f(1, 0);
+				shader.vert().vec3f(0, 1, 0).vec2f(1, 0);
+				shader.vert().vec3f(1, 1, 0).vec2f(1, 0);
+				//shader.vert().vec3f(1, 0, 0).vec2f(1, 0);
+
 				//shader.strategy(AutoStrat.sequence(DrawMethod.LINE_LOOP));
 				//shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0);
 				//shader.vert().rgb(0xAAFFFF).vec3f(0, -1, 0);
 				//shader.vert().rgb(0xAAFFFF).vec3f(-1, 0, 0);
-				GL11.glEnable(GL11.GL_CULL_FACE);
 				shader.renderAndDelete();
 			}, 10);
 

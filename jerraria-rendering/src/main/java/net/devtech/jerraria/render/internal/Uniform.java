@@ -110,7 +110,7 @@ public abstract class Uniform implements GlData.Buf {
 
 		protected Matrix(DataType type, int location) {
 			super(type, location);
-			this.buf = ByteBuffer.allocateDirect(type.byteCount).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer();
+			this.buf = ByteBuffer.allocateDirect(type.byteCount).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		}
 
 		@Override

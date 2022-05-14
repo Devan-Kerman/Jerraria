@@ -4,3 +4,7 @@
 out/
 *.iml
 build
+run/
+jerraria-rendering/run/
+jerraria-access/run/
+jerraria-common/run/

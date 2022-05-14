@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL31.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL20;
 
 public class VAO extends GlData {
@@ -60,9 +62,9 @@ public class VAO extends GlData {
 			last.byteLength += element.type.byteCount;
 		}
 
+		this.groups = List.copyOf(groups.values());
 		this.last = last;
 		this.elements = elements;
-		this.groups = List.copyOf(groups.values());
 		this.manager = new ShaderVAOState();
 		this.reference = new VAOReference();
 		this.reference.vaoGlId = genVAO(this.groups, true);
@@ -107,17 +109,27 @@ public class VAO extends GlData {
 
 	public void copy(int id) {
 		for(ElementGroup group : this.groups) {
-			group.buffer.copyVertex(id);
+			group.buffer.copyVertex(group.buffer, id);
 		}
 	}
 
 	public void copy(VAO vao, int id) {
-
+		if(vao.groups.size() != this.groups.size()) {
+			throw new UnsupportedOperationException("Vertex Copying Not Supported Between These 2 VAOs!");
+		}
+		for(int i = 0; i < this.groups.size(); i++) {
+			ElementGroup from = this.groups.get(i), to = vao.groups.get(i);
+			if(from.byteLength != to.byteLength) {
+				throw new UnsupportedOperationException("Vertex Copying Not Supported Between These 2 VAOs!");
+			}
+			from.buffer.copyVertex(to.buffer, id);
+		}
 	}
 
 	public VAO flush() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.vertexCount = 0;
+			group.buffer.buffer.position(0);
 		}
 		return this;
 	}
@@ -197,7 +209,7 @@ public class VAO extends GlData {
 					type.elementCount,
 					type.elementType,
 					type.normalized,
-					type.byteCount,
+					group.byteLength,
 					value.byteOffset
 				);
 				glEnableVertexAttribArray(value.location);

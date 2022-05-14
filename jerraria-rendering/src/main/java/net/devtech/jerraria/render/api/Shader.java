@@ -108,6 +108,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		} else {
 			this.shader.vao.copy(vertexId);
 		}
+		this.verticesSinceStrategy++;
 	}
 
 	@Contract("_,_->this")

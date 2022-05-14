@@ -93,6 +93,7 @@ class ClientInit {
 
 		SolidColorShader box = SolidColorShader.INSTANCE;
 		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+		text.mat.identity();
 		text.texture.tex(ClientInit.asciiAtlasId);
 
 		List<Runnable> renderThreadTasks = new Vector<>();

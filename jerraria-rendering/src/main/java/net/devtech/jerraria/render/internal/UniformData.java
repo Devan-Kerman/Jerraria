@@ -203,6 +203,7 @@ public class UniformData extends GlData {
 		for(Uniform uniform : this.uniforms) {
 			if(uniform.rebind) {
 				uniform.upload();
+				uniform.rebind = false;
 			}
 			uniform.alwaysUpload();
 		}

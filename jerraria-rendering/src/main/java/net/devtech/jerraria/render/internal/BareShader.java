@@ -91,8 +91,8 @@ public class BareShader {
 
 	public void draw() { // todo fully write EBO
 		int mode = this.strategy.getDrawMethod().glId;
-		this.vao.bind();
 		int type = this.setupDraw();
+		this.vao.bind();
 		if(type == -1) {
 			this.vao.drawArrays(mode);
 		} else {
@@ -103,6 +103,7 @@ public class BareShader {
 	public void drawInstanced(int count) {
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw();
+		this.vao.bind();
 		if(type == -1) {
 			this.vao.drawArraysInstanced(mode, count);
 		} else {
@@ -175,8 +176,8 @@ public class BareShader {
 			}
 			this.currentGlId = id;
 		}
-		this.uniforms.upload();
 
+		this.uniforms.upload();
 		if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
 			return -1;
 		} else if(this.ebo != null) {
@@ -240,7 +241,7 @@ public class BareShader {
 			} else if(isUniform) {
 				return "default";
 			} else {
-				return this.name + "_";
+				return "default_";
 			}
 		}
 	}
