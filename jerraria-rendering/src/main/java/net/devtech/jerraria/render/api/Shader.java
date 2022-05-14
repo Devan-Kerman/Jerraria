@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.TypesInternalAccess;
+import net.devtech.jerraria.render.internal.element.Seq;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
@@ -17,6 +19,7 @@ import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
 
 /**
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
@@ -24,7 +27,6 @@ import org.jetbrains.annotations.ApiStatus;
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	// todo EBOs
 		// copy vertex based on ID (both with EBO and without)
-		// AutoElementStrategy for automatic quads, support hotswapping AutoElementStrategies
 		// add vertex data in EBOs without creating element (so u can add all the vertex data and then manually copy)
 
 	public final Id id;
@@ -78,7 +80,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	/**
-	 * Starts a new vertex, you must call all the GlValues in the chain before calling this again!
+	 * Starts writing the next vertex data, you must call all the GlValues in the chain before calling this again!
 	 * @see GlValue#getNext()
 	 * @see Vec3.F#vec3f(Matrix3f, float, float, float)
 	 * @return T the vertex configurator
@@ -92,6 +94,37 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		return this.compiled;
 	}
 
+	/**
+	 * Copy the data of the given vertex id into the next vertex
+	 * @param vertexId the id of the vertex to copy {@link End}
+	 */
+	public final void copy(int vertexId) {
+		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
+			this.shader.vao.next();
+		}
+		this.endedVertex = false;
+		if(this.shader.ebo != null && this.getStrategy() instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
+			this.shader.ebo.append(vertexId);
+		} else {
+			this.shader.vao.copy(vertexId);
+		}
+	}
+
+	@Contract("_,_->this")
+	public final Shader<T> copy(Shader<T> shader, int vertexId) {
+		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
+			this.shader.vao.next();
+		}
+		this.endedVertex = false;
+		this.shader.vao.copy(shader.shader.vao, vertexId);
+		return this;
+	}
+
+	/**
+	 * Sets the AutoElementStrategy of this Shader
+	 * @see AutoStrat
+	 */
+	@Contract("_->this")
 	public Shader<T> strategy(AutoStrat strategy) {
 		if(this.verticesSinceStrategy != 0) {
 			this.validateAndFlushVertex(this.shader.strategy);

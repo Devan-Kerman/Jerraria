@@ -52,6 +52,6 @@ public final class AutoElementFamily implements AutoStrat {
 
 	@Override
 	public String toString() {
-		return this.name;
+		return this.name + " via " + this.method;
 	}
 }

@@ -105,6 +105,16 @@ public class VAO extends GlData {
 		});
 	}
 
+	public void copy(int id) {
+		for(ElementGroup group : this.groups) {
+			group.buffer.copyVertex(id);
+		}
+	}
+
+	public void copy(VAO vao, int id) {
+
+	}
+
 	public VAO flush() {
 		for(ElementGroup group : this.groups) {
 			group.buffer.vertexCount = 0;

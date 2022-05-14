@@ -24,8 +24,8 @@ public final class Quad extends ShapeStrat {
 	}
 
 	@Override
-	public int elementsForVertexData(int count) {
-		return (count*6)/4;
+	public int elementsForVertexData(int vertexDataCount) {
+		return (vertexDataCount*6)/4;
 	}
 
 	@Override

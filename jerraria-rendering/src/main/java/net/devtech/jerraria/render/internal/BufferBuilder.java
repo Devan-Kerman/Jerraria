@@ -18,7 +18,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 
 	public BufferBuilder(int vertexLength) {
 		this.vertexLength = vertexLength;
-		this.buffer = allocateBuffer(1024);
+		this.buffer = allocateBuffer(Math.max(1024, vertexLength*16));
 	}
 
 	public BufferBuilder(BufferBuilder builder) {
@@ -55,6 +55,13 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		current.put(offset, src, from * this.vertexLength, bytesToCopy);
 		current.position(offset + bytesToCopy);
 		this.vertexCount += len;
+	}
+
+	public BufferBuilder copyVertex(int vertexId) {
+		int vertexOffset = vertexId * this.vertexLength;
+		ByteBuffer buffer = this.buffer;
+		buffer.put(buffer.position(), buffer, vertexOffset, this.vertexLength);
+		return this.next();
 	}
 
 	public BufferBuilder next() {

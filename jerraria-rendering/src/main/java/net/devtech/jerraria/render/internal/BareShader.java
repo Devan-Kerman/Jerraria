@@ -34,7 +34,7 @@ public class BareShader {
 	public final VAO vao;
 	public final UniformData uniforms;
 	public EBO ebo;
-	public AutoStrat strategy = AutoStrat.DEFAULT;
+	public AutoStrat strategy = AutoStrat.TRIANGLE;
 	int lastCopiedVertex;
 	GlIdReference id;
 	int currentGlId;
@@ -136,14 +136,16 @@ public class BareShader {
 			// populate EBO with old strategy data
 		AutoStrat current = this.strategy;
 		if(current != strategy || force) {
+			if(this.vao.last.buffer.vertexCount == this.lastCopiedVertex) {
+				this.strategy = strategy;
+				return;
+			}
+
 			if(current.getDrawMethod() != strategy.getDrawMethod()) {
-				throw new UnsupportedOperationException("Cannot render one half of vertex data in " + current.getDrawMethod() + " and the other in " + current.getDrawMethod());
+				throw new UnsupportedOperationException("Cannot render one half of vertex data in " + current.getDrawMethod() + " and the other in " + strategy.getDrawMethod());
 			}
 
 			this.strategy = strategy;
-			if(this.vao.last.buffer.vertexCount == this.lastCopiedVertex) {
-				return;
-			}
 
 			AutoElementFamily family = (AutoElementFamily) current;
 			int count = this.vao.last.buffer.vertexCount;

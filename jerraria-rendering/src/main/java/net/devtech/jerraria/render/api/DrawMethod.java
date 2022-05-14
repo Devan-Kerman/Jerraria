@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
+/**
+ * A native opengl drawing method
+ */
 public enum DrawMethod {
 	TRIANGLE(GL11.GL_TRIANGLES, 3, 3),
 	LINES(GL11.GL_LINES, 2, 2),

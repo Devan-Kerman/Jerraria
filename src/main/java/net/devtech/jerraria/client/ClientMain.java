@@ -16,6 +16,7 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
@@ -23,7 +24,6 @@ import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
@@ -32,6 +32,7 @@ import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 import net.devtech.jerraria.world.internal.client.ClientWorldServer;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 public class ClientMain {
 	static {
@@ -138,15 +139,16 @@ public class ClientMain {
 			RenderThread.addRenderStage(() -> {
 				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
 				SolidColorShader shader = SolidColorShader.INSTANCE;
-				shader.strategy(AutoStrat.QUADS);
-				shader.vert().rgb(0xFFFFFF).vec3f(0, 0, 0);
+				shader.strategy(AutoStrat.LINE_STRIP);
 				shader.vert().rgb(0xFFFFFF).vec3f(1, 0, 0);
 				shader.vert().rgb(0xFFFFFF).vec3f(1, 1, 0);
+				shader.vert().rgb(0xFFFFFF).vec3f(0, 0, 0);
 				shader.vert().rgb(0xFFFFFF).vec3f(0, 1, 0);
-				shader.strategy(AutoStrat.DEFAULT);
-				shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0);
-				shader.vert().rgb(0xAAFFFF).vec3f(0, -1, 0);
-				shader.vert().rgb(0xAAFFFF).vec3f(-1, 0, 0);
+				//shader.strategy(AutoStrat.sequence(DrawMethod.LINE_LOOP));
+				//shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0);
+				//shader.vert().rgb(0xAAFFFF).vec3f(0, -1, 0);
+				//shader.vert().rgb(0xAAFFFF).vec3f(-1, 0, 0);
+				GL11.glEnable(GL11.GL_CULL_FACE);
 				shader.renderAndDelete();
 			}, 10);
 

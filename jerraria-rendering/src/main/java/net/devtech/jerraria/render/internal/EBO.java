@@ -15,6 +15,7 @@ public class EBO {
 	public EBO() {
 		this.builder = new BufferBuilder(1, 256);
 		this.glId = glGenBuffers();
+		this.currentType = GL_UNSIGNED_BYTE;
 	}
 
 	public EBO(EBO ebo) {
@@ -45,6 +46,11 @@ public class EBO {
 
 	public void append(int index) {
 		this.ensureCanIndex(index);
+		switch(this.currentType) {
+			case GL_UNSIGNED_INT -> this.builder.i(index);
+			case GL_UNSIGNED_SHORT -> this.builder.s((short) index);
+			case GL_UNSIGNED_BYTE -> this.builder.b((byte) index);
+		}
 		this.builder.next();
 		this.isDirty = true;
 	}
@@ -69,6 +75,7 @@ public class EBO {
 				}
 			}
 			this.builder = new_;
+			this.currentType = GL_UNSIGNED_INT;
 		} else if(index >= 256 && this.currentType < GL_UNSIGNED_SHORT) {
 			// resize to short
 			BufferBuilder current = this.builder;
@@ -81,6 +88,7 @@ public class EBO {
 				new_.next();
 			}
 			this.builder = new_;
+			this.currentType = GL_UNSIGNED_SHORT;
 		}
 	}
 
