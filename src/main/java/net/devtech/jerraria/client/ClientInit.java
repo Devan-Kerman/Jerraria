@@ -107,12 +107,7 @@ class ClientInit {
 		boolean exit;
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			int[] dims = ClientInit.dims;
-
-			Matrix3f cartToIndexMat = new Matrix3f();
-			cartToIndexMat.offset(-1, 1);
-			cartToIndexMat.scale(2, -2);
-			cartToIndexMat.scale(dims[1] / (dims[0] * 8F), 1 / 8F);
+			Matrix3f cartToIndexMat = cartesianToAWTIndexGrid(8f);
 
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.renderAndDelete();
@@ -132,6 +127,15 @@ class ClientInit {
 			ClientInit.mainAtlas = mainAtlas.join();
 		}
 		return exit;
+	}
+
+	public static Matrix3f cartesianToAWTIndexGrid(float scale) {
+		int[] dims = ClientInit.dims;
+		Matrix3f cartToIndexMat = new Matrix3f();
+		cartToIndexMat.offset(-1, 1);
+		cartToIndexMat.scale(2, -2);
+		cartToIndexMat.scale(dims[1] / (dims[0] * scale), 1 / scale);
+		return cartToIndexMat;
 	}
 
 	@NotNull

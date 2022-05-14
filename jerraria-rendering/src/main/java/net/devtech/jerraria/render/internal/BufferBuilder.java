@@ -30,9 +30,10 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.vertexCount = vertices;
 		ByteBuffer buffer = builder.buffer;
 		if(buffer != null) {
-			int toCopy = this.vertexLength * (vertices + 1);
-			ByteBuffer copy = allocateBuffer(JMath.nearestPowerOf2(toCopy));
-			copy.put(0, buffer, 0, toCopy); // account for unflushed
+			int copiedBytes = this.vertexLength * vertices;
+			ByteBuffer copy = allocateBuffer(JMath.nearestPowerOf2(copiedBytes));
+			copy.put(0, buffer, 0, copiedBytes); // account for unflushed
+			copy.position(copiedBytes);
 			this.buffer = copy;
 		}
 	}
@@ -53,6 +54,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		int offset = current.position();
 		current.put(offset, src, from * this.vertexLength, bytesToCopy);
 		current.position(offset + bytesToCopy);
+		this.vertexCount += len;
 	}
 
 	public BufferBuilder next() {

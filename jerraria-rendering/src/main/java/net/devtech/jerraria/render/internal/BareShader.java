@@ -90,22 +90,31 @@ public class BareShader {
 	}
 
 	public void draw() { // todo fully write EBO
-		int id = this.strategy.getDrawMethod().glId;
+		int mode = this.strategy.getDrawMethod().glId;
+		this.vao.bind();
 		int type = this.setupDraw();
 		if(type == -1) {
-			this.vao.bindAndDrawArray(id);
+			this.vao.drawArrays(mode);
 		} else {
-			this.vao.bindAndDrawElements(id, this.ebo.builder.getVertexCount(), type);
+			this.vao.drawElements(mode, this.getVertexCount(), type);
 		}
 	}
 
 	public void drawInstanced(int count) {
-		int id = this.strategy.getDrawMethod().glId;
+		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw();
 		if(type == -1) {
-			this.vao.bindAndDrawInstancedArray(id, count);
+			this.vao.drawArraysInstanced(mode, count);
 		} else {
-			this.vao.bindAndDrawInstancedElements(id, this.ebo.builder.getVertexCount(), type, count);
+			this.vao.drawElementsInstanced(mode, this.getVertexCount(), type, count);
+		}
+	}
+
+	public int getVertexCount() {
+		if(this.ebo == null) {
+			return this.strategy.elementsForVertexData(this.vao.last.buffer.vertexCount);
+		} else {
+			return this.ebo.builder.getVertexCount();
 		}
 	}
 
@@ -136,13 +145,13 @@ public class BareShader {
 				return;
 			}
 
-			AutoElementFamily family = (AutoElementFamily) this.strategy;
+			AutoElementFamily family = (AutoElementFamily) current;
 			int count = this.vao.last.buffer.vertexCount;
 			if(this.ebo == null) {
-				this.ebo = new EBO(family.forCount(count), family.byte_.elementsForVertexData(count));
+				this.ebo = new EBO(family.forCount(count), current.elementsForVertexData(count));
 			} else {
-				int start = family.byte_.elementsForVertexData(this.lastCopiedVertex);
-				int len = family.byte_.elementsForVertexData(count - this.lastCopiedVertex);
+				int start = current.elementsForVertexData(this.lastCopiedVertex);
+				int len = current.elementsForVertexData(count - this.lastCopiedVertex);
 				this.ebo.append(family.forCount(count), start, len);
 			}
 			this.lastCopiedVertex = count;

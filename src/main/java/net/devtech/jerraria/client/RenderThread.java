@@ -26,6 +26,8 @@ public class RenderThread {
 
 			for(RenderStage stage : STAGES) {
 				stage.runnable.run();
+
+				// todo error handling screen
 			}
 
 			for(int i = RENDER_QUEUE.size() - 1; i >= 0; i--) {

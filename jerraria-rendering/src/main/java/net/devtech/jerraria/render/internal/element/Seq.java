@@ -21,7 +21,7 @@ public final class Seq extends ShapeStrat {
 	public static final AutoStrat[] SEQUENCES = new AutoStrat[DrawMethod.VALUES.size()];
 	static {
 		for(DrawMethod value : DrawMethod.VALUES) {
-			SEQUENCES[value.ordinal()] = new AutoElementFamily(Seq.BYTE_, Seq.SHORT_, Seq.INT_, value);
+			SEQUENCES[value.ordinal()] = new AutoElementFamily(Seq.BYTE_, Seq.SHORT_, Seq.INT_, value, value.name());
 		}
 	}
 
@@ -33,6 +33,16 @@ public final class Seq extends ShapeStrat {
 	@Override
 	public int elementsForVertexData(int count) {
 		return count;
+	}
+
+	@Override
+	public int vertexCount(DrawMethod method) {
+		return method.vertexCount;
+	}
+
+	@Override
+	public int minumumVertices(DrawMethod method) {
+		return method.minimumVertices;
 	}
 
 	@Override

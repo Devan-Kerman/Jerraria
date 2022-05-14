@@ -33,7 +33,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	final VFBuilderImpl<T> builder;
 	final ShaderCopier<Shader<?>> copyFunction;
 	boolean endedVertex;
-	int vertices;
+	int verticesSinceStrategy;
 	T compiled;
 	boolean isCopy;
 	private BareShader shader;
@@ -84,15 +84,20 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 * @return T the vertex configurator
 	 */
 	public final T vert() {
-		if(this.vertices != 0 && !this.endedVertex) {
+		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
 			this.shader.vao.next();
 		}
 		this.endedVertex = false;
-		TypesInternalAccess.setVertexId(this.end, this.vertices++);
+		TypesInternalAccess.setVertexId(this.end, this.verticesSinceStrategy++);
 		return this.compiled;
 	}
 
 	public Shader<T> strategy(AutoStrat strategy) {
+		if(this.verticesSinceStrategy != 0) {
+			this.validateAndFlushVertex(this.shader.strategy);
+			this.verticesSinceStrategy = 0;
+		}
+
 		this.shader.hotswapStrategy(strategy, false);
 		return this;
 	}
@@ -101,8 +106,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 * Bind the shader and render its contents
 	 */
 	public final void render() {
-		if(this.vertices == 0) return;
-		this.preRender(this.shader.strategy.getDrawMethod());
+		if(this.verticesSinceStrategy == 0) return;
+		this.validateAndFlushVertex(this.getStrategy());
 		this.shader.draw();
 	}
 
@@ -110,8 +115,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 * Bind the shader and render its contents X times using opengl's instanced rendering
 	 */
 	public final void renderInstanced(int count) {
-		if(this.vertices == 0) return;
-		this.preRender(this.shader.strategy.getDrawMethod());
+		if(this.verticesSinceStrategy == 0) return;
+		this.validateAndFlushVertex(this.getStrategy());
 		this.shader.drawInstanced(count);
 	}
 
@@ -119,7 +124,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 * Bind the shader, render its contents, and then delete all it's vertex data
 	 */
 	public final void renderAndDelete() {
-		if(this.vertices == 0) return;
+		if(this.verticesSinceStrategy == 0) return;
 		this.render();
 		this.deleteVertexData();
 	}
@@ -132,10 +137,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	public final void deleteVertexData() {
 		this.shader.deleteVertexData();
+		this.verticesSinceStrategy = 0;
 	}
 
 	public final void deleteUniformData() {
-		this.shader.deleteVertexData();
+		this.shader.uniforms.flush();
 	}
 
 	/**
@@ -179,14 +185,18 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		ShaderManager.reloadShader(this.shader, this.id);
 	}
 
-	void preRender(DrawMethod primitive) {
-		if(this.vertices % primitive.vertexCount != 0) {
-			throw new IllegalArgumentException("Expected multiple of " + primitive.vertexCount + " vertexes for " +
-			                                   "rendering " + primitive + " but found " + this.vertices);
+	private void validateAndFlushVertex(AutoStrat strategy) {
+		this.validateAndFlushVertex(strategy, strategy.vertexCount(), strategy.minimumVertices());
+	}
+
+	void validateAndFlushVertex(Object string, int vertexCount, int minimumVertices) {
+		if(this.verticesSinceStrategy % vertexCount != 0) {
+			throw new IllegalArgumentException("Expected multiple of " + vertexCount + " vertexes for " +
+			                                   "rendering " + string + " but found " + this.verticesSinceStrategy);
 		}
-		if(this.vertices < primitive.minimumVertices) {
-			throw new IllegalArgumentException("Expected atleast " + primitive.minimumVertices + " vertexes for " +
-			                                   "rendering " + primitive + " but found " + this.vertices);
+		if(this.verticesSinceStrategy < minimumVertices) {
+			throw new IllegalArgumentException("Expected atleast " + minimumVertices + " vertexes for " +
+			                                   "rendering " + string + " but found " + this.verticesSinceStrategy);
 		}
 		this.endOfVertex();
 	}

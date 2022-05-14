@@ -32,14 +32,14 @@ public class EBO {
 	}
 
 	public void bind() {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.glId);
 		if(this.isDirty) {
 			this.builder.upload(GL_ELEMENT_ARRAY_BUFFER);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.glId);
 		}
 	}
 
 	public void append(ShapeStrat strat, int from, int len) {
-		this.ensureCanIndex(strat.maxSize());
+		this.ensureCanIndex(strat.maxSize()-1);
 		this.builder.copyVertexes(strat.builder, from, len);
 	}
 

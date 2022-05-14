@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL15.glGenBuffers;
 
 import java.nio.ByteBuffer;
 
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.internal.BufferBuilder;
 
 public abstract class ShapeStrat {
@@ -35,12 +36,17 @@ public abstract class ShapeStrat {
 
 	public abstract int elementsForVertexData(int count);
 
+	public abstract int vertexCount(DrawMethod method);
+
+	public abstract int minumumVertices(DrawMethod method);
+
 	abstract void ensureCapacity0(int vertices);
 
 	public void bind() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.elementBufferObject);
 		if(this.isDirty) {
 			this.builder.upload(GL_ELEMENT_ARRAY_BUFFER);
+			this.isDirty = false;
 		}
 	}
 

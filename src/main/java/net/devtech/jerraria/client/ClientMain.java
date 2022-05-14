@@ -16,6 +16,8 @@ import java.util.List;
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
+import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -134,13 +136,28 @@ public class ClientMain {
 			});
 
 			RenderThread.addRenderStage(() -> {
+				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
+				SolidColorShader shader = SolidColorShader.INSTANCE;
+				shader.strategy(AutoStrat.QUADS);
+				shader.vert().rgb(0xFFFFFF).vec3f(0, 0, 0);
+				shader.vert().rgb(0xFFFFFF).vec3f(1, 0, 0);
+				shader.vert().rgb(0xFFFFFF).vec3f(1, 1, 0);
+				shader.vert().rgb(0xFFFFFF).vec3f(0, 1, 0);
+				shader.strategy(AutoStrat.DEFAULT);
+				shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0);
+				shader.vert().rgb(0xAAFFFF).vec3f(0, -1, 0);
+				shader.vert().rgb(0xAAFFFF).vec3f(-1, 0, 0);
+				shader.renderAndDelete();
+			}, 10);
+
+			/*RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
 				renderer.render(mat, player, scale[0], scale[0]);
-			}, 10);
+			}, 10);*/
 
 			RenderThread.startRender();
 			// close game

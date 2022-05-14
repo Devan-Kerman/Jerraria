@@ -34,10 +34,10 @@ public abstract class Mat4<N extends GlValue<?>> extends AbstractGlValue<N> impl
 			super(data, next, name);
 		}
 
-		public N mat(Matrix4f mat) {
+		/*public N mat(Matrix4f mat) {
 			// todo matrix4f
 			return this.getNext();
-		}
+		}*/
 
 		public N identity() {
 			this.data.element(this.element)

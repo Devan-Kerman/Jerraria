@@ -5,6 +5,8 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 
 import java.nio.ByteBuffer;
+
+import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.internal.BufferBuilder;
 import net.devtech.jerraria.util.math.JMath;
 
@@ -27,8 +29,18 @@ public final class Quad extends ShapeStrat {
 	}
 
 	@Override
+	public int vertexCount(DrawMethod method) {
+		return 4;
+	}
+
+	@Override
+	public int minumumVertices(DrawMethod method) {
+		return 4;
+	}
+
+	@Override
 	public void ensureCapacity0(int vertices) {
-		if(vertices >= this.maxSize) {
+		if(vertices > this.maxSize) {
 			throw new IllegalStateException("size is too big for quad type!");
 		}
 

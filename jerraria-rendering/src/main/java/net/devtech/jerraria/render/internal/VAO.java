@@ -141,7 +141,7 @@ public class VAO extends GlData {
 		return this;
 	}
 
-	public VAO bind() {
+	private VAO bind0() {
 		int id = this.reference.vaoGlId;
 		if(!this.reference.initialized) {
 			id = this.reference.vaoGlId = genVAO(this.groups, false);
@@ -150,27 +150,25 @@ public class VAO extends GlData {
 		return this;
 	}
 
-	public void bindAndDrawArray(int mode) {
-		this.bind();
+	public VAO bind() {
+		this.bind0();
 		this.updateGroups();
+		return this;
+	}
+
+	public void drawArrays(int mode) {
 		glDrawArrays(mode, 0, this.last.buffer.vertexCount);
 	}
 
-	public void bindAndDrawInstancedArray(int mode, int count) {
-		this.bind();
-		this.updateGroups();
+	public void drawArraysInstanced(int mode, int count) {
 		glDrawArraysInstanced(mode, 0, this.last.buffer.vertexCount, count);
 	}
 
-	public void bindAndDrawElements(int mode, int elements, int type) {
-		this.bind();
-		this.updateGroups();
+	public void drawElements(int mode, int elements, int type) {
 		glDrawElements(mode, elements, type,0L);
 	}
 
-	public void bindAndDrawInstancedElements(int mode, int elements, int type, int count) {
-		this.bind();
-		this.updateGroups();
+	public void drawElementsInstanced(int mode, int elements, int type, int count) {
 		glDrawElementsInstanced(mode, elements, type, 0L, count);
 	}
 
