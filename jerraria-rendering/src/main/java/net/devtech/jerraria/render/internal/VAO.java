@@ -21,24 +21,8 @@ import org.lwjgl.opengl.GL20;
 public class VAO extends GlData {
 	static final IntArrayList RECLAIM_VAO_IDS = new IntArrayList(), RECLAIM_VBO_IDS = new IntArrayList();
 
-	static class ShaderVAOState {
-		/**
-		 * The id of the VAO currently bound to the shader
-		 */
-		int currentlyBoundId;
-
-		public void bind(int id, boolean force) {
-			int current = this.currentlyBoundId;
-			if(current != id || force) {
-				glBindVertexArray(id);
-				this.currentlyBoundId = id;
-			}
-		}
-	}
-
 	static class VAOReference {int vaoGlId;}
 
-	final ShaderVAOState manager;
 	final VAOReference reference;
 	final Map<String, Element> elements;
 	final List<ElementGroup> groups;
@@ -65,7 +49,6 @@ public class VAO extends GlData {
 		this.groups = List.copyOf(groups.values());
 		this.last = last;
 		this.elements = elements;
-		this.manager = new ShaderVAOState();
 		this.reference = new VAOReference();
 		this.reference.vaoGlId = genVAO(this.groups, true);
 	}
@@ -79,7 +62,6 @@ public class VAO extends GlData {
 		this.groups = groups;
 		this.elements = vao.elements;
 		this.last = last;
-		this.manager = vao.manager;
 
 		synchronized(RECLAIM_VAO_IDS) {
 			if(!RECLAIM_VAO_IDS.isEmpty()) {
@@ -168,7 +150,7 @@ public class VAO extends GlData {
 		if(this.reference.vaoGlId == 0) {
 			id = this.reference.vaoGlId = genVAO(this.groups, false);
 		}
-		this.manager.bind(id, false);
+		glBindVertexArray(id);
 		return this;
 	}
 

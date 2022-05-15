@@ -180,8 +180,8 @@ class ShaderImpl {
 		Shader<T> shader, VFBuilderImpl<T> builder, Shader.Copier<Shader<?>> context) {
 		shader.builder = builder;
 		shader.copyFunction = context;
-		shader.uniformData = new LazyUniformData(shader);
 		shader.uniforms = new ArrayList<>();
+		shader.uniformData = new LazyUniformData(shader);
 		shader.isCopy = false;
 	}
 }

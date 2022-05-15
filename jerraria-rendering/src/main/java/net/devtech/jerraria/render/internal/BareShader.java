@@ -91,8 +91,7 @@ public class BareShader {
 
 	public void draw() { // todo fully write EBO
 		int mode = this.strategy.getDrawMethod().glId;
-		this.vao.bind();
-		int type = this.setupDraw();
+		int type = this.setupDraw(true);
 		if(type == -1) {
 			this.vao.drawArrays(mode);
 		} else {
@@ -102,8 +101,7 @@ public class BareShader {
 
 	public void drawInstanced(int count) {
 		int mode = this.strategy.getDrawMethod().glId;
-		this.vao.bind();
-		int type = this.setupDraw();
+		int type = this.setupDraw(true);
 		if(type == -1) {
 			this.vao.drawArraysInstanced(mode, count);
 		} else {
@@ -168,7 +166,7 @@ public class BareShader {
 		}
 	}
 
-	private int setupDraw() {
+	private int setupDraw(boolean bindVao) {
 		int id = this.id.glId;
 		BareShader active = activeShader;
 		if(active == null || active.currentGlId != id) {
@@ -185,17 +183,22 @@ public class BareShader {
 		}
 
 		this.uniforms.upload();
-		if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
-			return -1;
-		} else if(this.ebo != null) {
-			this.hotswapStrategy(this.strategy, true);
-			this.ebo.bind();
-			return this.ebo.currentType;
+		if(bindVao) {
+			this.vao.bind();
+			if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
+				return -1;
+			} else if(this.ebo != null) {
+				this.hotswapStrategy(this.strategy, true);
+				this.ebo.bind();
+				return this.ebo.currentType;
+			} else {
+				// custom strategy without hotswaps
+				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last.buffer.vertexCount);
+				strat.bind();
+				return strat.getType();
+			}
 		} else {
-			// custom strategy without hotswaps
-			ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last.buffer.vertexCount);
-			strat.bind();
-			return strat.getType();
+			return -1;
 		}
 	}
 
