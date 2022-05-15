@@ -138,7 +138,7 @@ public class ClientMain {
 				}
 			});
 
-			/*RenderThread.addRenderStage(() -> {
+			RenderThread.addRenderStage(() -> {
 				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
 				SolidColorShader shader = SolidColorShader.INSTANCE;
 				shader.strategy(AutoStrat.DATA_UPLOAD);
@@ -152,16 +152,16 @@ public class ClientMain {
 				shader.copy(c);
 				shader.copy(d);
 				shader.renderAndDelete();
-			}, 10);*/
+			}, 10);
 
-			RenderThread.addRenderStage(() -> {
+			/*RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(ClientInit.dims[1] / ((float)ClientInit.dims[0]), 1);
 				WorldRenderer renderer = new WorldRenderer(world);
 				renderer.render(mat, player, scale[0], scale[0]);
-			}, 10);
+			}, 10);*/
 
 			RenderThread.startRender();
 			// close game

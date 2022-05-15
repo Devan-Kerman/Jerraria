@@ -109,16 +109,15 @@ class ClientInit {
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			Matrix3f cartToIndexMat = cartesianToAWTIndexGrid(8f);
-
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.renderAndDelete();
 			text.renderAndDelete();
-			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
-			GLFW.glfwPollEvents();
-
 			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
 				renderThreadTasks.remove(i).run();
 			}
+
+			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
+			GLFW.glfwPollEvents();
 		}
 
 		if(exit) {
