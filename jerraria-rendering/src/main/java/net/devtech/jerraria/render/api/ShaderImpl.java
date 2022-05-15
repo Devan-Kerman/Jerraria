@@ -1,6 +1,9 @@
 package net.devtech.jerraria.render.api;
 
+import java.util.ArrayList;
+
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
@@ -92,8 +95,17 @@ class ShaderImpl {
 	}
 
 	static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform_(U from, U to) {
-		if(to.data instanceof UniformData fromU && from.data instanceof UniformData toU) {
+		GlData fromData = to.data, toData = from.data;
+		if(fromData instanceof LazyUniformData u) {
+			fromData = u.getUniforms();
+		}
+		if(toData instanceof LazyUniformData u) {
+			toData = u.getUniforms();
+		}
+		if(toData instanceof UniformData fromU && fromData instanceof UniformData toU) {
 			fromU.copyTo(from.element, toU, to.element);
+		} else {
+			throw new UnsupportedOperationException("unrecognized copy " + fromData.getClass() + " to " + toData.getClass());
 		}
 	}
 
@@ -150,12 +162,26 @@ class ShaderImpl {
 		}
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void postCopyInit(
-		Shader<T> init, Shader<T> shader, BareShader bare) {
-		Pair<T, End> build = shader.builder.build(bare);
-		init.compiled = build.first();
-		init.end = build.second();
-		init.shader = bare;
-		init.isCopy = true;
+	static <T extends GlValue<?> & GlValue.Attribute> void copyPostInit(
+		Shader<T> shader, Shader<T> copy, SCopy method) {
+		BareShader bare = new BareShader(copy.shader, method);
+		shader.copyFunction = copy.copyFunction;
+		shader.builder = copy.builder;
+		shader.uniformData = bare.uniforms;
+		shader.uniforms = copy.uniforms;
+		Pair<T, End> build = copy.builder.build(bare);
+		shader.compiled = build.first();
+		shader.end = build.second();
+		shader.shader = bare;
+		shader.isCopy = true;
+	}
+
+	static <T extends GlValue<?> & GlValue.Attribute> void postInit(
+		Shader<T> shader, VFBuilderImpl<T> builder, Shader.Copier<Shader<?>> context) {
+		shader.builder = builder;
+		shader.copyFunction = context;
+		shader.uniformData = new LazyUniformData(shader);
+		shader.uniforms = new ArrayList<>();
+		shader.isCopy = false;
 	}
 }

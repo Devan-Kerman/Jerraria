@@ -348,6 +348,9 @@ public class UniformData extends GlData {
 
 		@Override
 		void bind() {
+			if(this.glId == 0) {
+				this.glId = this.initGlId();
+			}
 			this.manager.bind(this.index, false);
 		}
 

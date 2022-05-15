@@ -3,6 +3,7 @@ package net.devtech.jerraria.render.api;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.LazyElement;
+import net.devtech.jerraria.render.internal.UniformData;
 
 final class LazyUniformData extends GlData {
 	private final Shader shader;
@@ -25,5 +26,9 @@ final class LazyUniformData extends GlData {
 		} else {
 			return new LazyElement(this.shader, name);
 		}
+	}
+
+	public UniformData getUniforms() {
+		return this.shader.shader.uniforms;
 	}
 }

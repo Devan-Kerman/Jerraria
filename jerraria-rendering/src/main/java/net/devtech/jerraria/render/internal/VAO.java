@@ -36,7 +36,7 @@ public class VAO extends GlData {
 		}
 	}
 
-	static class VAOReference {int vaoGlId; boolean initialized;}
+	static class VAOReference {int vaoGlId;}
 
 	final ShaderVAOState manager;
 	final VAOReference reference;
@@ -95,11 +95,11 @@ public class VAO extends GlData {
 		VAOReference reference = this.reference = new VAOReference();
 		BareShader.GL_CLEANUP.register(this, () -> {
 			synchronized(RECLAIM_VAO_IDS) {
-				if(reference.initialized) {
+				if(reference.vaoGlId != 0) {
 					RECLAIM_VAO_IDS.add(reference.vaoGlId);
 				}
 				for(ElementGroup group : groups) {
-					if(group.validGlId) {
+					if(group.glId != 0) {
 						RECLAIM_VBO_IDS.add(group.glId);
 					}
 				}
@@ -165,7 +165,7 @@ public class VAO extends GlData {
 
 	private VAO bind0() {
 		int id = this.reference.vaoGlId;
-		if(!this.reference.initialized) {
+		if(this.reference.vaoGlId == 0) {
 			id = this.reference.vaoGlId = genVAO(this.groups, false);
 		}
 		this.manager.bind(id, false);
@@ -236,14 +236,12 @@ public class VAO extends GlData {
 		BufferBuilder buffer;
 		boolean reupload;
 		int glId;
-		boolean validGlId;
 		int byteLength;
 
 		public ElementGroup(String name) {
 			this.name = name;
 			this.elements = new ArrayList<>();
 			this.glId = this.initGlId();
-			this.validGlId = true;
 		}
 
 		public ElementGroup(ElementGroup group, boolean copyContents) {
@@ -267,9 +265,8 @@ public class VAO extends GlData {
 		}
 
 		void bind() {
-			if(!this.validGlId) {
+			if(this.glId == 0) {
 				this.glId = this.initGlId();
-				this.validGlId = true;
 			}
 			glBindBuffer(GL_ARRAY_BUFFER, this.glId);
 		}
