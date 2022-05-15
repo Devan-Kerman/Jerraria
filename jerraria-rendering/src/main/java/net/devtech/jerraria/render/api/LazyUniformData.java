@@ -1,7 +1,5 @@
 package net.devtech.jerraria.render.api;
 
-import java.util.Collection;
-
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.LazyElement;
@@ -21,21 +19,11 @@ final class LazyUniformData extends GlData {
 
 	@Override
 	public Element getElement(String name) {
-		BareShader shader = shader.shader;
+		BareShader shader = this.shader.shader;
 		if(shader != null) {
 			return shader.uniforms.getElement(name);
 		} else {
-			return new LazyElement(shader, name);
-		}
-	}
-
-	@Override
-	public Collection<? extends Element> allElements() {
-		BareShader shader = shader.shader;
-		if(shader != null) {
-			return shader.uniforms.allElements();
-		} else {
-			throw new UnsupportedOperationException("Shader not loaded!");
+			return new LazyElement(this.shader, name);
 		}
 	}
 }

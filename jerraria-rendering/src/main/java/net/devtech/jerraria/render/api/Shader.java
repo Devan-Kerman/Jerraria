@@ -21,7 +21,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.math.Matrix4f;
 
 /**
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.

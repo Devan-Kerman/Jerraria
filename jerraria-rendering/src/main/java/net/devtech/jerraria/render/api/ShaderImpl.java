@@ -1,7 +1,6 @@
 package net.devtech.jerraria.render.api;
 
 import it.unimi.dsi.fastutil.Pair;
-import net.devtech.jerraria.render.JerrariaMain;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
@@ -23,9 +22,6 @@ class ShaderImpl {
 		@SuppressWarnings("unchecked")
 		T shader = initializer.create(id, builder, copyFunction);
 		compile(shader);
-		synchronized(JerrariaMain.SHADERS) {
-			JerrariaMain.SHADERS.put(shader, new Object());
-		}
 		return shader;
 	}
 
@@ -122,7 +118,7 @@ class ShaderImpl {
 	static <T extends GlValue<?> & GlValue.Attribute> void compile(Shader<T> shader) {
 		BareShader bare = ShaderManager.getBareShader(shader.id, shader.builder.attributes, shader.uniforms);
 		shader.shader = bare;
-		Pair<T, End> build = shader.builder.build(bare.vao);
+		Pair<T, End> build = shader.builder.build(bare);
 		shader.compiled = build.first();
 		shader.end = build.second();
 	}
@@ -156,7 +152,7 @@ class ShaderImpl {
 
 	static <T extends GlValue<?> & GlValue.Attribute> void postCopyInit(
 		Shader<T> init, Shader<T> shader, BareShader bare) {
-		Pair<T, End> build = shader.builder.build(bare.vao);
+		Pair<T, End> build = shader.builder.build(bare);
 		init.compiled = build.first();
 		init.end = build.second();
 		init.shader = bare;
