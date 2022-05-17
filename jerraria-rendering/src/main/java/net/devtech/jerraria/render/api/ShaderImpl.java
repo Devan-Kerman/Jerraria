@@ -9,6 +9,7 @@ import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.TypesInternalAccess;
 import net.devtech.jerraria.render.internal.BareShader;
+import net.devtech.jerraria.render.internal.LazyUniformData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
@@ -51,7 +52,7 @@ class ShaderImpl {
 		shader.verticesSinceStrategy++;
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> Shader<T> getShader(
+	static <T extends GlValue<?> & GlValue.Attribute> Shader<T> copyVertex(
 		Shader<T> current,
 		Shader<T> shader,
 		int vertexId) {

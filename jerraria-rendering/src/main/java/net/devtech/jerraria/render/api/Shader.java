@@ -76,7 +76,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	@Contract("_,_->this")
 	public final Shader<T> copy(Shader<T> shader, int vertexId) {
-		return ShaderImpl.getShader(this, shader, vertexId);
+		return ShaderImpl.copyVertex(this, shader, vertexId);
 	}
 
 	/**

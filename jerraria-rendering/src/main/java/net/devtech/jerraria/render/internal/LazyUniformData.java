@@ -1,11 +1,12 @@
-package net.devtech.jerraria.render.api;
+package net.devtech.jerraria.render.internal;
 
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.LazyElement;
 import net.devtech.jerraria.render.internal.UniformData;
 
-final class LazyUniformData extends GlData {
+public final class LazyUniformData extends GlData {
 	private final Shader shader;
 
 	public LazyUniformData(Shader shader) {this.shader = shader;}
@@ -15,12 +16,12 @@ final class LazyUniformData extends GlData {
 		if(element instanceof LazyElement l) {
 			element = l.getSelf();
 		}
-		return shader.shader.uniforms.element(element);
+		return shader.getShader().uniforms.element(element);
 	}
 
 	@Override
 	public Element getElement(String name) {
-		BareShader shader = this.shader.shader;
+		BareShader shader = this.shader.getShader();
 		if(shader != null) {
 			return shader.uniforms.getElement(name);
 		} else {
@@ -29,6 +30,6 @@ final class LazyUniformData extends GlData {
 	}
 
 	public UniformData getUniforms() {
-		return this.shader.shader.uniforms;
+		return this.shader.getShader().uniforms;
 	}
 }
