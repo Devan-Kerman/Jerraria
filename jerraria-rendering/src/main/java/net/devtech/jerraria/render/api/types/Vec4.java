@@ -5,10 +5,6 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vector4f;
-
 /**
  * A 3d vector of a primitive gl value
  */
@@ -44,24 +40,8 @@ public abstract class Vec4<N extends GlValue<?>> extends AbstractGlValue<N> impl
 	}
 
 	public static class F<N extends GlValue<?>> extends Vec4<N> {
-		Vector4f v4f;
-
 		protected F(GlData data, GlValue<?> next, String name) {
 			super(data, next, name);
-		}
-
-		public N vec4f(MatrixStack mat, float x, float y, float z, float w) {
-			return this.vec4f(mat.peek().getPositionMatrix(), x, y, z, w);
-		}
-
-		public N vec4f(Matrix4f mat, float x, float y, float z, float w) {
-			Vector4f v4f = this.v4f;
-			if(v4f == null) {
-				v4f = this.v4f = new Vector4f();
-			}
-			v4f.set(x, y, z, w);
-			v4f.transform(mat);
-			return this.vec4f(v4f.getX(), v4f.getY(), v4f.getZ(), v4f.getW());
 		}
 
 		public N vec4f(float a, float b, float c, float d) {
