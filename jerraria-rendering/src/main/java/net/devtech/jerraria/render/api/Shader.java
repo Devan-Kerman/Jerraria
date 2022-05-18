@@ -1,6 +1,10 @@
 package net.devtech.jerraria.render.api;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
@@ -8,6 +12,7 @@ import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
+import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -20,6 +25,7 @@ import org.jetbrains.annotations.Contract;
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	public final Id id;
+	final Map<String, Object> compilationConfig = new HashMap<>();
 	List<GlValue.Type<?>> uniforms;
 	GlData uniformData;
 	VFBuilderImpl<T> builder;
@@ -137,7 +143,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public void reload() {
-		ShaderManager.reloadShader(this.shader, this.id);
+		ShaderManager.reloadShader(this.shader, this.id, this.compilationConfig);
 	}
 
 	@ApiStatus.Internal
@@ -150,6 +156,34 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 */
 	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
 		return ShaderImpl.addUniform(this, type);
+	}
+
+	/**
+	 * Put a custom shader compilation parameter, these are assumed to be processed by a {@link SourceProvider}.
+	 * Calling this method after the shader has been built has no effect unless {@link #reload()} is called.
+	 *
+	 * <p>Existing supported parameters: (none)</p>
+	 */
+	protected final void putParameter(String name, Object value) {
+		this.compilationConfig.put(name, value);
+	}
+
+	/**
+	 * Add a custom shader compilation parameter, these are assumed to be processed by a {@link SourceProvider}.
+	 * Calling this method after the shader has been built has no effect unless {@link #reload()} is called.
+	 *
+	 * <p>
+	 *     Existing supported parameters: <br>
+	 *      - "define": adds a "#define [value]"
+	 * </p>
+	 */
+	protected final void addParameter(String name, Object value) {
+		Object o = this.compilationConfig.computeIfAbsent(name, a -> new ArrayList<>());
+		if(o instanceof Collection c) {
+			c.add(value);
+		} else {
+			throw new IllegalStateException(name + " is not a list!");
+		}
 	}
 
 	public interface Copier<T extends Shader<?>> {

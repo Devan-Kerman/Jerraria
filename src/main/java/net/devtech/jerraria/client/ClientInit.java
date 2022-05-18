@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
@@ -64,8 +65,8 @@ class ClientInit {
 			ClientInit.dims = new int[]{width, height};
 		});
 
-		ShaderManager.FRAG_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".frag"));
-		ShaderManager.VERT_SOURCES.add(shaderId -> findShaderSource(directory, shaderId, ".vert"));
+		ShaderManager.FRAG_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".frag")));
+		ShaderManager.VERT_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".vert")));
 		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
 			VirtualFile shaders = directory
 				.resolveDirectory(id.mod())

@@ -129,7 +129,7 @@ class ShaderImpl {
 	}
 
 	static <T extends GlValue<?> & GlValue.Attribute> void compile(Shader<T> shader) {
-		BareShader bare = ShaderManager.getBareShader(shader.id, shader.builder.attributes, shader.uniforms);
+		BareShader bare = ShaderManager.getBareShader(shader.id, shader.builder.attributes, shader.uniforms, shader.compilationConfig);
 		shader.shader = bare;
 		Pair<T, End> build = shader.builder.build(bare);
 		shader.compiled = build.first();

@@ -8,11 +8,13 @@ import static org.lwjgl.opengl.GL31.glShaderSource;
 import static org.lwjgl.opengl.GL31.glUseProgram;
 
 import java.lang.ref.Cleaner;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.render.api.GlValue;
@@ -60,15 +62,17 @@ public class BareShader {
 	}
 
 	public static Map<Id, BareShader> compileShaders(
-		Function<Id, String> fragSrc,
-		Function<Id, String> vertSrc,
+		SourceProvider fragSrc,
+		SourceProvider vertSrc,
+		Map<String, Object> initialArgs,
 		List<Uncompiled> shaders) {
-		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders =
-			                                                                   new Object2IntOpenHashMap<>();
+		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders = new Object2IntOpenHashMap<>();
 		Map<Id, BareShader> compiledShaders = new HashMap<>();
 		for(Uncompiled uncompiled : shaders) {
-			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
-			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
+			ShaderPreprocessor preprocessor = new ShaderPreprocessor(ShaderManager.LIB_SRC);
+			preprocessor.getIncludeParameters().putAll(initialArgs);
+			int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
+			int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
 			int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 			try {
 				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
@@ -101,10 +105,12 @@ public class BareShader {
 		}
 	}
 
-	public static int createProgram(Function<Id, String> src, int type, Id id) {
-		String source = src.apply(id);
+	public static int createProgram(SourceProvider src, ShaderPreprocessor initial, int type, Id id) {
+		Pair<ShaderPreprocessor, String> source = src.getSource(initial, id);
+		List<String> lines = new ArrayList<>();
+		source.left().insert(source.value(), lines);
 		int glId = glCreateShader(type);
-		glShaderSource(glId, source);
+		glShaderSource(glId, lines.toArray(String[]::new));
 		glCompileShader(glId);
 		return glId;
 	}
@@ -146,8 +152,8 @@ public class BareShader {
 		}
 	}
 
-	private static int getOrCompileShader(Function<Id, String> src, Object2IntMap<Id> cache, Id sourceId, int type) {
-		return cache.computeIfAbsent(sourceId, (Id id) -> createProgram(src, type, id));
+	private static int getOrCompileShader(SourceProvider src, ShaderPreprocessor libSrc, Object2IntMap<Id> cache, Id sourceId, int type) {
+		return cache.computeIfAbsent(sourceId, (Id id) -> createProgram(src, libSrc, type, id));
 	}
 
 	public void hotswapStrategy(AutoStrat strategy, boolean force) {

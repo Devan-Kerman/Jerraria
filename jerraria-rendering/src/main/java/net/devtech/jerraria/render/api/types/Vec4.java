@@ -5,6 +5,9 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 
+// todo jerrarian RenderLayer
+// todo instanced rendering api
+
 /**
  * A 3d vector of a primitive gl value
  */
