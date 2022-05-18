@@ -23,6 +23,7 @@ import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.internal.element.Seq;
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.Validate;
 import org.lwjgl.opengl.GL20;
 
 /**
@@ -69,16 +70,35 @@ public class BareShader {
 			int fragmentShader = getOrCompileShader(fragSrc, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
 			int vertexShader = getOrCompileShader(vertSrc, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
 			int program = ShaderManager.compileShader(fragmentShader, vertexShader);
-
-			//glUseProgram(program);
-			VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
-			UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
-			BareShader shader = new BareShader(program, vertex, uniform);
-			compiledShaders.put(uncompiled.id, shader);
+			try {
+				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
+				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
+				BareShader shader = new BareShader(program, vertex, uniform);
+				compiledShaders.put(uncompiled.id, shader);
+			} catch(Throwable t) {
+				ShaderValidationException rethrow = new ShaderValidationException(String.format(
+					"Exception when validating %s [frag: %s] [vert: %s]",
+					uncompiled.id,
+					uncompiled.frag,
+					uncompiled.vert
+				), t);
+				Validate.simplifyStackTrace(t, rethrow);
+				throw Validate.rethrow(rethrow);
+			}
 		}
 		fragmentShaders.values().forEach(GL20::glDeleteShader);
 		vertexShaders.values().forEach(GL20::glDeleteShader);
 		return compiledShaders;
+	}
+
+	static final class ShaderValidationException extends Exception {
+		public ShaderValidationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public ShaderValidationException(String message) {
+			super(message);
+		}
 	}
 
 	public static int createProgram(Function<Id, String> src, int type, Id id) {
@@ -246,10 +266,8 @@ public class BareShader {
 
 		public String groupName(boolean isUniform) {
 			String name = this.groupName;
-			if(name != null) {
+			if(name != null || isUniform) {
 				return name;
-			} else if(isUniform) {
-				return "default";
 			} else {
 				return "default_";
 			}

@@ -3,18 +3,23 @@ package net.devtech.jerraria.render.internal;
 import static org.lwjgl.opengl.GL31.*;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL20;
 
@@ -29,19 +34,61 @@ public class VAO extends GlData {
 	final ElementGroup last;
 
 	public VAO(Map<String, BareShader.Field> fields, int program, Id id) {
+		IntBuffer aBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+		IntBuffer bBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
+		record ActiveField(String name, int location, int type) {}
+		Map<String, ActiveField> fieldsByName = new LinkedHashMap<>();
+		glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, aBuf);
+		int activeAttributes = aBuf.get(0);
+		for(int i = 0; i < activeAttributes; i++) {
+			String name = glGetActiveAttrib(program, i, aBuf, bBuf);
+			if(name.startsWith("gl_")) { // ignore builtins
+				continue;
+			}
+			int location = glGetAttribLocation(program, name);
+			if(location == -1) {
+				throw new IllegalStateException("Unable to find location of " + name + " in shader!");
+			}
+			int size = aBuf.get(0), type = bBuf.get(0);
+			if(size > 1) { // add arrays
+				String baseName;
+				if(name.charAt(name.length()-1) == ']') {
+					baseName = name.substring(0, Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name));
+				} else {
+					baseName = name;
+				}
+				for(int index = 0; index < size; index++) {
+					int attribLocation = glGetAttribLocation(program, name);
+					String indexName = String.format("%s[%d]", baseName, index);
+					fieldsByName.put(indexName, new ActiveField(indexName, attribLocation, type));
+				}
+			} else {
+				fieldsByName.put(name, new ActiveField(name, location, type));
+			}
+		}
+
+		Set<String> unreferencedUniforms = new LinkedHashSet<>(fieldsByName.keySet());
+		unreferencedUniforms.removeAll(fields.keySet());
+		Set<String> unresolvedUniforms = new LinkedHashSet<>(fields.keySet());
+		unresolvedUniforms.removeAll(fieldsByName.keySet());
+		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
+			throw new IllegalStateException("Vertex Attribute(s) with name(s) " + unreferencedUniforms + " were not referenced! Vertex Attribute(s) with name(s) " + unresolvedUniforms + " were not found!");
+		}
+
 		Map<String, Element> elements = new HashMap<>();
 		Map<String, ElementGroup> groups = new LinkedHashMap<>();
 		ElementGroup last = null;
-		for(BareShader.Field field : fields.values()) {
-			int location = glGetAttribLocation(program, field.name());
-			if(location == -1) {
-				throw new IllegalArgumentException("Could not find field by name " + field.name() + " in " + id);
+		for(ActiveField value : fieldsByName.values()) {
+			String name = value.name;
+			BareShader.Field field = fields.get(name);
+			if(!field.type().isCompatible(value.type)) {
+				throw new UnsupportedOperationException(value.type + " is not valid for type for \"" + name + "\" " +
+				                                        "suggested types: " + DataType.forGlslType(value.type));
 			}
-
 			last = groups.computeIfAbsent(field.groupName(false), ElementGroup::new);
 			int groupIndex = new ArrayList<>(groups.values()).indexOf(last);
-			var element = new Element(groupIndex, field.name(), field.type(), location, last.byteLength);
-			elements.put(field.name(), element);
+			var element = new Element(groupIndex, name, field.type(), value.location, last.byteLength);
+			elements.put(name, element);
 			last.elements.add(element);
 			last.byteLength += element.type.byteCount;
 		}

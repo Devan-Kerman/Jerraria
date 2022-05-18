@@ -1,5 +1,6 @@
 package net.devtech.jerraria.util;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -156,6 +157,17 @@ public class Validate {
 	 */
 	public static <T> T create(Supplier<T> supplier) {
 		return supplier.get();
+	}
+
+	public static void simplifyStackTrace(Throwable origin, Throwable rethrow) {
+		StackTraceElement[] current = rethrow.getStackTrace();
+		StackTraceElement[] error = origin.getStackTrace();
+		for(int i = 0; i < current.length; i++) {
+			if(i >= error.length || !error[i].equals(current[i])) {
+				origin.setStackTrace(Arrays.copyOfRange(error, i, error.length));
+				break;
+			}
+		}
 	}
 
 	public interface Msg<T> {

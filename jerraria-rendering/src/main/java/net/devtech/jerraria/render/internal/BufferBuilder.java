@@ -22,7 +22,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public BufferBuilder(BufferBuilder builder) {
-		this(builder, builder.vertexLength);
+		this(builder, builder.vertexCount);
 	}
 
 	public BufferBuilder(BufferBuilder builder, int vertices) {

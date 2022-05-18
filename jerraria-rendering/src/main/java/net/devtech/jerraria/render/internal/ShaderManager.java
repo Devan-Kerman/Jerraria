@@ -20,6 +20,7 @@ import java.util.function.Function;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
+import net.devtech.jerraria.util.Validate;
 
 public class ShaderManager {
 	public static final List<Function<Id, String>> FRAG_SOURCES = new ArrayList<>(), VERT_SOURCES = new ArrayList<>();
@@ -70,8 +71,7 @@ public class ShaderManager {
 		glAttachShader(program, fragmentShader);
 		glLinkProgram(program);
 		if(glGetProgrami(program, GL_LINK_STATUS) == 0) {
-			System.err.println("Error compiling shader!");
-			System.err.println(glGetProgramInfoLog(program));
+			throw Validate.rethrow(new BareShader.ShaderValidationException(glGetProgramInfoLog(program)));
 		}
 		return program;
 	}

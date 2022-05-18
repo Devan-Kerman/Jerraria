@@ -49,10 +49,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 	 * @param name the full path of the uniform or vertex attribute in the shader
 	 * @param groupName <p>&#09;If this is used as a vertex attribute, the group name simply identifies the buffer the
 	 * 	data of this attribute is stored in. in {@link #simple(SimpleType, DataType, String)} the groupName is null,
-	 * 	which states all vertex attributes will share the same buffer.</p> <br>
-	 * 	<p>&#09;If this is used as a uniform, the group name identifies the
-	 * 	<a href=https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object>Uniform Block</a> that the uniform is in.
-	 * 	Like vertex attributes, each groupName has its own buffer. </p>
+	 * 	which states all vertex attributes will share the same buffer.</p> <br> This must be null for uniforms
 	 */
 	protected static <N extends AbstractGlValue<?>> Simple<N> simple(
 		SimpleType<N> type,
@@ -100,11 +97,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 
 		@Override
 		public void attach(BareShader.Uncompiled uncompiled, Loc isUniform) {
-			String groupName = this.groupName;
-			if(this.groupName == null && isUniform == Loc.UNIFORM) {
-				groupName = "default";
-			}
-			uncompiled.type(isUniform, this.dataType, this.name, groupName);
+			uncompiled.type(isUniform, this.dataType, this.name, this.groupName);
 		}
 
 		@Override
