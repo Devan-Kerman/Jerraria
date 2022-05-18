@@ -17,8 +17,12 @@ import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.render.api.DrawMethod;
+import net.devtech.jerraria.render.api.SCopy;
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
@@ -139,19 +143,34 @@ public class ClientMain {
 			});
 
 			RenderThread.addRenderStage(() -> {
-				//Matrix3f mat = ClientInit.cartesianToAWTIndexGrid(8);
-				SolidColorShader shader = SolidColorShader.INSTANCE;
-				shader.strategy(AutoStrat.DATA_UPLOAD);
-				int a = shader.vert().rgb(0xAAFFFF).vec3f(0, 0, 0).id();
-				int b = shader.vert().rgb(0xAAFFFF).vec3f(1, 0, 0).id();
-				int c = shader.vert().rgb(0xAAFFFF).vec3f(0, 1, 0).id();
-				int d = shader.vert().rgb(0xAAFFFF).vec3f(1, 1, 0).id();
-				shader.strategy(AutoStrat.sequence(DrawMethod.LINES));
-				shader.copy(a);
-				shader.copy(b);
-				shader.copy(c);
-				shader.copy(d);
-				shader.renderAndDelete();
+				Matrix3f mat = new Matrix3f();
+				InstancedSolidColorShader shader = InstancedSolidColorShader.INSTANCE;
+				shader.drawRect(mat, 0, 0, .1f, .1f);
+				for(Vec3.F<?> offset : shader.offsets) {
+					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
+				}
+
+				for(Vec3.F<?> color : shader.colors) {
+					color.vec3f(.5f, .5f, .5f);
+				}
+
+				shader.renderInstanced(32);
+				shader.deleteVertexData();
+
+				InstancedSolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH);
+				copy.renderInstanced(32);
+
+				for(Vec3.F<?> offset : shader.offsets) {
+					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
+				}
+
+				for(Vec3.F<?> color : shader.colors) {
+					color.vec3f(.5f, 1, 1);
+				}
+
+				shader.drawRect(mat, 0, 0, .1f, .1f);
+				shader.renderInstanced(32);
+				shader.deleteVertexData();
 			}, 10);
 
 			/*RenderThread.addRenderStage(() -> {

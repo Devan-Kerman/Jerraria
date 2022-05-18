@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
+import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.DrawMethod;
