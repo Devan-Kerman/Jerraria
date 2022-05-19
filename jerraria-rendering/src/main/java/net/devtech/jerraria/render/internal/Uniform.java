@@ -1,16 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL31.glUniform1f;
-import static org.lwjgl.opengl.GL31.glUniform1i;
-import static org.lwjgl.opengl.GL31.glUniform2f;
-import static org.lwjgl.opengl.GL31.glUniform2i;
-import static org.lwjgl.opengl.GL31.glUniform3f;
-import static org.lwjgl.opengl.GL31.glUniform3i;
-import static org.lwjgl.opengl.GL31.glUniform4f;
-import static org.lwjgl.opengl.GL31.glUniform4i;
-import static org.lwjgl.opengl.GL31.glUniformMatrix2fv;
-import static org.lwjgl.opengl.GL31.glUniformMatrix3fv;
-import static org.lwjgl.opengl.GL31.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL31.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -97,7 +87,7 @@ public abstract class Uniform implements GlData.Buf {
 		throw new UnsupportedOperationException();
 	}
 
-	abstract void copyTo(Uniform uniform);
+	abstract void copyTo(GlData.Buf uniform);
 
 	abstract void reset();
 
@@ -120,9 +110,15 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void copyTo(Uniform uniform) {
-			Matrix matrix = (Matrix) uniform;
-			matrix.buf.put(this.buf);
+		void copyTo(GlData.Buf uniform) {
+			if(uniform instanceof Matrix m) {
+				m.buf.put(this.buf);
+			} else {
+				int floats = this.type.byteCount / 4;
+				for(int index = 0; index < floats; index++) {
+					uniform.f(this.buf.get(floats));
+				}
+			}
 		}
 
 		@Override
@@ -168,15 +164,14 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void copyTo(Uniform uniform) {
-			Sampler texture = (Sampler) uniform;
-			texture.textureId = this.textureId;
+		void copyTo(GlData.Buf uniform) {
+			uniform.i(this.textureId);
 		}
 
 		@Override
 		void alwaysUpload() {
-			GL13.glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
-			GL13.glBindTexture(this.type.elementType, this.textureId);
+			glActiveTexture(GL13.GL_TEXTURE0 + this.textureUnit);
+			glBindTexture(this.type.elementType, this.textureId);
 		}
 	}
 
@@ -221,13 +216,21 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void copyTo(Uniform uniform) {
-			Int copy = (Int) uniform;
-			copy.index = this.index;
-			copy.a = this.a;
-			copy.b = this.b;
-			copy.c = this.c;
-			copy.d = this.d;
+		void copyTo(GlData.Buf uniform) {
+			if(uniform instanceof Int i) {
+				i.index = this.index;
+				i.a = this.a;
+				i.b = this.b;
+				i.c = this.c;
+				i.d = this.d;
+				return;
+			}
+			switch(this.type.elementCount) {
+				case 1 -> uniform.i(a);
+				case 2 -> uniform.i(a).i(b);
+				case 3 -> uniform.i(a).i(b).i(c);
+				case 4 -> uniform.i(a).i(b).i(c).i(d);
+			}
 		}
 
 		@Override
@@ -283,13 +286,21 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
-		void copyTo(Uniform uniform) {
-			Float copy = (Float) uniform;
-			copy.index = this.index;
-			copy.a = this.a;
-			copy.b = this.b;
-			copy.c = this.c;
-			copy.d = this.d;
+		void copyTo(GlData.Buf uniform) {
+			if(uniform instanceof Float f) {
+				f.index = this.index;
+				f.a = this.a;
+				f.b = this.b;
+				f.c = this.c;
+				f.d = this.d;
+				return;
+			}
+			switch(this.type.elementCount) {
+				case 1 -> uniform.f(a);
+				case 2 -> uniform.f(a).f(b);
+				case 3 -> uniform.f(a).f(b).f(c);
+				case 4 -> uniform.f(a).f(b).f(c).f(d);
+			}
 		}
 	}
 }
