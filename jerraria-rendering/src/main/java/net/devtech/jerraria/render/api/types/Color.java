@@ -63,7 +63,7 @@ public abstract class Color<N extends GlValue<?>> extends AbstractGlValue<N> imp
 		}
 
 		public N argb(int a, int r, int g, int b) {
-			this.data.element(this.element).b((byte) a).b((byte) r).b((byte) g).b((byte) b);
+			this.data.element(this.element).b((byte) r).b((byte) g).b((byte) b).b((byte) a);
 			return this.getNext();
 		}
 
