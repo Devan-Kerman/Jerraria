@@ -74,12 +74,12 @@ public final class ShaderPreprocessor {
 				}
 				lines.add("#line 1\n");
 				processor.key().insert(processor.value(), lines);
-				lines.add("#line " + lineNumber);
+				lines.add("#line " + lineNumber + "\n");
 			} else {
 				throw new UnsupportedOperationException("Empty #include on line " + lineNumber);
 			}
 		} else {
-			lines.add(ln);
+			lines.add(ln + "\n");
 		}
 	}
 

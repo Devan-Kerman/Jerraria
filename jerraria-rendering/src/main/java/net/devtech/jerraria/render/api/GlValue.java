@@ -40,7 +40,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 		SimpleType<N> type,
 		DataType dataType,
 		String name) {
-		return new Simple<>(type, dataType, name, null);
+		return new Simple<>(type, dataType, name, null, null);
 	}
 
 	/**
@@ -56,7 +56,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 		DataType dataType,
 		String name,
 		String groupName) {
-		return new Simple<>(type, dataType, name, groupName);
+		return new Simple<>(type, dataType, name, groupName, null);
 	}
 
 	/**
@@ -88,7 +88,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 
 	public interface Uniform {}
 
-	public record Simple<N extends GlValue<?>>(SimpleType<N> type, DataType dataType, String name, String groupName)
+	public record Simple<N extends GlValue<?>>(SimpleType<N> type, DataType dataType, String name, String groupName, Object optional)
 		implements Type<N> {
 		@Override
 		public N create(GlData data, GlValue<?> next) {
@@ -97,7 +97,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 
 		@Override
 		public void attach(BareShader.Uncompiled uncompiled, Loc isUniform) {
-			uncompiled.type(isUniform, this.dataType, this.name, this.groupName);
+			uncompiled.type(isUniform, this.dataType, this.name, this.groupName, optional);
 		}
 
 		@Override

@@ -2,11 +2,12 @@ package net.devtech.jerraria.client;
 
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.resource.VirtualFile;
+import net.devtech.jerraria.util.math.Matrix3f;
 
 public class JerrariaClient {
 	public static final long MAIN_WINDOW_GL_ID = ClientInit.glMainWindow;
 	public static final Atlas MAIN_ATLAS = ClientInit.mainAtlas;
-	public static final VirtualFile.Directory CLIENT_RESOURCES = ClientMain.clientResources;
+	public static final VirtualFile.Directory CLIENT_RESOURCES = Bootstrap.clientResources;
 
 	public static int windowWidth() {
 		return ClientInit.dims[0];
@@ -21,4 +22,5 @@ public class JerrariaClient {
 			throw new IllegalStateException(JerrariaClient.class.getSimpleName() + " loaded by " + ClientInit.class.getSimpleName());
 		}
 	}
+
 }

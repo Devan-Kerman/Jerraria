@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
-import net.devtech.jerraria.client.ClientMain;
+import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.LoadRender;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.resource.VirtualFile;
@@ -249,7 +249,7 @@ public class Atlas {
 		try {
 			return new Atlas(LoadRender.create("Stitching " + atlasId, 1),
 				RENDER_THREAD_EXECUTOR,
-				ClientMain.clientResources,
+				Bootstrap.clientResources,
 				atlasId);
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
@@ -258,7 +258,7 @@ public class Atlas {
 
 	public static Atlas createAtlas(LoadRender render, Executor renderThreadExecutor, Id atlasId) {
 		try {
-			return new Atlas(render, renderThreadExecutor, ClientMain.clientResources, atlasId);
+			return new Atlas(render, renderThreadExecutor, Bootstrap.clientResources, atlasId);
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}

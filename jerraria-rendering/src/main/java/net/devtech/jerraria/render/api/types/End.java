@@ -6,8 +6,8 @@ import net.devtech.jerraria.render.api.Shader;
 /**
  * Denotes the end of a vertex attribute list.
  */
-public class End extends GlValue<End> {
-	int vertexId;
+public class End extends GlValue<End> implements GlValue.Attribute {
+	int vertexId; // todo determine what vertices to keep and what to nuke
 	public End() {
 		super(null, null);
 	}

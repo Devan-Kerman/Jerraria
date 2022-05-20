@@ -4,28 +4,7 @@ import static org.lwjgl.opengl.GL20.GL_ACTIVE_UNIFORMS;
 import static org.lwjgl.opengl.GL20.glGetActiveUniform;
 import static org.lwjgl.opengl.GL20.glGetProgramiv;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL31.GL_ACTIVE_UNIFORM_BLOCKS;
-import static org.lwjgl.opengl.GL31.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_ARRAY_STRIDE;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BLOCK_DATA_SIZE;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_OFFSET;
-import static org.lwjgl.opengl.GL31.glBindBufferBase;
-import static org.lwjgl.opengl.GL31.glBindBufferRange;
-import static org.lwjgl.opengl.GL31.glBufferData;
-import static org.lwjgl.opengl.GL31.glCopyBufferSubData;
-import static org.lwjgl.opengl.GL31.glDeleteBuffers;
-import static org.lwjgl.opengl.GL31.glGenBuffers;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformBlockName;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformBlockiv;
-import static org.lwjgl.opengl.GL31.glGetActiveUniformsi;
-import static org.lwjgl.opengl.GL31.glGetInteger;
-import static org.lwjgl.opengl.GL31.glGetUniformBlockIndex;
-import static org.lwjgl.opengl.GL31.glGetUniformIndices;
-import static org.lwjgl.opengl.GL31.glUniformBlockBinding;
+import static org.lwjgl.opengl.GL31.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -42,13 +21,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
+import org.lwjgl.opengl.GL46;
 
 
 public class UniformData extends GlData {
@@ -57,15 +39,87 @@ public class UniformData extends GlData {
 	final List<UniformBufferBlock> groups;
 	final List<Uniform> uniforms;
 
+	record ActiveUniform(String name,
+	                     int location, // normal uniforms
+	                     int index, int byteOffset, // UBO uniforms
+	                     int glslType
+	) {}
+
 	public UniformData(Map<String, BareShader.Field> fields, int program, Id id) {
 		IntBuffer aBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 		IntBuffer bBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 
-		// uniform blocks
+		// actual uniforms
+		glGetProgramiv(program, GL_ACTIVE_UNIFORMS, aBuf);
+		int uniformCount = aBuf.get(0);
+		Map<String, ActiveUniform> uniformMap = new LinkedHashMap<>();
 		Map<String, UniformBufferBlock> blocksByName = new LinkedHashMap<>();
 		Int2ObjectMap<UniformBufferBlock> blocksByIndex = new Int2ObjectOpenHashMap<>();
+		Int2ObjectMap<UniformBufferBlock> atomicBuffers = new Int2ObjectOpenHashMap<>();
+		for(int i = 0; i < uniformCount; i++) {
+			String name = glGetActiveUniform(program, i, aBuf, bBuf);
+			if(name.startsWith("gl_")) { // ignore builtins
+				continue;
+			}
+			int location = glGetUniformLocation(program, name);
+			int offset = glGetActiveUniformsi(program, i, GL_UNIFORM_OFFSET);
+			// GL46.GL_ATOMIC_COUNTER_BUFFER
+			//GL46.ATOMIC
+			int atomicIndex = glGetActiveUniformsi(program, i, GL46.GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX);
+			if(atomicIndex != -1) {
+				UniformBufferBlock block;
+				if(!atomicBuffers.containsKey(atomicIndex)) {
+					int binding = GL46.glGetActiveAtomicCounterBufferi(program,
+						atomicIndex,
+						GL46.GL_ATOMIC_COUNTER_BUFFER_BINDING
+					);
+					block = new UniformBufferBlock(
+						name + "Family",
+						program,
+						binding,
+						atomicIndex,
+						GL46.GL_ATOMIC_COUNTER_BUFFER
+					);
+					blocksByName.put(block.name, block);
+					atomicBuffers.put(atomicIndex, block);
+				} else {
+					block = atomicBuffers.get(atomicIndex);
+				}
+				blocksByIndex.put(i, block);
+			}
+
+			int size = aBuf.get(0), type = bBuf.get(0);
+			if(size > 1) { // add arrays
+				String baseName;
+				if(name.charAt(name.length()-1) == ']') {
+					baseName = name.substring(0, Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name));
+				} else {
+					baseName = name;
+				}
+				int stride = glGetActiveUniformsi(program, i, GL_UNIFORM_ARRAY_STRIDE);
+				for(int index = 0; index < size; index++) {
+					String indexName = String.format("%s[%d]", baseName, index);
+					int attribLocation = glGetUniformLocation(program, indexName);
+					int byteOffset = stride * index + offset;
+					uniformMap.put(indexName, new ActiveUniform(indexName, attribLocation, i, byteOffset, type));
+				}
+			} else {
+				uniformMap.put(name, new ActiveUniform(name, location, i, offset, type));
+			}
+		}
+
+		Set<String> unreferencedUniforms = new LinkedHashSet<>(uniformMap.keySet());
+		unreferencedUniforms.removeAll(fields.keySet());
+		Set<String> unresolvedUniforms = new LinkedHashSet<>(fields.keySet());
+		unresolvedUniforms.removeAll(uniformMap.keySet());
+		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
+			throw new IllegalStateException("Uniform(s) with name(s) " + unreferencedUniforms + " were not referenced! Uniform(s) with name(s) " + unresolvedUniforms + " were not found!");
+		}
+
+		// uniform blocks
 		glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, aBuf);
 		int uniformBlockCount = aBuf.get(0);
+		int bindingPointCounter = 0;
 		for(int i = 0; i < uniformBlockCount; i++) {
 			String name = glGetActiveUniformBlockName(program, i);
 			glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_DATA_SIZE, aBuf);
@@ -81,7 +135,12 @@ public class UniformData extends GlData {
 				.order(ByteOrder.nativeOrder())
 				.asIntBuffer();
 			glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, uniformIndexes);
-			UniformBufferBlock block = new UniformBufferBlock(name, program, i);
+
+			int bindingPoint;
+			while(atomicBuffers.containsKey(bindingPoint = bindingPointCounter++)) {
+			}
+
+			UniformBufferBlock block = new UniformBufferBlock(name, program, bindingPoint, i, GL_UNIFORM_BUFFER);
 			for(int off = 0; off < activeUniforms; off++) {
 				int uniformIndex = uniformIndexes.get(off);
 				block.uniformIndices.add(uniformIndex);
@@ -90,49 +149,8 @@ public class UniformData extends GlData {
 			blocksByName.put(name, block);
 		}
 
-		// actual uniforms
-		glGetProgramiv(program, GL_ACTIVE_UNIFORMS, aBuf);
-		int uniformCount = aBuf.get(0);
-		record ActiveUniform(String name,
-		                     int location, // normal uniforms
-		                     int index, int byteOffset, // UBO uniforms
-		                     int glslType
-		) {}
-		Map<String, ActiveUniform> uniformMap = new LinkedHashMap<>();
-		for(int i = 0; i < uniformCount; i++) {
-			String name = glGetActiveUniform(program, i, aBuf, bBuf);
-			if(name.startsWith("gl_")) { // ignore builtins
-				continue;
-			}
-			int location = glGetUniformLocation(program, name);
-			int size = aBuf.get(0), type = bBuf.get(0);
-			if(size > 1) { // add arrays
-				String baseName;
-				if(name.charAt(name.length()-1) == ']') {
-					baseName = name.substring(0, Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name));
-				} else {
-					baseName = name;
-				}
-				int stride = glGetActiveUniformsi(program, i, GL_UNIFORM_ARRAY_STRIDE);
-				int offset = glGetActiveUniformsi(program, i, GL_UNIFORM_OFFSET);
-				for(int index = 0; index < size; index++) {
-					String indexName = String.format("%s[%d]", baseName, index);
-					int attribLocation = glGetUniformLocation(program, indexName);
-					int byteOffset = stride * index + offset;
-					uniformMap.put(indexName, new ActiveUniform(indexName, attribLocation, i, byteOffset, type));
-				}
-			} else {
-				uniformMap.put(name, new ActiveUniform(name, location, i, -1, type));
-			}
-		}
-		Set<String> unreferencedUniforms = new LinkedHashSet<>(uniformMap.keySet());
-		unreferencedUniforms.removeAll(fields.keySet());
-		Set<String> unresolvedUniforms = new LinkedHashSet<>(fields.keySet());
-		unresolvedUniforms.removeAll(uniformMap.keySet());
-		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
-			throw new IllegalStateException("Uniform(s) with name(s) " + unreferencedUniforms + " were not referenced! Uniform(s) with name(s) " + unresolvedUniforms + " were not found!");
-		}
 
+		AtomicInteger imageUnitCounter = new AtomicInteger();
 		AtomicInteger textureUnitCounter = new AtomicInteger();
 		Map<String, Element> elements = new HashMap<>();
 		List<Uniform> uniforms = new ArrayList<>();
@@ -142,23 +160,31 @@ public class UniformData extends GlData {
 			BareShader.Field field = fields.get(name);
 			DataType type = field.type();
 			if(!type.isCompatible(uniform.glslType)) {
-				throw new UnsupportedOperationException(type + " is not valid for type for \"" + name + "\" " +
-				                                        "suggested types: " + DataType.forGlslType(
-					uniform.glslType));
+				Set<DataType> types = DataType.forGlslType(uniform.glslType);
+				List<String> glslNames = types.stream().map(DataType::toString).toList();
+				throw new UnsupportedOperationException(type + " is not valid for type for \"" + glslNames + " " + name + "\" " +
+				                                        "suggested types: " + types);
 			}
 
 			if(uniform.location != -1) {
 				if(field.groupName(true) != null) {
-					throw new IllegalArgumentException("Uniform with name " + name + " is not in an interface " +
-					                                   "block!");
+					throw new IllegalArgumentException("Uniform with name " + name + " is not in an interface block!");
 				}
-				element = new StandardUniform(name, type, uniform.location, uniform.index);
-				if(type.isSampler) {
+				element = new StandardUniform(name, type, uniform.location, uniforms.size());
+				if(type.isImage) {
+					uniforms.add(Uniform.createImage(type, uniform.location, imageUnitCounter.getAndIncrement(),
+						(ImageFormat) field.optional()
+					));
+				} else if(type.isSampler) {
 					uniforms.add(Uniform.createSampler(type, uniform.location, textureUnitCounter.getAndIncrement()));
 				} else {
 					uniforms.add(Uniform.create(type, uniform.location));
 				}
 			} else {
+				if(type.isOpaque()) {
+					throw new UnsupportedOperationException("Opaque types like " + type + " cannot exist in uniform buffer blocks!");
+				}
+
 				// for nested arrays or arrays of a vanilla type, we must start at the [0] index and calculate forward!
 				UniformBufferBlock group = blocksByIndex.get(uniform.index);
 				if(group == null) {
@@ -289,49 +315,52 @@ public class UniformData extends GlData {
 		return this;
 	}
 
+	public void markForRebind() {
+		for(Uniform uniform : this.uniforms) {
+			uniform.rebind = true;
+		}
+	}
+
 	static class UniformBufferBlockManager {
-		final int uniformBlockIndex;
-		final int[] uniformIndexes;
-		final int groupBinding;
+		private static final int INITIAL_BUFFER_LEN = 4;
+		final int bufferType;
+		final int bindingIndex;
+		final int binding;
 		final int byteLength;
 		final int paddedByteLength;
-		final IntArrayList available;
+		final IntArrayList available = new IntArrayList(INITIAL_BUFFER_LEN);
 		int uboGlId;
 		int bufferLength;
 
-		UniformBufferBlockManager(String name, int program, int binding, int length) {
-			this.groupBinding = binding;
-			this.uniformBlockIndex = glGetUniformBlockIndex(program, name);
-			glUniformBlockBinding(program, this.uniformBlockIndex, binding);
-
-			int[] buf = {0};
-			glGetActiveUniformBlockiv(program, this.groupBinding, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, buf);
-			this.uniformIndexes = new int[buf[0]];
-			glGetActiveUniformBlockiv(program,
-				this.groupBinding,
-				GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
-				this.uniformIndexes
-			);
-
-			glGetActiveUniformBlockiv(program, this.groupBinding, GL_UNIFORM_BLOCK_DATA_SIZE, buf);
-			this.byteLength = buf[0];
-			this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
-
-			this.available = new IntArrayList(length);
-			for(int i = length - 1; i >= 0; i--) {
-				this.available.add(i);
+		UniformBufferBlockManager(int program, int binding, int index, int type) {
+			this.bufferType = type;
+			this.binding = binding;
+			this.bindingIndex = index;
+			if(type == GL_UNIFORM_BUFFER) {
+				glUniformBlockBinding(program, index, binding);
+				this.byteLength = glGetActiveUniformBlocki(program, index, GL_UNIFORM_BLOCK_DATA_SIZE);
+			} else {
+				this.byteLength = GL46.glGetActiveAtomicCounterBufferi(program, index, GL46.GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
 			}
 
-			this.bufferLength = length;
+			this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
+			this.postInit();
+		}
+
+		private void postInit() {
+			for(int i = INITIAL_BUFFER_LEN - 1; i >= 0; i--) {
+				this.available.add(i);
+			}
+			this.bufferLength = INITIAL_BUFFER_LEN;
 			this.allocateBuffer();
 			this.bind(0);
 		}
 
-		public void bind(int index) {
-			glBindBufferRange(GL_UNIFORM_BUFFER,
-				this.groupBinding,
+		public void bind(int alloc) {
+			glBindBufferRange(this.bufferType,
+				this.bindingIndex,
 				this.uboGlId,
-				(long) index * this.paddedByteLength,
+				(long) alloc * this.paddedByteLength,
 				this.byteLength
 			);
 		}
@@ -345,8 +374,10 @@ public class UniformData extends GlData {
 					int oldLength = this.bufferLength;
 					int newLength = oldLength * 2;
 					this.bufferLength = newLength;
+					glBindBuffer(GL_COPY_READ_BUFFER, oldBuffer);
 					int newBuffer = this.allocateBuffer();
-					glCopyBufferSubData(oldBuffer, newBuffer, 0, 0, oldLength);
+					glBindBuffer(GL_COPY_WRITE_BUFFER, newBuffer);
+					glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldLength);
 					glDeleteBuffers(oldBuffer);
 					for(int i = newLength - 1; i >= oldLength; i--) {
 						available.add(i);
@@ -368,57 +399,54 @@ public class UniformData extends GlData {
 
 		protected int allocateBuffer() {
 			int id = this.uboGlId = glGenBuffers();
-			glBindBufferBase(GL_UNIFORM_BUFFER, this.groupBinding, this.uboGlId);
+			glBindBufferBase(this.bufferType, this.bindingIndex, this.uboGlId);
 			int bufferLength = this.paddedByteLength * this.bufferLength;
-			glBufferData(GL_UNIFORM_BUFFER, bufferLength, GL_STATIC_DRAW);
+			glBufferData(this.bufferType, bufferLength, GL_STATIC_DRAW);
 			return id;
 		}
 	}
 
 	static class UniformBufferBlock extends VAO.ElementGroup {
 		final UniformBufferBlockManager manager;
-		final int index;
+		final int alloc;
 		final int groupIndex;
 		final IntSet uniformIndices;
+		final int bufferType;
 
-		public UniformBufferBlock(String name, int program, int index) {
+		public UniformBufferBlock(String name, UniformBufferBlockManager manager, int bufferType) {
 			super(name);
-			this.manager = new UniformBufferBlockManager(name, program, index, 4);
+			this.manager = manager;
 			this.byteLength = this.manager.paddedByteLength;
 			this.glId = this.manager.uboGlId;
-
 			this.buffer = new BufferBuilder(this.byteLength);
 			this.buffer.vertexCount = 1;
-
-			this.index = this.manager.allocate(this, true);
-			this.groupIndex = this.manager.groupBinding;
+			this.alloc = this.manager.allocate(this, true);
+			this.groupIndex = this.manager.binding;
 			this.uniformIndices = new IntOpenHashSet();
+			this.bufferType = bufferType;
 		}
 
-		public UniformBufferBlock() {
-			super("default");
-			this.groupIndex = -1;
-			this.manager = null;
-			this.index = -1;
-			this.uniformIndices = null;
+		public UniformBufferBlock(String name, int program, int binding, int index, int type) {
+			this(name, new UniformBufferBlockManager(program, binding, index, type), type);
 		}
 
 		public UniformBufferBlock(UniformBufferBlock group, boolean preserveUniforms) {
 			super(group, preserveUniforms);
 			this.manager = group.manager;
-			this.index = this.manager.allocate(this, false);
+			this.alloc = this.manager.allocate(this, false);
 			this.groupIndex = group.groupIndex;
 			this.glId = group.glId;
 			this.reupload = preserveUniforms;
 			this.uniformIndices = group.uniformIndices;
+			this.bufferType = group.bufferType;
 		}
 
 		@Override
 		void upload() {
-			this.manager.bind(this.index);
+			this.manager.bind(this.alloc);
 			if(this.reupload) {
 				this.buffer.uniformCount();
-				this.buffer.subUpload(true, (long) this.index * this.byteLength, 1);
+				this.buffer.subUpload(this.bufferType, (long) this.alloc * this.byteLength, 1);
 				this.reupload = false;
 			}
 		}
@@ -428,7 +456,7 @@ public class UniformData extends GlData {
 			if(this.glId == 0) {
 				this.glId = this.initGlId();
 			}
-			this.manager.bind(this.index);
+			this.manager.bind(this.alloc);
 		}
 
 		@Override

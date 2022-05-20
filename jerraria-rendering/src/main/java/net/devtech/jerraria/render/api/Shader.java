@@ -24,6 +24,13 @@ import org.jetbrains.annotations.Contract;
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
+	// todo ticking for Instancer
+	// todo custom invalidation for Instancer
+	// todo more flexible "allocation" of instances
+	// todo avoid storing VAO/UBO data in CPU memory
+	// todo effecient copy commands (lazily evaluated, and can operate on whole ranges)
+			// todo support atomic counters (done)
+
 	public final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();
 	List<GlValue.Type<?>> uniforms;
@@ -54,9 +61,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T createShader(
-		Id id,
-		Copier<T> copyFunction,
-		Initializer<N, T> initializer) {
+		Id id, Copier<T> copyFunction, Initializer<N, T> initializer) {
 		return ShaderImpl.createShader(id, copyFunction, initializer);
 	}
 
@@ -99,21 +104,27 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 * Bind the shader and render its contents
 	 */
 	public final void render() {
+		this.preRender(RenderCall.RENDER);
 		ShaderImpl.renderNoFlush(this);
+		this.postRender(RenderCall.RENDER);
 	}
 
 	/**
 	 * Bind the shader and render its contents X times using opengl's instanced rendering
 	 */
 	public final void renderInstanced(int count) {
+		this.preRender(RenderCall.RENDER_INSTANCED);
 		ShaderImpl.renderInstancedNoFlush(this, count);
+		this.postRender(RenderCall.RENDER_INSTANCED);
 	}
 
 	/**
 	 * Bind the shader, render its contents, and then delete all it's vertex data
 	 */
 	public final void renderAndDelete() {
+		this.preRender(RenderCall.RENDER_AND_DELETE);
 		ShaderImpl.renderAndFlush(this);
+		this.postRender(RenderCall.RENDER_AND_DELETE);
 	}
 
 	public static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform(U from, U to) {
@@ -151,6 +162,14 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		return shader;
 	}
 
+	protected void preRender(RenderCall call) {
+
+	}
+
+	protected void postRender(RenderCall call) {
+
+	}
+
 	/**
 	 * @return the uniform configurator for the given variable
 	 */
@@ -160,7 +179,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	/**
 	 * Put a custom shader compilation parameter, these are assumed to be processed by a {@link SourceProvider}.
-	 * Calling this method after the shader has been built has no effect unless {@link #reload()} is called.
+	 * Calling
+	 * this method after the shader has been built has no effect unless {@link #reload()} is called.
 	 *
 	 * <p>Existing supported parameters: (none)</p>
 	 */
@@ -170,11 +190,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	/**
 	 * Add a custom shader compilation parameter, these are assumed to be processed by a {@link SourceProvider}.
-	 * Calling this method after the shader has been built has no effect unless {@link #reload()} is called.
+	 * Calling
+	 * this method after the shader has been built has no effect unless {@link #reload()} is called.
 	 *
 	 * <p>
-	 *     Existing supported parameters: <br>
-	 *      - "define": adds a "#define [value]"
+	 * Existing supported parameters: <br> - "define": adds a "#define [value]"
 	 * </p>
 	 */
 	protected final void addParameter(String name, Object value) {
@@ -183,6 +203,18 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 			c.add(value);
 		} else {
 			throw new IllegalStateException(name + " is not a list!");
+		}
+	}
+
+	protected enum RenderCall {
+		RENDER(false, false), RENDER_INSTANCED(false, true), RENDER_AND_DELETE(true, false);
+
+		public final boolean doesDelete;
+		public final boolean isInstanced;
+
+		RenderCall(boolean delete, boolean instanced) {
+			this.doesDelete = delete;
+			this.isInstanced = instanced;
 		}
 	}
 

@@ -104,7 +104,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.vertexCount = 1;
 	}
 
-	void subUpload(boolean isUniform, long offset, int vertexLimit) {
+	void subUpload(int bufferType, long offset, int vertexLimit) {
 		if(this.vertexCount > vertexLimit) {
 			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
 		}
@@ -113,7 +113,8 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		int pos = buffer.position();
 		buffer.limit(this.vertexCount * this.vertexLength);
 		buffer.position(0); // restore position to 0
-		glBufferSubData(isUniform ? GL_UNIFORM_BUFFER : GL_ARRAY_BUFFER, offset, buffer);
+
+		glBufferSubData(bufferType, offset, buffer);
 		buffer.limit(lim);
 		buffer.position(pos);
 	}

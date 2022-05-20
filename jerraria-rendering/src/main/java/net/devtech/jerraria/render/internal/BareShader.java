@@ -71,10 +71,10 @@ public class BareShader {
 		for(Uncompiled uncompiled : shaders) {
 			ShaderPreprocessor preprocessor = new ShaderPreprocessor(ShaderManager.LIB_SRC);
 			preprocessor.getIncludeParameters().putAll(initialArgs);
-			int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
-			int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
-			int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 			try {
+				int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
+				int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
+				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
 				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
 				BareShader shader = new BareShader(program, vertex, uniform);
@@ -200,11 +200,12 @@ public class BareShader {
 			activeShader = this;
 		}
 		if(id != this.currentGlId) {
-			this.vao.markForReupload();
-			this.uniforms.markForReupload();
-			if(this.ebo != null) {
-				this.ebo.markForReupload();
-			}
+			// this should be rebind not reupload
+			//this.vao.markForReupload();
+			//if(this.ebo != null) {
+			//	this.ebo.markForReupload();
+			//}
+			this.uniforms.markForRebind();
 			this.currentGlId = id;
 		}
 
@@ -246,30 +247,26 @@ public class BareShader {
 			this.uniformFields = new HashMap<>();
 		}
 
-		public Uncompiled vert(DataType type, String name, String groupName) {
-			this.vertexFields.put(name, new Field(type, name, groupName));
+		public Uncompiled vert(DataType type, String name, String groupName, Object optional) {
+			this.vertexFields.put(name, new Field(type, name, groupName, optional));
 			return this;
 		}
 
-		public Uncompiled uniform(DataType type, String name, String groupName) {
-			this.uniformFields.put(name, new Field(type, name, groupName));
+		public Uncompiled uniform(DataType type, String name, String groupName, Object optional) {
+			this.uniformFields.put(name, new Field(type, name, groupName, optional));
 			return this;
 		}
 
-		public Uncompiled type(GlValue.Loc type, DataType local, String name, String groupName) {
+		public Uncompiled type(GlValue.Loc type, DataType local, String name, String groupName, Object optional) {
 			if(type == GlValue.Loc.UNIFORM) {
-				return this.uniform(local, name, groupName);
+				return this.uniform(local, name, groupName, optional);
 			} else {
-				return this.vert(local, name, groupName);
+				return this.vert(local, name, groupName, optional);
 			}
 		}
 	}
 
-	public record Field(DataType type, String name, String groupName) {
-		public Field(DataType type, String name) {
-			this(type, name, null);
-		}
-
+	public record Field(DataType type, String name, String groupName, Object optional) {
 		public String groupName(boolean isUniform) {
 			String name = this.groupName;
 			if(name != null || isUniform) {

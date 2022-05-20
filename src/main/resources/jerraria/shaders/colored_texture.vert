@@ -1,10 +1,10 @@
 #version 330 core
 
 in vec3 pos;
-in vec3 color;
+in vec4 color;
 in vec2 uv;
 
-out vec3 oColor;
+out vec4 oColor;
 out vec2 oUV;
 
 uniform mat3 mat_;

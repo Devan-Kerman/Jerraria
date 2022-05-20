@@ -19,7 +19,7 @@ import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.tile.render.ShaderKey;
 import net.devtech.jerraria.world.tile.render.ShaderSource;
 
-public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>>
+public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>>
 	implements ShaderSource.ShaderConfigurator<ColoredTextureShader> { // vertex attributes
 	public static final ColoredTextureShader INSTANCE = createShader(
 		Id.create("jerraria", "colored_texture"),
@@ -39,7 +39,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>>
 	public final Mat3.x3<?> mat = this.uni(Mat3.mat3("mat_"));
 
 	protected ColoredTextureShader(Id id, VFBuilder<End> builder, Object function) {
-		super(id, builder.add(Color.rgb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex attributes
+		super(id, builder.add(Color.argb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex attributes
 	}
 
 	protected ColoredTextureShader(ColoredTextureShader shader, SCopy copy) {
@@ -68,13 +68,13 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.RGB<End>>>>
 		float width,
 		float height,
 		int color) {
-		this.vert().vec3f(mat, offX, offY, 1).uv(texture, 0, 0).rgb(color);
-		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(color);
-		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(color);
+		this.vert().vec3f(mat, offX, offY, 1).uv(texture, 0, 0).argb(color);
+		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).argb(color);
+		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).argb(color);
 
-		this.vert().vec3f(mat, offX + width, offY + height, 1).uv(texture, 1, 1).rgb(color);
-		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).rgb(color);
-		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).rgb(color);
+		this.vert().vec3f(mat, offX + width, offY + height, 1).uv(texture, 1, 1).argb(color);
+		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).argb(color);
+		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).argb(color);
 		return this;
 	}
 

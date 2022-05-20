@@ -67,12 +67,12 @@ public class VAO extends GlData {
 			}
 		}
 
-		Set<String> unreferencedUniforms = new LinkedHashSet<>(fieldsByName.keySet());
-		unreferencedUniforms.removeAll(fields.keySet());
-		Set<String> unresolvedUniforms = new LinkedHashSet<>(fields.keySet());
-		unresolvedUniforms.removeAll(fieldsByName.keySet());
-		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
-			throw new IllegalStateException("Vertex Attribute(s) with name(s) " + unreferencedUniforms + " were not referenced! Vertex Attribute(s) with name(s) " + unresolvedUniforms + " were not found!");
+		Set<String> unrefAttrib = new LinkedHashSet<>(fieldsByName.keySet());
+		unrefAttrib.removeAll(fields.keySet());
+		Set<String> unresAttrib = new LinkedHashSet<>(fields.keySet());
+		unresAttrib.removeAll(fieldsByName.keySet());
+		if(!unresAttrib.isEmpty() || !unrefAttrib.isEmpty()) {
+			throw new IllegalStateException("Vertex Attribute(s) with name(s) " + unrefAttrib + " were not referenced! Vertex Attribute(s) with name(s) " + unresAttrib + " were not found! (may have been optimized out)");
 		}
 
 		Map<String, Element> elements = new HashMap<>();
@@ -82,8 +82,10 @@ public class VAO extends GlData {
 			String name = value.name;
 			BareShader.Field field = fields.get(name);
 			if(!field.type().isCompatible(value.type)) {
-				throw new UnsupportedOperationException(value.type + " is not valid for type for \"" + name + "\" " +
-				                                        "suggested types: " + DataType.forGlslType(value.type));
+				Set<DataType> types = DataType.forGlslType(value.type);
+				List<String> glslNames = types.stream().map(DataType::toString).toList();
+				throw new UnsupportedOperationException(field.type() + " is not valid for type for \"" + glslNames + " " + name + "\" " +
+				                                        "suggested types: " + types);
 			}
 			last = groups.computeIfAbsent(field.groupName(false), ElementGroup::new);
 			int groupIndex = new ArrayList<>(groups.values()).indexOf(last);

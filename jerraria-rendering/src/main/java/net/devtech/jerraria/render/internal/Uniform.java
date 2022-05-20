@@ -1,6 +1,23 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL30.GL_R32UI;
+import static org.lwjgl.opengl.GL30.GL_RGBA32UI;
+import static org.lwjgl.opengl.GL31.GL_READ_ONLY;
+import static org.lwjgl.opengl.GL31.GL_READ_WRITE;
+import static org.lwjgl.opengl.GL31.GL_WRITE_ONLY;
+import static org.lwjgl.opengl.GL31.glActiveTexture;
+import static org.lwjgl.opengl.GL31.glBindTexture;
+import static org.lwjgl.opengl.GL31.glUniform1f;
+import static org.lwjgl.opengl.GL31.glUniform1i;
+import static org.lwjgl.opengl.GL31.glUniform2f;
+import static org.lwjgl.opengl.GL31.glUniform2i;
+import static org.lwjgl.opengl.GL31.glUniform3f;
+import static org.lwjgl.opengl.GL31.glUniform3i;
+import static org.lwjgl.opengl.GL31.glUniform4f;
+import static org.lwjgl.opengl.GL31.glUniform4i;
+import static org.lwjgl.opengl.GL31.glUniformMatrix2fv;
+import static org.lwjgl.opengl.GL31.glUniformMatrix3fv;
+import static org.lwjgl.opengl.GL31.glUniformMatrix4fv;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,7 +25,9 @@ import java.nio.FloatBuffer;
 
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.basic.ImageFormat;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL42;
 
 /**
  * Non buffer object uniform data
@@ -22,6 +41,19 @@ public abstract class Uniform implements GlData.Buf {
 	protected Uniform(DataType type, int location) {
 		this.type = type;
 		this.location = location;
+	}
+
+	public static Uniform createImage(DataType type, int location, int imageUnit, ImageFormat format) {
+		String name = type.name();
+		int access;
+		if(name.startsWith("writeonly")) {
+			access = GL_WRITE_ONLY;
+		} else if(name.startsWith("readonly")) {
+			access = GL_READ_ONLY;
+		} else {
+			access = GL_READ_WRITE;
+		}
+		return new Image(type, location, imageUnit, access, format);
 	}
 
 	public static Uniform createSampler(DataType type, int location, int textureUnit) {
@@ -154,6 +186,11 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
+		void copyTo(GlData.Buf uniform) {
+			uniform.i(this.textureId);
+		}
+
+		@Override
 		void reset() {
 			this.textureId = -1;
 		}
@@ -161,11 +198,6 @@ public abstract class Uniform implements GlData.Buf {
 		@Override
 		void upload() {
 			glUniform1i(this.location, this.textureUnit);
-		}
-
-		@Override
-		void copyTo(GlData.Buf uniform) {
-			uniform.i(this.textureId);
 		}
 
 		@Override
@@ -226,10 +258,10 @@ public abstract class Uniform implements GlData.Buf {
 				return;
 			}
 			switch(this.type.elementCount) {
-				case 1 -> uniform.i(a);
-				case 2 -> uniform.i(a).i(b);
-				case 3 -> uniform.i(a).i(b).i(c);
-				case 4 -> uniform.i(a).i(b).i(c).i(d);
+				case 1 -> uniform.i(this.a);
+				case 2 -> uniform.i(this.a).i(this.b);
+				case 3 -> uniform.i(this.a).i(this.b).i(this.c);
+				case 4 -> uniform.i(this.a).i(this.b).i(this.c).i(this.d);
 			}
 		}
 
@@ -271,6 +303,24 @@ public abstract class Uniform implements GlData.Buf {
 		}
 
 		@Override
+		void copyTo(GlData.Buf uniform) {
+			if(uniform instanceof Float f) {
+				f.index = this.index;
+				f.a = this.a;
+				f.b = this.b;
+				f.c = this.c;
+				f.d = this.d;
+				return;
+			}
+			switch(this.type.elementCount) {
+				case 1 -> uniform.f(this.a);
+				case 2 -> uniform.f(this.a).f(this.b);
+				case 3 -> uniform.f(this.a).f(this.b).f(this.c);
+				case 4 -> uniform.f(this.a).f(this.b).f(this.c).f(this.d);
+			}
+		}
+
+		@Override
 		void reset() {
 			this.index = 0;
 		}
@@ -284,23 +334,65 @@ public abstract class Uniform implements GlData.Buf {
 				case 4 -> glUniform4f(this.location, this.a, this.b, this.c, this.d);
 			}
 		}
+	}
+
+	/**
+	 * does not support intercompatible image formats because frankly I couldn't care less
+	 */
+	static class Image extends Uniform {
+		final int imageUnit;
+		final int imageAccess;
+		final ImageFormat format;
+		int imageId, layer;
+
+		protected Image(
+			DataType type, int location, int unit, int access, ImageFormat format) {
+			super(type, location);
+			this.imageUnit = unit;
+			this.imageAccess = access;
+			this.format = format;
+			this.reset();
+		}
+
+		@Override
+		public GlData.Buf i(int i) {
+			if(this.imageId == 0) {
+				this.imageId = i;
+			} else if(this.layer == 0) {
+				this.layer = i;
+			} else {
+				throw new IndexOutOfBoundsException("Image uniform only supports image id and layer");
+			}
+			return this;
+		}
 
 		@Override
 		void copyTo(GlData.Buf uniform) {
-			if(uniform instanceof Float f) {
-				f.index = this.index;
-				f.a = this.a;
-				f.b = this.b;
-				f.c = this.c;
-				f.d = this.d;
-				return;
-			}
-			switch(this.type.elementCount) {
-				case 1 -> uniform.f(a);
-				case 2 -> uniform.f(a).f(b);
-				case 3 -> uniform.f(a).f(b).f(c);
-				case 4 -> uniform.f(a).f(b).f(c).f(d);
-			}
+			uniform.i(this.imageId).i(this.layer);
+		}
+
+		@Override
+		void reset() {
+			this.imageId = this.layer = 0;
+		}
+
+		@Override
+		void upload() {
+			glUniform1i(this.location, this.imageUnit);
+		}
+
+		@Override
+		void alwaysUpload() {
+			// format from id: GL46.glGetIntegeri(GL46.GL_IMAGE_BINDING_FORMAT, imageId)
+			GL42.glBindImageTexture(
+				this.imageUnit,
+				this.imageId,
+				0,
+				false,
+				this.layer,
+				this.imageAccess,
+				this.format.glId
+			);
 		}
 	}
 }

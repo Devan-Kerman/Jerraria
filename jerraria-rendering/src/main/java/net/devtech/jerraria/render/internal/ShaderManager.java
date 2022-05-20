@@ -10,6 +10,7 @@ import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
 import static org.lwjgl.opengl.GL20.glGetProgrami;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +76,7 @@ public class ShaderManager {
 	}
 
 	private static <T> Function<Id, T> findFirst0(List<Function<Id, T>> list) {
-		return id1 -> list.stream().map(f -> f.apply(id1)).filter(Objects::nonNull).findFirst().orElseThrow();
+		return id1 -> list.stream().map(f -> f.apply(id1)).filter(Objects::nonNull).findFirst().orElseThrow(() -> Validate.rethrow(new FileNotFoundException(id1.toString())));
 	}
 
 	private static SourceProvider findFirst(List<SourceProvider> list) {
