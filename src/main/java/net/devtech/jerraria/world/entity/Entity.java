@@ -179,11 +179,11 @@ public abstract class Entity implements Pos2d {
 		this.oldWorldId = chunk.getWorld().sessionId();
 	}
 
-	private int getChunkX() {
+	public int getChunkX() {
 		return this.getBlockX() >> World.LOG2_CHUNK_SIZE;
 	}
 
-	private int getChunkY() {
+	public int getChunkY() {
 		return this.getBlockY() >> World.LOG2_CHUNK_SIZE;
 	}
 

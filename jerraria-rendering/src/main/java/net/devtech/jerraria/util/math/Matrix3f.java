@@ -83,6 +83,19 @@ public class Matrix3f implements AutoCloseable {
 		return mat;
 	}
 
+	public Matrix3f load(Matrix3f mat) {
+		this.a11 = mat.a11;
+		this.a12 = mat.a12;
+		this.a13 = mat.a13;
+		this.a21 = mat.a21;
+		this.a22 = mat.a22;
+		this.a23 = mat.a23;
+		this.a31 = mat.a31;
+		this.a32 = mat.a32;
+		this.a33 = mat.a33;
+		return this;
+	}
+
 	public void upload(GlData.Buf buf) {
 		buf.f(this.a11).f(this.a21).f(this.a31)
 		   .f(this.a12).f(this.a22).f(this.a32)

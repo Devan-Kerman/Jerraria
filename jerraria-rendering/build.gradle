@@ -9,6 +9,7 @@ dependencies {
 	api "org.lwjgl:lwjgl-openal:$lwjglVersion"
 	api "org.lwjgl:lwjgl-opengl:$lwjglVersion"
 	api "org.lwjgl:lwjgl-stb:$lwjglVersion"
+	api 'io.github.douira:glsl-transformer:0.23.2'
 	runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
 	runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"
 	runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$lwjglNatives"

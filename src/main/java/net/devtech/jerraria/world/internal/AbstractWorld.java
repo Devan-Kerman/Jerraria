@@ -6,6 +6,7 @@ import net.devtech.jerraria.world.EntityLayer;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class AbstractWorld implements World {
@@ -18,6 +19,11 @@ public abstract class AbstractWorld implements World {
 	}
 
 	public abstract Chunk getChunk(int x, int y);
+
+	public void addEntity(Entity entity) {
+		Chunk chunk = this.getChunk(entity.getChunkX(), entity.getChunkY());
+		chunk.addEntity(entity);
+	}
 
 	@Override
 	public TileLayer layerFor(TileLayers layers) {

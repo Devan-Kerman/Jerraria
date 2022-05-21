@@ -49,9 +49,9 @@ public class ClientChunk extends Chunk {
 		this.isSnapshot = false;
 	}
 
-	public ClientChunk(Chunk client) {
-		super(client.world, client.chunkX, client.chunkY);
-		this.isSnapshot = true;
+	public ClientChunk(AbstractWorld world, Chunk client, boolean isSnapshot) {
+		super(world, client.chunkX, client.chunkY);
+		this.isSnapshot = isSnapshot;
 		System.arraycopy(client.variants, 0, this.variants, 0, this.variants.length);
 		var view = ChunkCodec.serializeData(client.variants, client.data);
 		var data = ChunkCodec.deserializeData(client.chunkX, client.chunkY, client.variants, view);
@@ -59,6 +59,10 @@ public class ClientChunk extends Chunk {
 		var entityData = ChunkCodec.serializeEntities(client.entities);
 		Set<Entity> entities = ChunkCodec.deserializeEntities(this.getWorld(), entityData);
 		this.entities.addAll(entities);
+	}
+
+	public ClientChunk(ClientChunk chunk) {
+		this(chunk.world, chunk, true);
 	}
 
 	public void setDelayUpdates() {

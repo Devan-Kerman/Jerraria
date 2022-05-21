@@ -16,7 +16,7 @@ import net.devtech.jerraria.util.math.Matrix3f;
 
 public class LLTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> { // vertex attributes
 	public static final LLTransRecordShader INSTANCE = createShader(
-		Id.create("jerraria", "ll_trans_record"),
+		Id.create("jerraria", "trans/ll_trans_record"),
 		LLTransRecordShader::new,
 		LLTransRecordShader::new
 	);

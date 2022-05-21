@@ -1,8 +1,10 @@
 package net.devtech.jerraria.client;
 
 import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
+import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 
@@ -35,5 +37,13 @@ public class WorldRenderer {
 				}
 			}
 		}
+
+		Matrix3f entityMatrix = rel.copy();
+		this.world.entityLayer().getEntitiesIntersect(EntitySearchType.Standard.RENDERING, fromBlockX, fromBlockY, toBlockX, toBlockY, 10).forEach(entity -> {
+			EntityRenderer renderer = entity.getRenderer();
+			float offX = (float) (entity.x() - fromBlockXScreen), offY = (float) (fromBlockYScreen - entity.y());
+			entityMatrix.load(rel).offset(offX, offY);
+			renderer.renderEntity(entityMatrix);
+		});
 	}
 }

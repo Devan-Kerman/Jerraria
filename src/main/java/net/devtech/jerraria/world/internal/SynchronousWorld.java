@@ -16,14 +16,17 @@ import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.jerracode.JCIO;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.world.WorldServer;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
+import org.jetbrains.annotations.VisibleForTesting;
 
 public class SynchronousWorld extends TickingWorld {
 	public static final AtomicInteger SESSION_IDS = new AtomicInteger();
 	final WorldServer server;
 	final Path directory;
-	final Long2ObjectMap<Chunk> loadedChunkCache = new Long2ObjectOpenHashMap<>();
+	@VisibleForTesting
+	public final Long2ObjectMap<Chunk> loadedChunkCache = new Long2ObjectOpenHashMap<>();
 	final ChunkReader reader;
 	final int sessionId = SESSION_IDS.incrementAndGet();
 

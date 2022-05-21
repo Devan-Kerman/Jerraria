@@ -6,6 +6,7 @@ public interface EntitySearchType {
 		API_ACCESS,
 		PROJECTILE_ATTACK,
 		MELEE_ATTACK,
-		UNKNOWN
+		UNKNOWN,
+		RENDERING;
 	}
 }

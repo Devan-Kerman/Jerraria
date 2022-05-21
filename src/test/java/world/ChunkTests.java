@@ -83,7 +83,7 @@ public class ChunkTests {
 
 	@Test
 	public void syncTasks() throws IOException, InterruptedException {
-		SynchronousWorld world = this.setupServer(true);
+		SynchronousWorld world = setupServer(true);
 		boolean didNotRun = false;
 		try {
 			world.executeAt(0, 0).get(1, TimeUnit.SECONDS);

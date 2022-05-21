@@ -19,10 +19,9 @@ import org.lwjgl.glfw.GLFW;
 public class ClientWorldRendering {
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
-			World[] worlds = {null};
-			ClientWorldServer server = new ClientWorldServer(worlds);
+			ClientWorldServer server = new ClientWorldServer();
 			ClientWorld world = new ClientWorld(server, 0);
-			worlds[0] = world;
+			server.add(world);
 
 			ClientChunk value = new ClientChunk(world, 0, 0);
 			world.loadedChunkCache.put(0, value);

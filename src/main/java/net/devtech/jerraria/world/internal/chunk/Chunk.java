@@ -350,6 +350,10 @@ public class Chunk implements Executor {
 	 * @return these entities may not be actually in the chunk, those are updated prior to entity tick
 	 */
 	public Iterable<Entity> getRawEntities() {
+		return this.entities;
+	}
+
+	public Iterable<Entity> getEntities() {
 		return this.filteredEntitiesView;
 	}
 

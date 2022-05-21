@@ -3,6 +3,9 @@
 in vec4 oColor;
 in vec2 oUV;
 
+out vec4 FragColor;
+out float reveal;
+
 uniform sampler2D texture_;
 
 void main() {
@@ -10,5 +13,5 @@ void main() {
 	if(pixel.a < .1) {
 		discard;
 	}
-	gl_FragColor = pixel * oColor;
+	FragColor = pixel * oColor;
 }

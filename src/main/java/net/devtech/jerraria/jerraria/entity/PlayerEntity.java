@@ -4,10 +4,12 @@ import java.util.List;
 
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
+import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.util.math.Rectangle;
+import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.BaseEntity;
 import net.devtech.jerraria.world.entity.render.AbstractEntityRenderer;
@@ -46,8 +48,16 @@ public class PlayerEntity extends BaseEntity {
 		return new Renderer();
 	}
 
+	@Override
+	public boolean doesIntersect(EntitySearchType type, double fromX, double fromY, double toX, double toY) {
+		if(type == EntitySearchType.Standard.RENDERING) {
+			return true;
+		}
+		return super.doesIntersect(type, fromX, fromY, toX, toY);
+	}
+
 	public class Renderer extends AbstractEntityRenderer<PlayerEntity> {
-		final Texture texture = JerrariaClient.MAIN_ATLAS.getTexture("jerraria/textures/basic_player");
+		//final Texture texture = JerrariaClient.MAIN_ATLAS.getTexture("jerraria/textures/basic_player");
 
 		public Renderer() {
 			super(PlayerEntity.this);
@@ -55,9 +65,9 @@ public class PlayerEntity extends BaseEntity {
 
 		@Override
 		public void renderEntity(Matrix3f matrix) {
-			ColoredTextureShader shader = ColoredTextureShader.INSTANCE;
-			shader.texture.atlas(texture);
-			shader.square(matrix, texture, 0, 0, 8, 16, 0xFFFFFFFF);
+			SolidColorShader shader = SolidColorShader.INSTANCE;
+			shader.drawRect(matrix, 10, 10, 10, 10, 0xFFFFFFFF);
+			shader.renderAndDelete();
 		}
 	}
 }

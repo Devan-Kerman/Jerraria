@@ -7,7 +7,6 @@ import net.devtech.jerraria.world.WorldServer;
 public class JerrariaWorldServer implements WorldServer {
 	final VirtualFile.Directory resources;
 
-
 	public JerrariaWorldServer(VirtualFile.Directory resources) {
 		this.resources = resources;
 	}

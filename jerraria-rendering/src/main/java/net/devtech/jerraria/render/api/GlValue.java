@@ -5,6 +5,7 @@ import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
+import static org.lwjgl.opengl.GL46.*;
 
 /**
  * A GlValue provides a java-friendly interface to a vertex attribute or uniform. <br> Oftentimes GlValues correspond
@@ -87,6 +88,11 @@ public abstract class GlValue<N extends GlValue<?>> {
 	public interface Attribute {}
 
 	public interface Uniform {}
+
+	/**
+	 * a valid `out` parameter in a shader
+	 */
+	public interface Output {}
 
 	public record Simple<N extends GlValue<?>>(SimpleType<N> type, DataType dataType, String name, String groupName, Object optional)
 		implements Type<N> {

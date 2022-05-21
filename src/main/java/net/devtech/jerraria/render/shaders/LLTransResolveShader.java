@@ -1,7 +1,5 @@
 package net.devtech.jerraria.render.shaders;
 
-import java.util.Arrays;
-
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
@@ -9,13 +7,12 @@ import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Tex;
-import net.devtech.jerraria.render.api.types.Vec2;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
 
 public class LLTransResolveShader extends Shader<Vec3.F<End>> {
 	public static final LLTransResolveShader INSTANCE = createShader(
-		Id.create("jerraria", "ll_trans_resolve"),
+		Id.create("jerraria", "trans/ll_trans_resolve"),
 		LLTransResolveShader::new,
 		LLTransResolveShader::new
 	);

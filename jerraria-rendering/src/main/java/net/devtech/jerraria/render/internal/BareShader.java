@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
+import static org.lwjgl.opengl.GL20.glGetShaderSource;
 import static org.lwjgl.opengl.GL31.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL31.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL31.glCompileShader;
