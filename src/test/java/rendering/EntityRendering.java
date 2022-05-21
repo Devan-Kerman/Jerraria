@@ -31,6 +31,7 @@ public class EntityRendering {
 			client.addEntity(player);
 
 			RenderThread.addRenderStage(() -> {
+				player.updatePosition(client, Math.sin(System.currentTimeMillis()/100d)*100, 0);
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
