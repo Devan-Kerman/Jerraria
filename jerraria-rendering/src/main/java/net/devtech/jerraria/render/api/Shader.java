@@ -29,7 +29,6 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	// todo more flexible "allocation" of instances
 	// todo avoid storing VAO/UBO data in CPU memory
 	// todo effecient copy commands (lazily evaluated, and can operate on whole ranges)
-			// todo support atomic counters (done)
 
 	public final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();

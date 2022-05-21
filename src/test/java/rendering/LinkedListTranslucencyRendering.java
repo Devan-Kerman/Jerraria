@@ -1,5 +1,6 @@
 package rendering;
 
+import static org.lwjgl.opengl.GL11C.glDeleteTextures;
 import static org.lwjgl.opengl.GL42.GL_R32UI;
 import static org.lwjgl.opengl.GL42.GL_RGBA32UI;
 import static org.lwjgl.opengl.GL42.GL_STATIC_DRAW;
@@ -25,23 +26,23 @@ public class LinkedListTranslucencyRendering {
 		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
 	}
 
-	// todo unhardcode types in Uniform
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
-			int translucencyBuffer = allocateTranslucencyBuffer(800, 600, 32);
+			int translucencyBuffer = allocateTranslucencyBuffer(800, 600, 64); // doesn't need to get cleared
 			RenderThread.addRenderStage(() -> {
-				// only this needs to be cleared
 				int imageListHead = allocateImageListHead(802, 602);
 				LLTransRecordShader rendering = LLTransRecordShader.INSTANCE;
 				rendering.counter.ui(0L);
 				rendering.translucencyBuffer.tex(translucencyBuffer);
 				rendering.imgListHead.tex(imageListHead);
-				//GL46.glClearTexImage(imageListHead, 0, GL_RED, GL_UNSIGNED_INT, (ByteBuffer) null);
 
 				Matrix3f identity = new Matrix3f();
 
-				rendering.square(identity, 0, 0, 1, 1, 1, 0x800000FF);
-				rendering.square(identity, 0, 0, .5f, .5f, -1, 0x80FF0000);
+				int[] colors = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF,
+				                0x0000FF, 0xFF00FF, 0xFFFFFF, 0xAAAAAA};
+				for(float i = 0; i < 1; i+=.125) {
+					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i, 0x80000000 | colors[(int) (i * 8)]);
+				}
 
 				// render to translucency buffer
 				rendering.render();
@@ -59,12 +60,12 @@ public class LinkedListTranslucencyRendering {
 				shader.vert().vec3f(1, 1, 0);
 				shader.render();
 				shader.deleteVertexData();
+
 				try {
 					Thread.sleep(100);
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
-				//glDeleteTextures(imageListHead);
 			}, 10);
 
 			return null;
@@ -85,10 +86,10 @@ public class LinkedListTranslucencyRendering {
 	}
 
 	public static int allocateImageListHead(int width, int height) {
-		int id = glGenTextures();
+		int tex = glGenTextures();
 		int type = DataType.UINT_IMAGE_2D.elementType;
-		glBindTexture(type, id);
+		glBindTexture(type, tex);
 		glTexStorage2D(type, 1, GL_R32UI, width, height);
-		return id;
+		return tex;
 	}
 }

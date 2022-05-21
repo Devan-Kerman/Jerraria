@@ -321,7 +321,7 @@ public enum DataType {
 	}
 
 	public boolean isOpaque() {
-		return this.isImage || this.isSampler; // todo atomics
+		return this.isImage || this.isSampler;
 	}
 
 	public boolean isFloating() {

@@ -12,7 +12,7 @@ public class SortTest {
 			for(; r >= 0; r--) {
 				uvec2 comp = fragments[r];
 				float depthB = comp.b();
-				if(depthA < depthB) {
+				if(depthA > depthB) {
 					fragments[r+1] = comp;
 				} else {
 					break;

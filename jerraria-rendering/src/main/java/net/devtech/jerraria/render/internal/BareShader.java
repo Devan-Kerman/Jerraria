@@ -115,7 +115,7 @@ public class BareShader {
 		return glId;
 	}
 
-	public void draw() { // todo fully write EBO
+	public void draw() {
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
 		if(type == -1) {

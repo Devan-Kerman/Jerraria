@@ -16,7 +16,6 @@ public class AtomicCounterRendering {
 		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
 	}
 
-	// todo unhardcode types in Uniform
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
 			glEnable(GL_DEBUG_OUTPUT);
@@ -31,7 +30,7 @@ public class AtomicCounterRendering {
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
 			RenderThread.addRenderStage(() -> {
 				shader.render();
-				//todo glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}, 10);
 			return null;
 		});

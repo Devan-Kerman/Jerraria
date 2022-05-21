@@ -11,12 +11,11 @@ layout(binding=0) uniform atomic_uint counter;
 in vec3 oPos;
 in vec4 oColor;
 
-void main() {
-	uint idx = atomicCounterIncrement(counter) + 1u; // position where data is stored
+void main() { // todo write solid pixels immediately?
+	uint idx = atomicCounterIncrement(counter) + 1u;// position where data is stored
 	if (idx < imageSize(translucencyBuffer)) {
 		ivec2 coord = ivec2(oPos.xy*imageSize(imgListHead));
 		uint prev = imageAtomicExchange(imgListHead, coord, idx); // next in list
 		imageStore(translucencyBuffer, int(idx), uvec4(packUnorm4x8(oColor), floatBitsToUint(oPos.z), 0, prev));
-		//gl_FragColor = vec4(float(prev)/240000f, 0, 0, 1);
 	}
 }

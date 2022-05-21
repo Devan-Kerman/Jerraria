@@ -31,7 +31,6 @@ import org.lwjgl.opengl.GL42;
 
 /**
  * Non buffer object uniform data
- * todo implement equals method to compare Shader objects
  */
 public abstract class Uniform implements GlData.Buf {
 	final DataType type;
