@@ -32,17 +32,17 @@ public class ShaderManager {
 
 	public record ShaderPair(Id frag, Id vert) {}
 
-	public static BareShader getBareShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms, Map<String, Object> initialArgs) {
+	public static BareShader getBareShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms, List<GlValue.Type<?>> outputs, Map<String, Object> initialArgs) {
 		BareShader shader = SHADER_CACHE.get(id);
 		if(shader == null) {
-			SHADER_CACHE.put(id, shader = getShader(id, vertex, uniforms, initialArgs));
+			SHADER_CACHE.put(id, shader = getShader(id, vertex, uniforms, outputs, initialArgs));
 		} else {
 			shader = new BareShader(shader, SCopy.PRESERVE_NEITHER);
 		}
 		return shader;
 	}
 
-	private static BareShader getShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms, Map<String, Object> initialArgs) {
+	private static BareShader getShader(Id id, List<GlValue.Type<?>> vertex, List<GlValue.Type<?>> uniforms, List<GlValue.Type<?>> outputs, Map<String, Object> initialArgs) {
 		ShaderPair pair = SHADER_PAIRS.apply(id);
 		var uncompiled = new BareShader.Uncompiled(id, pair.frag, pair.vert);
 		for(GlValue.Type<?> type : vertex) {
@@ -50,6 +50,9 @@ public class ShaderManager {
 		}
 		for(GlValue.Type<?> uniform : uniforms) {
 			uniform.attach(uncompiled, GlValue.Loc.UNIFORM);
+		}
+		for(GlValue.Type<?> output : outputs) {
+			output.attach(uncompiled, GlValue.Loc.OUTPUT);
 		}
 		return BareShader.compileShaders(FRAG_SRC, VERT_SRC, initialArgs, List.of(uncompiled)).get(id);
 	}

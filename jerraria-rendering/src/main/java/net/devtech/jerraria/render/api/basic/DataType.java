@@ -266,6 +266,19 @@ public enum DataType {
 	ATOMIC_UINT(GL46.GL_UNSIGNED_INT_ATOMIC_COUNTER, 4, false, "atomic_uint", true, GL46.GL_UNSIGNED_INT_ATOMIC_COUNTER);
 
 	static final Int2ObjectMap<Set<DataType>> COMPATIBLE_DATA_TYPES = new Int2ObjectOpenHashMap<>();
+	public static final Set<DataType> VALID_OUTPUTS = Set.of(
+		TEXTURE_1D,
+		TEXTURE_2D,
+		TEXTURE_3D,
+		TEXTURE_CUBE,
+		TEXTURE_RECTANGLE,
+		TEXTURE_1D_ARRAY,
+		TEXTURE_2D_ARRAY,
+		TEXTURE_CUBE_MAP_ARRAY,
+		TEXTURE_BUFFER,
+		TEXTURE_2D_MULTISAMPLE,
+		TEXTURE_2D_MULTISAMPLE_ARRAY
+	);
 
 	// 39 * 3 * 11
 	public final String glslName;

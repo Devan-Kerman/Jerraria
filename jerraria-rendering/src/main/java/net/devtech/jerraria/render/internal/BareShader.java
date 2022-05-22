@@ -1,6 +1,8 @@
 package net.devtech.jerraria.render.internal;
 
 import static org.lwjgl.opengl.GL20.glGetShaderSource;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.opengl.GL31.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL31.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL31.glCompileShader;
@@ -13,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -27,7 +28,9 @@ import net.devtech.jerraria.render.internal.element.Seq;
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL46;
 
 /**
  * Un-abstracted view of a "shader object" (think VAO or UBO) thing. The shader object has its own VAO and its own UBO.
@@ -37,18 +40,22 @@ public class BareShader {
 	public static BareShader activeShader;
 	public final VAO vao;
 	public final UniformData uniforms;
+	@Nullable
+	public final FragOutput outputs;
+	@Nullable
 	public EBO ebo;
 	public AutoStrat strategy = AutoStrat.TRIANGLE;
 	int lastCopiedVertex;
 	GlIdReference id;
 	int currentGlId;
 
-	public BareShader(int glId, VAO data, UniformData uniformData) {
+	public BareShader(int glId, VAO data, UniformData uniformData, @Nullable FragOutput output) {
 		this.id = new GlIdReference();
 		this.id.glId = glId;
 		this.currentGlId = glId;
 		this.vao = data;
 		this.uniforms = uniformData;
+		this.outputs = output;
 	}
 
 	public BareShader(BareShader shader, SCopy method) {
@@ -59,6 +66,11 @@ public class BareShader {
 		if(shader.ebo != null) {
 			this.ebo = new EBO(shader.ebo);
 			this.strategy = shader.strategy;
+		}
+		if(shader.outputs != null) {
+			this.outputs = new FragOutput(shader.outputs);
+		} else {
+			this.outputs = null;
 		}
 	}
 
@@ -74,11 +86,19 @@ public class BareShader {
 			preprocessor.getIncludeParameters().putAll(initialArgs);
 			try {
 				int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
+
 				int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
 				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
 				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
-				BareShader shader = new BareShader(program, vertex, uniform);
+				FragOutput output;
+				if(uncompiled.outputFields.size() > 1) {
+					GLSLParserValidation.validateFragShader(fragmentShader, uncompiled);
+					output = new FragOutput(uncompiled.outputFields, program, uncompiled.id);
+				} else {
+					output = null;
+				}
+				BareShader shader = new BareShader(program, vertex, uniform, output);
 				compiledShaders.put(uncompiled.id, shader);
 			} catch(Throwable t) {
 				ShaderValidationException rethrow = new ShaderValidationException(String.format(
@@ -124,6 +144,7 @@ public class BareShader {
 		} else {
 			this.vao.drawElements(mode, this.getVertexCount(), type);
 		}
+		this.teardownDraw();
 	}
 
 	public void drawInstanced(int count) {
@@ -134,6 +155,7 @@ public class BareShader {
 		} else {
 			this.vao.drawElementsInstanced(mode, this.getVertexCount(), type, count);
 		}
+		this.teardownDraw();
 	}
 
 	public int getVertexCount() {
@@ -211,6 +233,10 @@ public class BareShader {
 		}
 
 		this.uniforms.upload();
+		if(this.outputs != null) {
+			this.outputs.bind();
+		}
+
 		if(bindVao) {
 			this.vao.bind();
 			if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
@@ -230,6 +256,12 @@ public class BareShader {
 		}
 	}
 
+	public void teardownDraw() {
+		if(this.outputs != null) {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+	}
+
 	public static final class GlIdReference {
 		int glId;
 	}
@@ -239,6 +271,7 @@ public class BareShader {
 		final Id frag, vert;
 		final Map<String, Field> vertexFields;
 		final Map<String, Field> uniformFields;
+		final Map<String, Field> outputFields;
 
 		public Uncompiled(Id id, Id frag, Id vert) {
 			this.id = id;
@@ -246,6 +279,7 @@ public class BareShader {
 			this.vert = vert;
 			this.vertexFields = new HashMap<>();
 			this.uniformFields = new HashMap<>();
+			this.outputFields = new HashMap<>();
 		}
 
 		public Uncompiled vert(DataType type, String name, String groupName, Object optional) {
@@ -258,12 +292,17 @@ public class BareShader {
 			return this;
 		}
 
+		public Uncompiled output(DataType type, String name, String groupName, Object optional) {
+			this.outputFields.put(name, new Field(type, name, groupName, optional));
+			return this;
+		}
+
 		public Uncompiled type(GlValue.Loc type, DataType local, String name, String groupName, Object optional) {
-			if(type == GlValue.Loc.UNIFORM) {
-				return this.uniform(local, name, groupName, optional);
-			} else {
-				return this.vert(local, name, groupName, optional);
-			}
+			return switch(type) {
+				case UNIFORM -> this.uniform(local, name, groupName, optional);
+				case ATTRIBUTE -> this.vert(local, name, groupName, optional);
+				case OUTPUT -> this.output(local, name, groupName, optional);
+			};
 		}
 	}
 

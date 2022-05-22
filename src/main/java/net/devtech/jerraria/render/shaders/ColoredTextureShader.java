@@ -35,7 +35,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 		INSTANCE.mat.mat(new Matrix3f());
 	}
 
-	public final Tex<?> texture = this.uni(Tex.tex2d("texture_")); // uniforms
+	public final Tex texture = this.uni(Tex.tex2d("texture_")); // uniforms
 	public final Mat3.x3<?> mat = this.uni(Mat3.mat3("mat_"));
 
 	protected ColoredTextureShader(Id id, VFBuilder<End> builder, Object function) {

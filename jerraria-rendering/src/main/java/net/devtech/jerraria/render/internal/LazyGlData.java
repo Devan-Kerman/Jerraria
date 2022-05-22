@@ -1,31 +1,35 @@
 package net.devtech.jerraria.render.internal;
 
+import java.util.function.Function;
+
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.LazyElement;
-import net.devtech.jerraria.render.internal.UniformData;
 
-public final class LazyUniformData extends GlData {
+public final class LazyGlData extends GlData {
 	private final Shader shader;
+	private final Function<BareShader, GlData> extract;
 
-	public LazyUniformData(Shader shader) {this.shader = shader;}
+	public LazyGlData(
+		Shader shader, Function<BareShader, GlData> extract) {
+		this.shader = shader;
+		this.extract = extract;
+	}
 
 	@Override
 	public Buf element(Element element) {
 		if(element instanceof LazyElement l) {
 			element = l.getSelf();
 		}
-		return shader.getShader().uniforms.element(element);
+		return extract.apply(shader.getShader()).element(element);
 	}
 
 	@Override
 	public Element getElement(String name) {
 		BareShader shader = this.shader.getShader();
 		if(shader != null) {
-			return shader.uniforms.getElement(name);
+			return extract.apply(shader).getElement(name);
 		} else {
-			return new LazyElement(this.shader, name);
+			return new LazyElement(this.shader, name, this.extract);
 		}
 	}
 

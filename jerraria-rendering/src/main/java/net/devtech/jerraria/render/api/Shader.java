@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
+import net.devtech.jerraria.render.api.types.FrameOut;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
@@ -32,8 +34,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	public final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();
-	List<GlValue.Type<?>> uniforms;
-	GlData uniformData;
+	List<GlValue.Type<?>> uniforms, outputs;
+	GlData uniformData, outData;
 	VFBuilderImpl<T> builder;
 	Copier<Shader<?>> copyFunction;
 	boolean endedVertex;
@@ -161,11 +163,9 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	protected void preRender(RenderCall call) {
-
 	}
 
 	protected void postRender(RenderCall call) {
-
 	}
 
 	/**
@@ -173,6 +173,18 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 */
 	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
 		return ShaderImpl.addUniform(this, type);
+	}
+
+	protected final FrameOut addOutput(String name, DataType imageType) {
+		return ShaderImpl.addOutput(this, name, imageType);
+	}
+
+	protected final FrameOut imageOutput(String name) {
+		return this.addOutput(name, DataType.TEXTURE_2D);
+	}
+
+	public void flushFrameBuffer() {
+		ShaderImpl.emptyFrameBuffer(this);
 	}
 
 	/**

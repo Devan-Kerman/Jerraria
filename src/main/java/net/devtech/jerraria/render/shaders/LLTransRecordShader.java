@@ -22,8 +22,8 @@ public class LLTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> { // ve
 	);
 
 	public final V.UI<?> counter = this.uni(V.atomic_ui("counter"));
-	public final Tex<?> imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
-	public final Tex<?> translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
+	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
+	public final Tex translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 
 	protected LLTransRecordShader(Id id, VFBuilder<End> builder, Object function) {
 		super(id, builder.add(Color.argb("color")).add(Vec3.f("pos")), function); // vertex attributes

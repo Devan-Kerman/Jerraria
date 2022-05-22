@@ -72,6 +72,8 @@ public abstract class Uniform implements GlData.Buf {
 	public static Uniform createNew(Uniform uniform) {
 		if(uniform instanceof Sampler s) {
 			return new Sampler(s.type, s.location, s.textureUnit);
+		} else if(uniform instanceof Image i) {
+			return new Image(i.type, i.location, i.imageUnit, i.imageAccess, i.format);
 		}
 		return create(uniform.type, uniform.location);
 	}

@@ -10,7 +10,7 @@ import net.devtech.jerraria.render.textures.Texture;
 /**
  * A gl texture value, these can only be used as uniforms. They are attached as a sampler2d
  */
-public class Tex<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Uniform {
+public class Tex extends AbstractGlValue<End> implements GlValue.Uniform {
 	protected Tex(GlData data, GlValue next, String name) {
 		super(data, next, name);
 	}
@@ -21,7 +21,7 @@ public class Tex<N extends GlValue<?>> extends AbstractGlValue<N> implements GlV
 	 * @param name the full path of the vertex attribute or uniform in the shader {@link #simple(SimpleType, DataType,
 	 *    String)}
 	 */
-	public static <N extends GlValue<?>> Type<Tex<N>> tex2d(String name) {
+	public static Type<Tex> tex2d(String name) {
 		return simple(Tex::new, DataType.TEXTURE_2D, name);
 	}
 
@@ -35,16 +35,15 @@ public class Tex<N extends GlValue<?>> extends AbstractGlValue<N> implements GlV
 	 * 	uses for not statically declaring the image format, however this is so full of holes, and I don't know of any
 	 * 	way to add a validation mechanism, so we'll ignore it.
 	 */
-	public static <N extends GlValue<?>> Type<Tex<N>> img(String name, DataType type, ImageFormat format) {
+	public static Type<Tex> img(String name, DataType type, ImageFormat format) {
 		return new Simple<>(Tex::new, type, name, null, format);
 	}
 
-	public N tex(int textureId) {
+	public void tex(int textureId) {
 		this.data.element(this.element).i(textureId);
-		return this.getNext();
 	}
 
-	public N atlas(Texture texture) {
-		return this.tex(texture.getGlId());
+	public void atlas(Texture texture) {
+		this.tex(texture.getGlId());
 	}
 }

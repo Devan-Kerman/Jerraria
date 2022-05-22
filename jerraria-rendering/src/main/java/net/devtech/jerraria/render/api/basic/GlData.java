@@ -30,4 +30,41 @@ public abstract class GlData {
 
 		Buf d(double d);
 	}
+
+	public interface BufAdapter extends Buf {
+		@Override
+		default Buf f(float f) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf i(int i) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf b(byte b) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf bool(boolean b) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf s(short s) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf c(char c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf d(double d) {
+			throw new UnsupportedOperationException();
+		}
+	}
 }

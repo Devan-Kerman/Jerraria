@@ -3,13 +3,15 @@ package net.devtech.jerraria.render.api;
 import java.util.ArrayList;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
+import net.devtech.jerraria.render.api.types.FrameOut;
 import net.devtech.jerraria.render.api.types.TypesInternalAccess;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.LazyUniformData;
+import net.devtech.jerraria.render.internal.LazyGlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
@@ -97,10 +99,10 @@ class ShaderImpl {
 
 	static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform_(U from, U to) {
 		GlData fromData = to.data, toData = from.data;
-		if(fromData instanceof LazyUniformData u) {
+		if(fromData instanceof LazyGlData u) {
 			fromData = u.getUniforms();
 		}
-		if(toData instanceof LazyUniformData u) {
+		if(toData instanceof LazyGlData u) {
 			toData = u.getUniforms();
 		}
 		if(toData instanceof UniformData fromU && fromData instanceof UniformData toU) {
@@ -128,8 +130,22 @@ class ShaderImpl {
 		return type.create(shader.uniformData, null);
 	}
 
+	static FrameOut addOutput(
+		Shader<?> shader, String name, DataType imageType) {
+		GlValue.Type<FrameOut> out = FrameOut.out(name, imageType);
+		if(!shader.isCopy) {
+			out.validateOutput();
+			if(shader.shader == null) {
+				shader.outputs.add(out);
+			} else {
+				throw new IllegalStateException("Uniforms must be defined before vertex attributes!");
+			}
+		}
+		return out.create(shader.outData, null);
+	}
+
 	static <T extends GlValue<?> & GlValue.Attribute> void compile(Shader<T> shader) {
-		BareShader bare = ShaderManager.getBareShader(shader.id, shader.builder.attributes, shader.uniforms, shader.compilationConfig);
+		BareShader bare = ShaderManager.getBareShader(shader.id, shader.builder.attributes, shader.uniforms, shader.outputs, shader.compilationConfig);
 		shader.shader = bare;
 		Pair<T, End> build = shader.builder.build(bare);
 		shader.compiled = build.first();
@@ -168,7 +184,9 @@ class ShaderImpl {
 		BareShader bare = new BareShader(copy.shader, method);
 		shader.copyFunction = copy.copyFunction;
 		shader.builder = copy.builder;
+		shader.outputs = copy.outputs;
 		shader.uniformData = bare.uniforms;
+		shader.outData = bare.outputs;
 		shader.uniforms = copy.uniforms;
 		Pair<T, End> build = copy.builder.build(bare);
 		shader.compiled = build.first();
@@ -182,7 +200,13 @@ class ShaderImpl {
 		shader.builder = builder;
 		shader.copyFunction = context;
 		shader.uniforms = new ArrayList<>();
-		shader.uniformData = new LazyUniformData(shader);
+		shader.outputs = new ArrayList<>();
+		shader.uniformData = new LazyGlData(shader, b -> b.uniforms);
+		shader.outData = new LazyGlData(shader, b -> b.outputs);
 		shader.isCopy = false;
+	}
+
+	public static void emptyFrameBuffer(Shader<?> shader) {
+		shader.shader.outputs.flushBuffer();
 	}
 }

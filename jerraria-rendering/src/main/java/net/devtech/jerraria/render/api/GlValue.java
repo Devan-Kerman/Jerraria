@@ -68,7 +68,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 	}
 
 	public enum Loc {
-		UNIFORM, ATTRIBUTE
+		UNIFORM, ATTRIBUTE, OUTPUT
 	}
 
 	public interface Type<N extends GlValue<?>> {
@@ -79,6 +79,8 @@ public abstract class GlValue<N extends GlValue<?>> {
 		default void validateUniform() {}
 
 		default void validateAttribute() {}
+
+		default void validateOutput() {}
 	}
 
 	public interface SimpleType<N extends GlValue<?>> {
@@ -119,6 +121,11 @@ public abstract class GlValue<N extends GlValue<?>> {
 			if(this.dataType.uniformOnly) {
 				throw new IllegalArgumentException(this.dataType + " cannot be used as a uniform!!");
 			}
+		}
+
+		@Override
+		public void validateOutput() {
+
 		}
 	}
 }

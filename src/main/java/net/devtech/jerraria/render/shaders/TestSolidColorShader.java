@@ -16,7 +16,7 @@ import net.devtech.jerraria.util.math.Matrix3f;
 public class TestSolidColorShader extends Shader<Vec3.F<End>> {
 	public static final TestSolidColorShader INSTANCE = createShader(Id.create("jerraria", "test_solid_color"), TestSolidColorShader::new, TestSolidColorShader::new);
 
-	public final Tex<?> imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
+	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 
 	protected TestSolidColorShader(Id id, VFBuilder<End> builder, Object function) {
 		super(id, builder.add(Vec3.f("pos")), function);

@@ -17,8 +17,8 @@ public class LLTransResolveShader extends Shader<Vec3.F<End>> {
 		LLTransResolveShader::new
 	);
 
-	public final Tex<?> imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
-	public final Tex<?> translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
+	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
+	public final Tex translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 
 	protected LLTransResolveShader(Id id, VFBuilder<End> builder, Object context) {
 		super(id, builder.add(Vec3.f("pos")), context);

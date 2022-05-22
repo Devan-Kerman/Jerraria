@@ -1,7 +1,12 @@
-package rendering;
+package net.devtech.jerraria.render.internal;
+
+import static org.lwjgl.opengl.GL20.glGetShaderSource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.github.douira.glsl_transformer.GLSLParser;
 import io.github.douira.glsl_transformer.GLSLParserBaseVisitor;
@@ -9,26 +14,11 @@ import io.github.douira.glsl_transformer.transform.JobParameters;
 import io.github.douira.glsl_transformer.transform.TransformationManager;
 import io.github.douira.glsl_transformer.tree.ExtendedContext;
 
-public class ParserTest {
-	public static void main(String[] args) {
+public class GLSLParserValidation {
+	public static void validateFragShader(int program, BareShader.Uncompiled uncompiled) {
+		String fragSource = glGetShaderSource(program);
 		TransformationManager<JobParameters> transform = new TransformationManager<>();
-		var parse = transform.parse("""
-			#version 330 core
-
-			in vec3 oPos;
-			in vec4 oColor;
-
-			out vec4 accum;
-			out float reveal;
-
-			void main(in vec4 test) {
-				vec4 color = oColor;
-				float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a), color.a) * clamp(0.03 / (1e-5 + pow(oPos.z / 200, 4.0)), 1e-2, 3e3);
-				accum = vec4(color.rgb * color.a, color.a) * weight;
-				reveal = color.a;
-			}
-			""", GLSLParser::translationUnit);
-
+		var parse = transform.parse(fragSource, GLSLParser::translationUnit);
 		List<String> names = new ArrayList<>();
 		parse.accept(new GLSLParserBaseVisitor<>() {
 			@Override
@@ -53,6 +43,16 @@ public class ParserTest {
 				return o;
 			}
 		});
-		System.out.println(names);
+		Map<String, BareShader.Field> fields = uncompiled.outputFields;
+		Set<String> unreferencedNames = new HashSet<>(names);
+		unreferencedNames.removeAll(fields.keySet());
+		Set<String> unresolvedName = new HashSet<>(fields.keySet());
+		names.forEach(unresolvedName::remove);
+
+		if(!unreferencedNames.isEmpty() || !unresolvedName.isEmpty()) {
+			throw new UnsupportedOperationException("Unable to find output(s) " + unresolvedName + ", outputs with name " + unreferencedNames + " were not referenced!");
+		}
+
+
 	}
 }
