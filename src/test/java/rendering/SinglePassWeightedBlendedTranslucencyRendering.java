@@ -40,7 +40,6 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR); // revealge blend target
 				glBlendEquation(GL_FUNC_ADD);
 
-				glDrawBuffers(new int[] {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1});
 				rendering.render();
 				rendering.deleteVertexData();
 				glMemoryBarrier(-1);
