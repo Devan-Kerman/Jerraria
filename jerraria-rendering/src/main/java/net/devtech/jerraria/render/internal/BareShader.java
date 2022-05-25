@@ -142,7 +142,6 @@ public class BareShader {
 		} else {
 			this.vao.drawElements(mode, this.getVertexCount(), type);
 		}
-		this.teardownDraw();
 	}
 
 	public void drawInstanced(int count) {
@@ -153,7 +152,6 @@ public class BareShader {
 		} else {
 			this.vao.drawElementsInstanced(mode, this.getVertexCount(), type, count);
 		}
-		this.teardownDraw();
 	}
 
 	public int getVertexCount() {
@@ -229,6 +227,8 @@ public class BareShader {
 		this.uniforms.upload();
 		if(this.outputs != null) {
 			this.outputs.bind();
+		} else {
+			GLContextState.bindFrameBuffer(0);
 		}
 
 		if(bindVao) {
@@ -251,9 +251,6 @@ public class BareShader {
 	}
 
 	public void teardownDraw() {
-		if(this.outputs != null) {
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
 	}
 
 	public static final class GlIdReference {

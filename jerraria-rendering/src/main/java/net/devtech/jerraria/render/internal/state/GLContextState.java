@@ -7,9 +7,15 @@ import net.devtech.jerraria.util.math.JMath;
 public final class GLContextState {
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
-	static int currentGlId;
-	static int currentVAO;
+	static int currentGlId, currentVAO, currentFrameBuffer;
 	// todo framebuffer
+
+	public static void bindFrameBuffer(int frameBufferId) {
+		if(currentFrameBuffer != frameBufferId) {
+			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+			currentFrameBuffer = frameBufferId;
+		}
+	}
 
 	public static void bindProgram(int programId) {
 		if(currentGlId != programId) {

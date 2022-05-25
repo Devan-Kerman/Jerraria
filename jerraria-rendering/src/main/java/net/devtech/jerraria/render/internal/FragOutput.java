@@ -7,6 +7,7 @@ import java.util.Map;
 
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.Id;
 import static org.lwjgl.opengl.GL46.*;
 
@@ -52,7 +53,7 @@ public class FragOutput extends GlData {
 	}
 
 	public void bind() {
-		glBindFramebuffer(GL_FRAMEBUFFER, this.frameBuffer);
+		GLContextState.bindFrameBuffer(this.frameBuffer);
 		for(OutputBind bind : this.binds) {
 			if(bind.rebind) {
 				bind.attach();
