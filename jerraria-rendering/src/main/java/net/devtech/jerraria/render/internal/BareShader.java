@@ -1,6 +1,5 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL20.glGetShaderSource;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.opengl.GL31.GL_FRAGMENT_SHADER;
@@ -8,7 +7,6 @@ import static org.lwjgl.opengl.GL31.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL31.glCompileShader;
 import static org.lwjgl.opengl.GL31.glCreateShader;
 import static org.lwjgl.opengl.GL31.glShaderSource;
-import static org.lwjgl.opengl.GL31.glUseProgram;
 
 import java.lang.ref.Cleaner;
 import java.util.ArrayList;
@@ -26,18 +24,17 @@ import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.internal.element.Seq;
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL46;
 
 /**
  * Un-abstracted view of a "shader object" (think VAO or UBO) thing. The shader object has its own VAO and its own UBO.
  */
 public class BareShader {
 	public static final Cleaner GL_CLEANUP = Cleaner.create();
-	public static BareShader activeShader;
 	public final VAO vao;
 	public final UniformData uniforms;
 	@Nullable
@@ -86,7 +83,6 @@ public class BareShader {
 			preprocessor.getIncludeParameters().putAll(initialArgs);
 			try {
 				int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
-
 				int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
 				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
@@ -94,6 +90,8 @@ public class BareShader {
 				FragOutput output;
 				if(uncompiled.outputFields.size() > 1) {
 					GLSLParserValidation.validateFragShader(fragmentShader, uncompiled);
+				}
+				if(!uncompiled.outputFields.isEmpty()) {
 					output = new FragOutput(uncompiled.outputFields, program, uncompiled.id);
 				} else {
 					output = null;
@@ -160,7 +158,7 @@ public class BareShader {
 
 	public int getVertexCount() {
 		if(this.ebo == null) {
-			return this.strategy.elementsForVertexData(this.vao.last.buffer.vertexCount);
+			return this.strategy.elementsForVertexData(this.vao.last.getBuilder().totalCount());
 		} else {
 			return this.ebo.builder.getVertexCount();
 		}
@@ -184,7 +182,7 @@ public class BareShader {
 			// populate EBO with old strategy data
 		AutoStrat current = this.strategy;
 		if(current != strategy || force) {
-			if(this.vao.last.buffer.vertexCount == this.lastCopiedVertex) {
+			if(this.vao.last.getBuilder().totalCount() == this.lastCopiedVertex) {
 				this.strategy = strategy;
 				return;
 			}
@@ -196,7 +194,7 @@ public class BareShader {
 			this.strategy = strategy;
 
 			AutoElementFamily family = (AutoElementFamily) current;
-			int count = this.vao.last.buffer.vertexCount;
+			int count = this.vao.last.getBuilder().totalCount();
 			if(this.ebo == null) {
 				int elements = current.elementsForVertexData(count);
 				if(elements != 0) {
@@ -217,11 +215,7 @@ public class BareShader {
 
 	private int setupDraw(boolean bindVao) {
 		int id = this.id.glId;
-		BareShader active = activeShader;
-		if(active == null || active.currentGlId != id) {
-			glUseProgram(id);
-			activeShader = this;
-		}
+		GLContextState.bindProgram(id);
 		if(id != this.currentGlId) {
 			// this should be rebind not reupload
 			//this.vao.markForReupload();
@@ -240,14 +234,14 @@ public class BareShader {
 		if(bindVao) {
 			this.vao.bind();
 			if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
-				return -1;
-			} else if(this.ebo != null) {
+				return -1; // 1, 2, 3, etc. does not need drawElements
+			} else if(this.ebo != null) { // strategy was hotswapped, eg. some section is in quads, some is in triangle
 				this.hotswapStrategy(this.strategy, true);
 				this.ebo.bind();
 				return this.ebo.currentType;
 			} else {
 				// custom strategy without hotswaps
-				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last.buffer.vertexCount);
+				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last.getBuilder().totalCount());
 				strat.bind();
 				return strat.getType();
 			}

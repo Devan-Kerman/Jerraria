@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.ChunkLinkingAccess;
 import net.devtech.jerraria.world.WorldServer;
 import net.devtech.jerraria.world.World;
@@ -74,7 +75,7 @@ public class ChunkGroup {
 	public class WorldImpl extends AbstractWorld {
 		@Override
 		public Chunk getChunk(int x, int y) {
-			Chunk chunk = ChunkGroup.this.chunks.get(Chunk.combineInts(x, y));
+			Chunk chunk = ChunkGroup.this.chunks.get(JMath.combineInts(x, y));
 			if(chunk == null) {
 				throw new IllegalStateException("chunk does not belong to group, you must link to stack chunk before using it!");
 			}
@@ -82,7 +83,7 @@ public class ChunkGroup {
 		}
 
 		Chunk getChunk0(int x, int y) {
-			Chunk chunk = ChunkGroup.this.chunks.get(Chunk.combineInts(x, y));
+			Chunk chunk = ChunkGroup.this.chunks.get(JMath.combineInts(x, y));
 			if(chunk == null) {
 				chunk = backing.getChunk(x, y);
 			}
@@ -101,7 +102,7 @@ public class ChunkGroup {
 
 		@Override
 		public boolean isChunkLoaded(int cx, int cy) {
-			return ChunkGroup.this.chunks.containsKey(Chunk.combineInts(cx, cy));
+			return ChunkGroup.this.chunks.containsKey(JMath.combineInts(cx, cy));
 		}
 
 		@Override
@@ -116,7 +117,7 @@ public class ChunkGroup {
 				boolean does = true;
 			};
 			access.accept((chunkX, chunkY) -> {
-				long key = Chunk.combineInts(chunkX, chunkY);
+				long key = JMath.combineInts(chunkX, chunkY);
 				Chunk chunk = ChunkGroup.this.chunks.get(key);
 				list.add(key);
 				if(chunk == null) {

@@ -77,20 +77,6 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	/**
-	 * Copy the data of the given vertex id into the next vertex
-	 *
-	 * @param vertexId the id of the vertex to copy {@link End}
-	 */
-	public final void copy(int vertexId) {
-		ShaderImpl.copy(this, vertexId);
-	}
-
-	@Contract("_,_->this")
-	public final Shader<T> copy(Shader<T> shader, int vertexId) {
-		return ShaderImpl.copyVertex(this, shader, vertexId);
-	}
-
-	/**
 	 * Sets the AutoElementStrategy of this Shader
 	 *
 	 * @see AutoStrat
@@ -133,10 +119,6 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	public final void deleteVertexData() {
 		ShaderImpl.flushVertex(this);
-	}
-
-	public final void deleteUniformData() {
-		this.shader.uniforms.flush();
 	}
 
 	/**

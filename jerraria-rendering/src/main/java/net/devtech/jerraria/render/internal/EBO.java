@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 
+// todo move EBO into VAO class
 public class EBO {
 	final int glId;
 	int currentType;
@@ -40,7 +41,7 @@ public class EBO {
 	}
 
 	public void append(ShapeStrat strat, int from, int len) {
-		this.ensureCanIndex(strat.maxSize()-1);
+		this.ensureCanIndex(Math.max(strat.maxSize(), ShapeStrat.maxSize(this.currentType))-1);
 		this.builder.copyVertexes(strat.builder, from, len);
 	}
 
@@ -90,10 +91,6 @@ public class EBO {
 			this.builder = new_;
 			this.currentType = GL_UNSIGNED_SHORT;
 		}
-	}
-
-	public void markForReupload() {
-		this.isDirty = true;
 	}
 
 	public void clear() {

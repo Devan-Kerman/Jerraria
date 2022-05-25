@@ -18,6 +18,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.jerraria.Tiles;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
@@ -235,11 +236,7 @@ public class Chunk implements Executor {
 
 
 	public long getId() {
-		return combineInts(this.chunkX, this.chunkY);
-	}
-
-	public static long combineInts(int a, int b) {
-		return (long) a << 32 | b & 0xFFFFFFFFL;
+		return JMath.combineInts(this.chunkX, this.chunkY);
 	}
 
 	public static int getB(long id) {

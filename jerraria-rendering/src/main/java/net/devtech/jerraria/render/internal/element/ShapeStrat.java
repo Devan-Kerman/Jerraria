@@ -55,7 +55,11 @@ public abstract class ShapeStrat {
 	}
 
 	public int maxSize() {
-		return switch(this.type) {
+		return maxSize(this.type);
+	}
+
+	public static int maxSize(int type) {
+		return switch(type) {
 			case GL_UNSIGNED_BYTE -> 256;
 			case GL_UNSIGNED_SHORT -> 65536;
 			case GL_UNSIGNED_INT -> Integer.MAX_VALUE;

@@ -1,7 +1,5 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL30.GL_R32UI;
-import static org.lwjgl.opengl.GL30.GL_RGBA32UI;
 import static org.lwjgl.opengl.GL31.GL_READ_ONLY;
 import static org.lwjgl.opengl.GL31.GL_READ_WRITE;
 import static org.lwjgl.opengl.GL31.GL_WRITE_ONLY;
@@ -26,6 +24,7 @@ import java.nio.FloatBuffer;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL42;
 
@@ -33,9 +32,10 @@ import org.lwjgl.opengl.GL42;
  * Non buffer object uniform data
  */
 public abstract class Uniform implements GlData.Buf {
+	ProgramDefaultUniformState state;
 	final DataType type;
 	final int location;
-	boolean rebind;
+	boolean reupload;
 
 	protected Uniform(DataType type, int location) {
 		this.type = type;
@@ -70,18 +70,22 @@ public abstract class Uniform implements GlData.Buf {
 	}
 
 	public static Uniform createNew(Uniform uniform) {
+		Uniform new_;
 		if(uniform instanceof Sampler s) {
-			return new Sampler(s.type, s.location, s.textureUnit);
+			new_ = new Sampler(s.type, s.location, s.textureUnit);
 		} else if(uniform instanceof Image i) {
-			return new Image(i.type, i.location, i.imageUnit, i.imageAccess, i.format);
+			new_ = new Image(i.type, i.location, i.imageUnit, i.imageAccess, i.format);
+		} else {
+			new_ = create(uniform.type, uniform.location);
 		}
-		return create(uniform.type, uniform.location);
+		new_.state = uniform.state;
+		return new_;
 	}
 
 	public static Uniform copy(Uniform uniform) {
 		Uniform copy = createNew(uniform);
 		uniform.copyTo(copy);
-		copy.rebind = true;
+		copy.reupload = true;
 		return copy;
 	}
 

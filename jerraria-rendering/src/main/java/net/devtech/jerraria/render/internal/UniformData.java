@@ -21,12 +21,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.internal.state.GLContextState;
+import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
@@ -63,8 +64,6 @@ public class UniformData extends GlData {
 			}
 			int location = glGetUniformLocation(program, name);
 			int offset = glGetActiveUniformsi(program, i, GL_UNIFORM_OFFSET);
-			// GL46.GL_ATOMIC_COUNTER_BUFFER
-			//GL46.ATOMIC
 			int atomicIndex = glGetActiveUniformsi(program, i, GL46.GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX);
 			if(atomicIndex != -1) {
 				UniformBufferBlock block;
@@ -199,8 +198,7 @@ public class UniformData extends GlData {
 					                                   "autodetect!");
 				}
 
-				element = new VAO.Element(group.groupIndex, name, type, uniform.index, uniform.byteOffset);
-				group.elements.add(element);
+				element = new ElementImpl(group.groupIndex, name, type, uniform.index, uniform.byteOffset);
 			}
 
 			elements.put(uniform.name, element);
@@ -208,6 +206,7 @@ public class UniformData extends GlData {
 
 		this.groups = new ArrayList<>(blocksByName.values());
 		this.elements = elements;
+		uniforms.forEach(u -> u.state = new ProgramDefaultUniformState());
 		this.uniforms = uniforms;
 	}
 
@@ -226,31 +225,20 @@ public class UniformData extends GlData {
 	}
 
 
-	public UniformData flush() {
-		for(Uniform uniform : this.uniforms) {
-			uniform.rebind = true;
-			uniform.reset();
-		}
-		for(VAO.ElementGroup group : this.groups) {
-			group.reupload = true;
-		}
-		return this;
-	}
+	// todo when we add SSBOs, we need a deleteAll or something since the range in which it binds is variable
 
 	@Override
 	public Buf element(Element element) {
 		if(element instanceof StandardUniform s) {
 			Uniform uniform = this.uniforms.get(s.uniformIndex);
-			uniform.rebind = true;
+			uniform.reupload = true;
 			uniform.reset();
 			return uniform;
 		} else {
-			VAO.Element e = (VAO.Element) element;
+			ElementImpl e = (ElementImpl) element;
 			UniformBufferBlock group = this.groups.get(e.groupIndex());
-			group.reupload = true;
-			BufferBuilder buffer = group.buffer;
-			ByteBuffer byteBuf = buffer.buffer;
-			byteBuf.position(e.byteOffset());
+			BufferObjectBuilder buffer = group.buffer();
+			buffer.offset(e.byteOffset());
 			return buffer;
 		}
 	}
@@ -271,34 +259,25 @@ public class UniformData extends GlData {
 		if(to.getClass() != from.getClass()) {
 			throw new IllegalArgumentException("Either both or neither uniforms must be in an interface block");
 		}
+
+		// todo better copying
 		if(from instanceof StandardUniform standard) {
 			Uniform fromUniform = this.uniforms.get(standard.uniformIndex);
 			Uniform toUniform = this.uniforms.get(((StandardUniform) to).uniformIndex);
 			fromUniform.copyTo(toUniform);
-			toUniform.rebind = true;
+			toUniform.reupload = true;
 		} else {
-			VAO.Element fromE = (VAO.Element) from;
-			VAO.Element toE = (VAO.Element) to;
+			ElementImpl fromE = (ElementImpl) from;
+			ElementImpl toE = (ElementImpl) to;
 			if(fromE.type() != toE.type()) {
 				throw new IllegalArgumentException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
 			}
 			UniformBufferBlock fromGroup = this.groups.get(fromE.groupIndex());
 			UniformBufferBlock toGroup = toData.groups.get(toE.groupIndex());
-			ByteBuffer fromBuffer = fromGroup.buffer.buffer;
-			ByteBuffer toBuffer = toGroup.buffer.buffer;
-			toBuffer.put(toE.byteOffset(), fromBuffer, fromE.byteOffset(), fromE.type().byteCount);
-			toGroup.reupload = true;
+			BufferObjectBuilder fromBuffer = fromGroup.buffer();
+			BufferObjectBuilder toBuffer = toGroup.buffer();
+			toBuffer.copyAttribute(toGroup.alloc, fromE.byteOffset(), fromE.type().byteCount, fromBuffer, fromGroup.alloc);
 		}
-	}
-
-	public UniformData markForReupload() {
-		for(UniformBufferBlock group : this.groups) {
-			group.reupload = true;
-		}
-		for(Uniform uniform : this.uniforms) {
-			uniform.rebind = true;
-		}
-		return this;
 	}
 
 	public UniformData upload() {
@@ -306,9 +285,9 @@ public class UniformData extends GlData {
 			group.upload();
 		}
 		for(Uniform uniform : this.uniforms) {
-			if(uniform.rebind) {
+			if(uniform.state.updateUniform(uniform, uniform.reupload)) {
 				uniform.upload();
-				uniform.rebind = false;
+				uniform.reupload = false;
 			}
 			uniform.alwaysUpload();
 		}
@@ -317,7 +296,10 @@ public class UniformData extends GlData {
 
 	public void markForRebind() {
 		for(Uniform uniform : this.uniforms) {
-			uniform.rebind = true;
+			uniform.reupload = true;
+		}
+		for(UniformBufferBlock group : this.groups) {
+			group.manager.currentlyBoundIndex = -1;
 		}
 	}
 
@@ -329,21 +311,28 @@ public class UniformData extends GlData {
 		final int byteLength;
 		final int paddedByteLength;
 		final IntArrayList available = new IntArrayList(INITIAL_BUFFER_LEN);
-		int uboGlId;
-		int bufferLength;
+		final String name;
+		final GLContextState.IndexedBufferTargetState bind;
+		final BufferObjectBuilder buffer;
+		int nextNewId;
+		int currentlyBoundIndex = -1;
 
-		UniformBufferBlockManager(int program, int binding, int index, int type) {
+		UniformBufferBlockManager(String group, int program, int binding, int index, int type) {
+			this.name = group;
 			this.bufferType = type;
 			this.binding = binding;
 			this.bindingIndex = index;
 			if(type == GL_UNIFORM_BUFFER) {
 				glUniformBlockBinding(program, index, binding);
 				this.byteLength = glGetActiveUniformBlocki(program, index, GL_UNIFORM_BLOCK_DATA_SIZE);
+				this.bind = GLContextState.UNIFORM_BUFFER;
 			} else {
 				this.byteLength = GL46.glGetActiveAtomicCounterBufferi(program, index, GL46.GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
+				this.bind = GLContextState.ATOMIC_COUNTERS;
 			}
 
 			this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
+			this.buffer = BufferObjectBuilder.uniform(this.paddedByteLength);
 			this.postInit();
 		}
 
@@ -351,18 +340,18 @@ public class UniformData extends GlData {
 			for(int i = INITIAL_BUFFER_LEN - 1; i >= 0; i--) {
 				this.available.add(i);
 			}
-			this.bufferLength = INITIAL_BUFFER_LEN;
-			this.allocateBuffer();
-			this.bind(0);
+			this.nextNewId = INITIAL_BUFFER_LEN;
+			this.bindRange(0);
 		}
 
-		public void bind(int alloc) {
-			glBindBufferRange(this.bufferType,
-				this.bindingIndex,
-				this.uboGlId,
-				(long) alloc * this.paddedByteLength,
-				this.byteLength
-			);
+		public BufferObjectBuilder forIndex(int alloc) {
+			this.buffer.index(alloc);
+			return this.buffer;
+		}
+
+		public void bindRange(int alloc) {
+			this.buffer.upload(false); // flush contents
+			this.bind.bindBufferRange(this.bindingIndex, this.buffer.getOrGenId(), alloc * this.paddedByteLength, this.byteLength);
 		}
 
 		public int allocate(UniformBufferBlock block, boolean permanent) {
@@ -370,20 +359,10 @@ public class UniformData extends GlData {
 			IntArrayList available = this.available;
 			synchronized(available) {
 				if(available.isEmpty()) {
-					int oldBuffer = this.uboGlId;
-					int oldLength = this.bufferLength;
-					int newLength = oldLength * 2;
-					this.bufferLength = newLength;
-					glBindBuffer(GL_COPY_READ_BUFFER, oldBuffer);
-					int newBuffer = this.allocateBuffer();
-					glBindBuffer(GL_COPY_WRITE_BUFFER, newBuffer);
-					glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, oldLength);
-					glDeleteBuffers(oldBuffer);
-					for(int i = newLength - 1; i >= oldLength; i--) {
-						available.add(i);
-					}
+					allocated = this.nextNewId++;
+				} else {
+					allocated = available.popInt();
 				}
-				allocated = available.popInt();
 			}
 
 			if(!permanent) {
@@ -396,30 +375,19 @@ public class UniformData extends GlData {
 
 			return allocated;
 		}
-
-		protected int allocateBuffer() {
-			int id = this.uboGlId = glGenBuffers();
-			glBindBufferBase(this.bufferType, this.bindingIndex, this.uboGlId);
-			int bufferLength = this.paddedByteLength * this.bufferLength;
-			glBufferData(this.bufferType, bufferLength, GL_STATIC_DRAW);
-			return id;
-		}
 	}
 
-	static class UniformBufferBlock extends VAO.ElementGroup {
+	static class UniformBufferBlock {
 		final UniformBufferBlockManager manager;
 		final int alloc;
 		final int groupIndex;
 		final IntSet uniformIndices;
 		final int bufferType;
+		final String name;
 
-		public UniformBufferBlock(String name, UniformBufferBlockManager manager, int bufferType) {
-			super(name);
+		public UniformBufferBlock(UniformBufferBlockManager manager, int bufferType) {
 			this.manager = manager;
-			this.byteLength = this.manager.paddedByteLength;
-			this.glId = this.manager.uboGlId;
-			this.buffer = new BufferBuilder(this.byteLength);
-			this.buffer.vertexCount = 1;
+			this.name = manager.name;
 			this.alloc = this.manager.allocate(this, true);
 			this.groupIndex = this.manager.binding;
 			this.uniformIndices = new IntOpenHashSet();
@@ -427,41 +395,29 @@ public class UniformData extends GlData {
 		}
 
 		public UniformBufferBlock(String name, int program, int binding, int index, int type) {
-			this(name, new UniformBufferBlockManager(program, binding, index, type), type);
+			this(new UniformBufferBlockManager(name, program, binding, index, type), type);
 		}
 
 		public UniformBufferBlock(UniformBufferBlock group, boolean preserveUniforms) {
-			super(group, preserveUniforms);
+			this.name = group.name;
 			this.manager = group.manager;
 			this.alloc = this.manager.allocate(this, false);
 			this.groupIndex = group.groupIndex;
-			this.glId = group.glId;
-			this.reupload = preserveUniforms;
 			this.uniformIndices = group.uniformIndices;
 			this.bufferType = group.bufferType;
+
+			if(preserveUniforms) {
+				BufferObjectBuilder builder = this.manager.forIndex(this.alloc);
+				builder.appendFrom(builder, 0, 1);
+			}
 		}
 
-		@Override
+		public BufferObjectBuilder buffer() {
+			return this.manager.forIndex(this.alloc);
+		}
+
 		void upload() {
-			this.manager.bind(this.alloc);
-			if(this.reupload) {
-				this.buffer.uniformCount();
-				this.buffer.subUpload(this.bufferType, (long) this.alloc * this.byteLength, 1);
-				this.reupload = false;
-			}
-		}
-
-		@Override
-		void bind() {
-			if(this.glId == 0) {
-				this.glId = this.initGlId();
-			}
-			this.manager.bind(this.alloc);
-		}
-
-		@Override
-		protected int initGlId() {
-			return this.glId;
+			this.manager.bindRange(this.alloc);
 		}
 	}
 

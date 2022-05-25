@@ -5,17 +5,14 @@ import java.util.ArrayList;
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.FrameOut;
-import net.devtech.jerraria.render.api.types.TypesInternalAccess;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.LazyGlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
-import net.devtech.jerraria.render.internal.element.Seq;
 import net.devtech.jerraria.util.Id;
 
 /**
@@ -36,35 +33,10 @@ class ShaderImpl {
 			shader.shader.vao.next();
 		}
 		shader.endedVertex = false;
-		TypesInternalAccess.setVertexId(shader.end, shader.verticesSinceStrategy++);
+		shader.verticesSinceStrategy++;
 		return shader.compiled;
 	}
 
-	static void copy(Shader<?> shader, int vertexId) {
-		if(shader.verticesSinceStrategy != 0 && !shader.endedVertex) {
-			shader.shader.vao.next();
-		}
-
-		if(shader.shader.ebo != null && shader.getStrategy() instanceof AutoElementFamily f && f.byte_ instanceof Seq) {
-			shader.shader.ebo.append(vertexId);
-		} else {
-			shader.shader.vao.copy(vertexId);
-			shader.endedVertex = false;
-		}
-		shader.verticesSinceStrategy++;
-	}
-
-	static <T extends GlValue<?> & GlValue.Attribute> Shader<T> copyVertex(
-		Shader<T> current,
-		Shader<T> shader,
-		int vertexId) {
-		if(current.verticesSinceStrategy != 0 && !current.endedVertex) {
-			current.shader.vao.next();
-		}
-		current.endedVertex = false;
-		current.shader.vao.copy(shader.shader.vao, vertexId);
-		return current;
-	}
 
 	static <T extends GlValue<?> & GlValue.Attribute> Shader<T> strategy(Shader<T> shader, AutoStrat strategy) {
 		if(shader.verticesSinceStrategy != 0) {

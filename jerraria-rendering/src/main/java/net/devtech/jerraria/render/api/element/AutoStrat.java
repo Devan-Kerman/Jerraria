@@ -44,20 +44,6 @@ public sealed interface AutoStrat permits AutoElementFamily {
 		"LINE_STRIP"
 	);
 
-	/**
-	 * Exclusively for uploading vertex data.
-	 *
-	 * For example, you can set {@link AutoStrat#DATA_UPLOAD} as your strategy, load a bunch of vertex datas, store the
-	 * ids and then swap the strategy to a {@link #sequence(DrawMethod)}, at which point you can {@link
-	 * Shader#copy(int)} to write the vertices.
-	 */
-	AutoStrat DATA_UPLOAD = new AutoElementFamily(DataUpload.INSTANCE,
-		DataUpload.INSTANCE,
-		DataUpload.INSTANCE,
-		null,
-		"DATA_UPLOAD"
-	);
-
 	static AutoStrat sequence(DrawMethod method) {
 		return Seq.SEQUENCES[method.ordinal()];
 	}

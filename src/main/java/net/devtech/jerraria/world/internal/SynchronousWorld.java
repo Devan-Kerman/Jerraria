@@ -15,8 +15,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.jerracode.JCIO;
 import net.devtech.jerraria.jerracode.NativeJCType;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.WorldServer;
-import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -58,7 +58,7 @@ public class SynchronousWorld extends TickingWorld {
 
 	@Override
 	public boolean isChunkLoaded(int cx, int cy) {
-		return this.loadedChunkCache.containsKey(Chunk.combineInts(cx, cy));
+		return this.loadedChunkCache.containsKey(JMath.combineInts(cx, cy));
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class SynchronousWorld extends TickingWorld {
 
 	@Override
 	public synchronized Chunk getChunk(int x, int y) {
-		return this.loadedChunkCache.computeIfAbsent(Chunk.combineInts(x, y), this.reader);
+		return this.loadedChunkCache.computeIfAbsent(JMath.combineInts(x, y), this.reader);
 	}
 
 	class ChunkReader implements Long2ObjectFunction<Chunk> {

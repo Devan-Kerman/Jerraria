@@ -2,10 +2,9 @@ package net.devtech.jerraria.world.internal.client;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.WorldServer;
 import net.devtech.jerraria.world.internal.SynchronousWorld;
-import net.devtech.jerraria.world.internal.TickingWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public class ClientWorld extends AbstractClientWorld {
@@ -25,7 +24,7 @@ public class ClientWorld extends AbstractClientWorld {
 
 	@Override
 	public boolean isChunkLoaded(int cx, int cy) {
-		return this.loadedChunkCache.containsKey(Chunk.combineInts(cx, cy));
+		return this.loadedChunkCache.containsKey(JMath.combineInts(cx, cy));
 	}
 
 	@Override
@@ -38,6 +37,6 @@ public class ClientWorld extends AbstractClientWorld {
 
 	@Override
 	public Chunk getChunk(int x, int y) {
-		return this.loadedChunkCache.get(Chunk.combineInts(x, y));
+		return this.loadedChunkCache.get(JMath.combineInts(x, y));
 	}
 }

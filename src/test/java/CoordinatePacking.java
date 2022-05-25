@@ -1,3 +1,4 @@
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ public class CoordinatePacking {
 	}
 
 	protected void test(int a, int b) {
-		long id = Chunk.combineInts(a, b);
+		long id = JMath.combineInts(a, b);
 		Assertions.assertEquals(a, Chunk.getA(id));
 		Assertions.assertEquals(b, Chunk.getB(id));
 	}

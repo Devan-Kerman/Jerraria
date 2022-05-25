@@ -6,11 +6,10 @@ import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.client.WorldRenderer;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
-import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
-import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 import net.devtech.jerraria.world.internal.client.ClientWorldServer;
@@ -28,7 +27,7 @@ public class ClientWorldRendering {
 
 			ClientChunk test = new ClientChunk(world, 0, -1);
 			System.out.println(test);
-			world.loadedChunkCache.put(Chunk.combineInts(0, -1), test);
+			world.loadedChunkCache.put(JMath.combineInts(0, -1), test);
 			test.setDelayUpdates();
 			for (int x = 0; x < 256; x++) {
 				for (int y = 0; y < 256; y++) {

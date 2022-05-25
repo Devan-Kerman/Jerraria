@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import net.devtech.jerraria.world.internal.chunk.ChunkGroup;
@@ -85,7 +86,7 @@ public abstract class TickingWorld extends AbstractWorld implements World {
 		LongSet visited = new LongOpenHashSet();
 		List<Chunk> chunks = new ArrayList<>();
 		access.accept((chunkX, chunkY) -> {
-			long key = Chunk.combineInts(chunkX, chunkY);
+			long key = JMath.combineInts(chunkX, chunkY);
 			if(!visited.add(key) || (ref.chunk != null && ref.chunk.getId() == key)) {
 				return;
 			}

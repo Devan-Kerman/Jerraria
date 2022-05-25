@@ -1,8 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL31.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL31.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL31.glBufferData;
 import static org.lwjgl.opengl.GL31.glBufferSubData;
 
@@ -63,10 +61,16 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		buffer.put(buffer.position(), builder.buffer, vertexOffset, this.vertexLength);
 	}
 
+	public void reset() {
+		this.vertexCount = 0;
+		this.buffer.position(0);
+	}
+
 	public BufferBuilder next() {
 		// the order here is correct, looks wrong but it's right
 		this.vertexCount++;
 		this.allocate(this.vertexLength);
+		this.buffer.position(this.vertexCount * this.vertexLength);
 		return this;
 	}
 
@@ -90,7 +94,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		return this.vertexCount;
 	}
 
-	private static ByteBuffer allocateBuffer(int size) {
+	public static ByteBuffer allocateBuffer(int size) {
 		ByteBuffer buffer = ByteBuffer.allocateDirect(size);
 		buffer.order(ByteOrder.nativeOrder());
 		return buffer;

@@ -70,4 +70,8 @@ public class JMath {
 	public static int ceil(int value, int base) {
 		return ((value + (base-1))/base) * base;
 	}
+
+	public static long combineInts(int a, int b) {
+		return (long) a << 32 | b & 0xFFFFFFFFL;
+	}
 }

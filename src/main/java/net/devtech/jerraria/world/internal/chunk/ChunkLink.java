@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.jerracode.element.JCElement;
+import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.internal.AbstractWorld;
@@ -37,7 +38,7 @@ public class ChunkLink extends TemporaryTileData {
 		if(this.unresolved == null) {
 			this.unresolved = new LongArrayList();
 		}
-		this.unresolved.add(Chunk.combineInts(cx, cy));
+		this.unresolved.add(JMath.combineInts(cx, cy));
 	}
 
 	public void link(Chunk chunk) {
