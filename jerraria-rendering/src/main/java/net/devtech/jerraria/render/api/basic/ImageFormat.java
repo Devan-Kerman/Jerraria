@@ -1,43 +1,6 @@
 package net.devtech.jerraria.render.api.basic;
 
-import static org.lwjgl.opengl.GL40.GL_R11F_G11F_B10F;
-import static org.lwjgl.opengl.GL40.GL_R16;
-import static org.lwjgl.opengl.GL40.GL_R16F;
-import static org.lwjgl.opengl.GL40.GL_R16I;
-import static org.lwjgl.opengl.GL40.GL_R16UI;
-import static org.lwjgl.opengl.GL40.GL_R16_SNORM;
-import static org.lwjgl.opengl.GL40.GL_R32F;
-import static org.lwjgl.opengl.GL40.GL_R32I;
-import static org.lwjgl.opengl.GL40.GL_R32UI;
-import static org.lwjgl.opengl.GL40.GL_R8;
-import static org.lwjgl.opengl.GL40.GL_R8I;
-import static org.lwjgl.opengl.GL40.GL_R8UI;
-import static org.lwjgl.opengl.GL40.GL_RG16;
-import static org.lwjgl.opengl.GL40.GL_RG16F;
-import static org.lwjgl.opengl.GL40.GL_RG16I;
-import static org.lwjgl.opengl.GL40.GL_RG16UI;
-import static org.lwjgl.opengl.GL40.GL_RG16_SNORM;
-import static org.lwjgl.opengl.GL40.GL_RG32F;
-import static org.lwjgl.opengl.GL40.GL_RG32I;
-import static org.lwjgl.opengl.GL40.GL_RG32UI;
-import static org.lwjgl.opengl.GL40.GL_RG8;
-import static org.lwjgl.opengl.GL40.GL_RG8I;
-import static org.lwjgl.opengl.GL40.GL_RG8UI;
-import static org.lwjgl.opengl.GL40.GL_RG8_SNORM;
-import static org.lwjgl.opengl.GL40.GL_RGB10_A2;
-import static org.lwjgl.opengl.GL40.GL_RGB10_A2UI;
-import static org.lwjgl.opengl.GL40.GL_RGBA16;
-import static org.lwjgl.opengl.GL40.GL_RGBA16F;
-import static org.lwjgl.opengl.GL40.GL_RGBA16I;
-import static org.lwjgl.opengl.GL40.GL_RGBA16UI;
-import static org.lwjgl.opengl.GL40.GL_RGBA16_SNORM;
-import static org.lwjgl.opengl.GL40.GL_RGBA32F;
-import static org.lwjgl.opengl.GL40.GL_RGBA32I;
-import static org.lwjgl.opengl.GL40.GL_RGBA32UI;
-import static org.lwjgl.opengl.GL40.GL_RGBA8;
-import static org.lwjgl.opengl.GL40.GL_RGBA8I;
-import static org.lwjgl.opengl.GL40.GL_RGBA8UI;
-import static org.lwjgl.opengl.GL40.GL_RGBA8_SNORM;
+import static org.lwjgl.opengl.GL33.*;
 
 /**
  * https://www.khronos.org/opengl/wiki/Image_Load_Store

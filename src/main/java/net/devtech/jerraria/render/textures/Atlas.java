@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.textures;
 
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL31.GL_COLOR_ATTACHMENT0;
 import static org.lwjgl.opengl.GL31.GL_NEAREST;
 import static org.lwjgl.opengl.GL31.GL_READ_FRAMEBUFFER;
@@ -41,6 +42,7 @@ import java.util.concurrent.Executor;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.LoadRender;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
@@ -400,9 +402,8 @@ public class Atlas {
 			if(copyFrameBufferId == -1) {
 				copyFrameBufferId = glGenFramebuffers();
 			}
-
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFrameBufferId);
-			glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
+			GLContextState.bindFrameBuffer(copyFrameBufferId);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
 			glCopyTexSubImage2D(GL_TEXTURE_2D,
 				0,
 				destination.offX,

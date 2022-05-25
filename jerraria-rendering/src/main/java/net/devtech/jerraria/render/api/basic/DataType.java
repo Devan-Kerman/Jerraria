@@ -1,14 +1,14 @@
 package net.devtech.jerraria.render.api.basic;
 
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL43.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.lwjgl.opengl.GL40;
-import org.lwjgl.opengl.GL46;
+import net.devtech.jerraria.render.api.OpenGLSupport;
 
 public enum DataType {
 	BOOL(GL_BOOL, 1, "bool", GL_BOOL),
@@ -33,7 +33,7 @@ public enum DataType {
 	I32_VEC2(I32, 2, "ivec2", GL_INT_VEC2),
 	U32_VEC2(U32, 2, "uvec2", GL_UNSIGNED_INT_VEC2),
 	F32_VEC2(F32, 2, "vec2", GL_FLOAT_VEC2),
-	F64_VEC2(F64, 2, "dvec2", GL40.GL_DOUBLE_VEC2),
+	F64_VEC2(F64, 2, "dvec2", GL_DOUBLE_VEC2),
 	NORMALIZED_F8_VEC2(NORMALIZED_F8, 2, "vec2", GL_FLOAT_VEC2),
 	NORMALIZED_F16_VEC2(NORMALIZED_F16, 2, "vec2", GL_FLOAT_VEC2),
 	NORMALIZED_F32_VEC2(NORMALIZED_F32, 2, "vec2", GL_FLOAT_VEC2),
@@ -46,7 +46,7 @@ public enum DataType {
 	I32_VEC3(I32, 3, "ivec3", GL_INT_VEC3),
 	U32_VEC3(U32, 3, "uvec3", GL_UNSIGNED_INT_VEC3),
 	F32_VEC3(F32, 3, "vec3", GL_FLOAT_VEC3),
-	F64_VEC3(F64, 3, "dvec3", GL40.GL_DOUBLE_VEC3),
+	F64_VEC3(F64, 3, "dvec3", GL_DOUBLE_VEC3),
 	NORMALIZED_F8_VEC3(NORMALIZED_F8, 3, "vec3", GL_FLOAT_VEC3),
 	NORMALIZED_F16_VEC3(NORMALIZED_F16, 3, "vec3", GL_FLOAT_VEC3),
 	NORMALIZED_F32_VEC3(NORMALIZED_F32, 3, "vec3", GL_FLOAT_VEC3),
@@ -59,7 +59,7 @@ public enum DataType {
 	I32_VEC4(I32, 4, "ivec4", GL_INT_VEC4),
 	U32_VEC4(U32, 4, "uvec4", GL_UNSIGNED_INT_VEC4),
 	F32_VEC4(F32, 4, "vec4", GL_FLOAT_VEC4),
-	F64_VEC4(F64, 4, "dvec4", GL40.GL_DOUBLE_VEC4),
+	F64_VEC4(F64, 4, "dvec4", GL_DOUBLE_VEC4),
 	NORMALIZED_F8_VEC4(NORMALIZED_F8, 4, "vec4", GL_FLOAT_VEC4),
 	NORMALIZED_F16_VEC4(NORMALIZED_F16, 4, "vec4", GL_FLOAT_VEC4),
 	NORMALIZED_F32_VEC4(NORMALIZED_F32, 4, "vec4", GL_FLOAT_VEC4),
@@ -74,15 +74,15 @@ public enum DataType {
 	MAT4x3(F32, 12, "mat4x3", GL_FLOAT_MAT4x3),
 	MAT4x2(F32, 8, "mat4x2", GL_FLOAT_MAT4x2),
 
-	DMAT2(F64, 4, "dmat2", GL40.GL_DOUBLE_MAT2),
-	DMAT2x3(F64, 6, "dmat2x3", GL40.GL_DOUBLE_MAT2x3),
-	DMAT2x4(F64, 8, "dmat2x4", GL40.GL_DOUBLE_MAT2x4),
-	DMAT3(F64, 9, "dmat3", GL40.GL_DOUBLE_MAT3),
-	DMAT3x2(F64, 6, "dmat3x2", GL40.GL_DOUBLE_MAT3x2),
-	DMAT3x4(F64, 12, "dmat3x4", GL40.GL_DOUBLE_MAT3x4),
-	DMAT4(F64, 16, "dmat4", GL40.GL_DOUBLE_MAT4),
-	DMAT4x3(F64, 12, "dmat4x3", GL40.GL_DOUBLE_MAT4x3),
-	DMAT4x2(F64, 8, "dmat4x2", GL40.GL_DOUBLE_MAT4x2),
+	DMAT2(F64, 4, "dmat2", GL_DOUBLE_MAT2),
+	DMAT2x3(F64, 6, "dmat2x3", GL_DOUBLE_MAT2x3),
+	DMAT2x4(F64, 8, "dmat2x4", GL_DOUBLE_MAT2x4),
+	DMAT3(F64, 9, "dmat3", GL_DOUBLE_MAT3),
+	DMAT3x2(F64, 6, "dmat3x2", GL_DOUBLE_MAT3x2),
+	DMAT3x4(F64, 12, "dmat3x4", GL_DOUBLE_MAT3x4),
+	DMAT4(F64, 16, "dmat4", GL_DOUBLE_MAT4),
+	DMAT4x3(F64, 12, "dmat4x3", GL_DOUBLE_MAT4x3),
+	DMAT4x2(F64, 8, "dmat4x2", GL_DOUBLE_MAT4x2),
 
 	NORMALIZED_F8_MAT2(NORMALIZED_F8, 4, "mat2", GL_FLOAT_MAT2),
 	NORMALIZED_F8_MAT2x3(NORMALIZED_F8, 6, "mat2x3", GL_FLOAT_MAT2x3),
@@ -173,10 +173,14 @@ public enum DataType {
 	UINT_TEXTURE_RECTANGLE(GL_TEXTURE_RECTANGLE, "usampler2dRect", GL_UNSIGNED_INT_SAMPLER_2D_RECT),
 	UINT_TEXTURE_1D_ARRAY(GL_TEXTURE_1D_ARRAY, "usampler1DArray", GL_UNSIGNED_INT_SAMPLER_1D_ARRAY),
 	UINT_TEXTURE_2D_ARRAY(GL_TEXTURE_2D_ARRAY, "usampler2DArray", GL_UNSIGNED_INT_SAMPLER_2D_ARRAY),
-	UINT_TEXTURE_CUBE_MAP_ARRAY(GL_TEXTURE_CUBE_MAP_ARRAY, "usamplerCubeArray", GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY),
+	UINT_TEXTURE_CUBE_MAP_ARRAY(GL_TEXTURE_CUBE_MAP_ARRAY, "usamplerCubeArray",
+		GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY),
 	UINT_TEXTURE_BUFFER(GL_TEXTURE_BUFFER, "usamplerBuffer", GL_UNSIGNED_INT_SAMPLER_BUFFER),
 	UINT_TEXTURE_2D_MULTISAMPLE(GL_TEXTURE_2D_MULTISAMPLE, "usampler2DMS", GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE),
-	UINT_TEXTURE_2D_MULTISAMPLE_ARRAY(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, "usampler2DMSArray", GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
+	UINT_TEXTURE_2D_MULTISAMPLE_ARRAY(GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		"usampler2DMSArray",
+		GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+	),
 
 	UINT_IMAGE_1D(UINT_TEXTURE_1D, "uimage1D", GL_UNSIGNED_INT_IMAGE_1D),
 	UINT_IMAGE_2D(UINT_TEXTURE_2D, "uimage2D", GL_UNSIGNED_INT_IMAGE_2D),
@@ -188,7 +192,10 @@ public enum DataType {
 	UINT_IMAGE_CUBE_MAP_ARRAY(UINT_TEXTURE_CUBE_MAP_ARRAY, "uimageCubeArray", GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY),
 	UINT_IMAGE_BUFFER(UINT_TEXTURE_BUFFER, "uimageBuffer", GL_UNSIGNED_INT_IMAGE_BUFFER),
 	UINT_IMAGE_2D_MULTISAMPLE(UINT_TEXTURE_2D_MULTISAMPLE, "uimage2DMS", GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE),
-	UINT_IMAGE_2D_MULTISAMPLE_ARRAY(UINT_TEXTURE_2D_MULTISAMPLE_ARRAY, "uimage2DMSArray", GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY),
+	UINT_IMAGE_2D_MULTISAMPLE_ARRAY(UINT_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		"uimage2DMSArray",
+		GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+	),
 
 	READONLY_UINT_IMAGE_1D(UINT_IMAGE_1D, "readonlyuImage1D"),
 	READONLY_UINT_IMAGE_2D(UINT_IMAGE_2D, "readonlyuImage2D"),
@@ -225,7 +232,10 @@ public enum DataType {
 	INT_TEXTURE_CUBE_MAP_ARRAY(GL_TEXTURE_CUBE_MAP_ARRAY, "isamplerCubeArray", GL_INT_SAMPLER_CUBE_MAP_ARRAY),
 	INT_TEXTURE_BUFFER(GL_TEXTURE_BUFFER, "isamplerBuffer", GL_INT_SAMPLER_BUFFER),
 	INT_TEXTURE_2D_MULTISAMPLE(GL_TEXTURE_2D_MULTISAMPLE, "isampler2DMS", GL_INT_SAMPLER_2D_MULTISAMPLE),
-	INT_TEXTURE_2D_MULTISAMPLE_ARRAY(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, "isampler2DMSArray", GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
+	INT_TEXTURE_2D_MULTISAMPLE_ARRAY(GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		"isampler2DMSArray",
+		GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+	),
 
 	INT_IMAGE_1D(INT_TEXTURE_1D, "iimage1D", GL_INT_IMAGE_1D),
 	INT_IMAGE_2D(INT_TEXTURE_2D, "iimage2D", GL_INT_IMAGE_2D),
@@ -237,7 +247,10 @@ public enum DataType {
 	INT_IMAGE_CUBE_MAP_ARRAY(INT_TEXTURE_CUBE_MAP_ARRAY, "iimageCubeArray", GL_INT_IMAGE_CUBE_MAP_ARRAY),
 	INT_IMAGE_BUFFER(INT_TEXTURE_BUFFER, "iimageBuffer", GL_INT_IMAGE_BUFFER),
 	INT_IMAGE_2D_MULTISAMPLE(INT_TEXTURE_2D_MULTISAMPLE, "iimage2DMS", GL_INT_IMAGE_2D_MULTISAMPLE),
-	INT_IMAGE_2D_MULTISAMPLE_ARRAY(INT_TEXTURE_2D_MULTISAMPLE_ARRAY, "iimage2DMSArray", GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY),
+	INT_IMAGE_2D_MULTISAMPLE_ARRAY(INT_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		"iimage2DMSArray",
+		GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+	),
 
 	READONLY_INT_IMAGE_1D(INT_IMAGE_1D, "readonlyiImage1D"),
 	READONLY_INT_IMAGE_2D(INT_IMAGE_2D, "readonlyiImage2D"),
@@ -263,11 +276,9 @@ public enum DataType {
 	WRITEONLY_INT_IMAGE_2D_MULTISAMPLE(INT_IMAGE_2D_MULTISAMPLE, "writeonlyiImage2DMS"),
 	WRITEONLY_INT_IMAGE_2D_MULTISAMPLE_ARRAY(INT_IMAGE_2D_MULTISAMPLE_ARRAY, "writeonlyiImage2DMSArray"),
 
-	ATOMIC_UINT(GL46.GL_UNSIGNED_INT_ATOMIC_COUNTER, 4, false, "atomic_uint", true, GL46.GL_UNSIGNED_INT_ATOMIC_COUNTER);
+	ATOMIC_UINT(GL_UNSIGNED_INT_ATOMIC_COUNTER, 4, false, "atomic_uint", true, GL_UNSIGNED_INT_ATOMIC_COUNTER);
 
-	static final Int2ObjectMap<Set<DataType>> COMPATIBLE_DATA_TYPES = new Int2ObjectOpenHashMap<>();
-	public static final Set<DataType> VALID_OUTPUTS = Set.of(
-		TEXTURE_1D,
+	public static final Set<DataType> VALID_OUTPUTS = Set.of(TEXTURE_1D,
 		TEXTURE_2D,
 		TEXTURE_3D,
 		TEXTURE_CUBE,
@@ -279,6 +290,21 @@ public enum DataType {
 		TEXTURE_2D_MULTISAMPLE,
 		TEXTURE_2D_MULTISAMPLE_ARRAY
 	);
+
+	public static final Set<DataType> UNSUPPORTED_TYPES = new HashSet<>();
+	static final Int2ObjectMap<Set<DataType>> COMPATIBLE_DATA_TYPES = new Int2ObjectOpenHashMap<>();
+
+	static {
+		for(DataType value : DataType.values()) {
+			COMPATIBLE_DATA_TYPES.computeIfAbsent(value.glslType, i -> new HashSet<>()).add(value);
+			if(!OpenGLSupport.IMAGE_LOAD_STORE) {
+				UNSUPPORTED_TYPES.add(value);
+			}
+		}
+		if(!OpenGLSupport.ATOMIC_COUNTERS) {
+			UNSUPPORTED_TYPES.add(ATOMIC_UINT);
+		}
+	}
 
 	// 39 * 3 * 11
 	public final String glslName;
@@ -314,7 +340,14 @@ public enum DataType {
 		this(name, false, byteCount, 1, elementType, false, glslType);
 	}
 
-	DataType(String name, boolean normalized, int byteCount, int elementCount, int elementType, boolean uniformOnly, int glslType) {
+	DataType(
+		String name,
+		boolean normalized,
+		int byteCount,
+		int elementCount,
+		int elementType,
+		boolean uniformOnly,
+		int glslType) {
 		this.glslName = name;
 		this.normalized = normalized;
 		this.byteCount = byteCount;
@@ -325,12 +358,6 @@ public enum DataType {
 		this.isImage = name.contains("image");
 		this.uniformOnly = uniformOnly;
 		this.glslType = glslType;
-	}
-
-	static {
-		for(DataType value : DataType.values()) {
-			COMPATIBLE_DATA_TYPES.computeIfAbsent(value.glslType, i -> new HashSet<>()).add(value);
-		}
 	}
 
 	public boolean isOpaque() {

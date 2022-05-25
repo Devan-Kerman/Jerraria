@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.internal.ShaderPreprocessor;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.internal.ShaderManager;
@@ -66,6 +67,7 @@ class ClientInit {
 
 		ShaderManager.FRAG_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".frag")));
 		ShaderManager.VERT_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".vert")));
+		ShaderManager.LIB_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".glsl")));
 		ShaderManager.SHADER_PROVIDERS.add(id -> { // shaderid.properties allows you to reuse frag/vertex shader files.
 			VirtualFile shaders = directory
 				.resolveDirectory(id.mod())

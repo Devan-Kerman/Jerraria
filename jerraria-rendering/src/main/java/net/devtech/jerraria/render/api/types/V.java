@@ -68,7 +68,7 @@ public abstract class V<N extends GlValue<?>> extends AbstractGlValue<N> impleme
 		}
 	}
 
-	public static class UI<N extends GlValue<?>> extends V<N> {
+	public static class UI<N extends GlValue<?>> extends V<N> { // todo get atomic int value
 		protected UI(GlData data, GlValue<?> next, String name) {
 			super(data, next, name);
 		}

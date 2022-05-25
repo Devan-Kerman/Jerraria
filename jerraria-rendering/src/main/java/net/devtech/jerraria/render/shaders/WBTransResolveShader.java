@@ -10,7 +10,7 @@ import net.devtech.jerraria.util.Id;
 
 public class WBTransResolveShader extends Shader<Vec3.F<End>> {
 	public static final WBTransResolveShader INSTANCE = createShader(
-		Id.create("jerraria", "trans/spwb_trans_resolve"),
+		Id.create("jerraria", "impl/spwb_trans_resolve"),
 		WBTransResolveShader::new,
 		WBTransResolveShader::new
 	);

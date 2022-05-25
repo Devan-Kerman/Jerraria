@@ -165,6 +165,7 @@ class ShaderImpl {
 		shader.end = build.second();
 		shader.shader = bare;
 		shader.isCopy = true;
+		shader.compilationConfig.putAll(copy.compilationConfig);
 	}
 
 	static <T extends GlValue<?> & GlValue.Attribute> void postInit(

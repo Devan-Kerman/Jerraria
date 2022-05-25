@@ -1,11 +1,12 @@
 package net.devtech.jerraria.render.api;
 
+import java.util.Objects;
+
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
-import static org.lwjgl.opengl.GL46.*;
 
 /**
  * A GlValue provides a java-friendly interface to a vertex attribute or uniform. <br> Oftentimes GlValues correspond
@@ -71,16 +72,27 @@ public abstract class GlValue<N extends GlValue<?>> {
 		UNIFORM, ATTRIBUTE, OUTPUT
 	}
 
-	public interface Type<N extends GlValue<?>> {
-		N create(GlData data, GlValue<?> next);
+	public abstract static class Type<N extends GlValue<?>> {
+		boolean isOptional;
 
-		void attach(BareShader.Uncompiled uncompiled, Loc isUniform);
+		public abstract N create(GlData data, GlValue<?> next);
 
-		default void validateUniform() {}
+		public abstract void attach(BareShader.Uncompiled uncompiled, Loc isUniform);
 
-		default void validateAttribute() {}
+		public void validateUniform() {}
 
-		default void validateOutput() {}
+		public void validateAttribute() {}
+
+		public void validateOutput() {}
+
+		public Type<N> optional(boolean isOptional) {
+			this.isOptional = isOptional;
+			return this;
+		}
+
+		public Type<N> optional() {
+			return this.optional(true);
+		}
 	}
 
 	public interface SimpleType<N extends GlValue<?>> {
@@ -96,8 +108,21 @@ public abstract class GlValue<N extends GlValue<?>> {
 	 */
 	public interface Output {}
 
-	public record Simple<N extends GlValue<?>>(SimpleType<N> type, DataType dataType, String name, String groupName, Object optional)
-		implements Type<N> {
+	public static final class Simple<N extends GlValue<?>> extends Type<N> {
+		final SimpleType<N> type;
+		final DataType dataType;
+		final String name;
+		final String groupName;
+		final Object extra;
+
+		public Simple(SimpleType<N> type, DataType dataType, String name, String groupName, Object extra) {
+			this.type = type;
+			this.dataType = dataType;
+			this.name = name;
+			this.groupName = groupName;
+			this.extra = extra;
+		}
+
 		@Override
 		public N create(GlData data, GlValue<?> next) {
 			return type.create(data, next, this.name);
@@ -105,14 +130,13 @@ public abstract class GlValue<N extends GlValue<?>> {
 
 		@Override
 		public void attach(BareShader.Uncompiled uncompiled, Loc isUniform) {
-			uncompiled.type(isUniform, this.dataType, this.name, this.groupName, optional);
+			uncompiled.type(isUniform, this.dataType, this.name, this.groupName, extra, this.isOptional);
 		}
 
 		@Override
 		public void validateUniform() {
 			if(this.dataType.normalized) {
-				throw new IllegalArgumentException("Normalized data cannot be used as Uniform! (" + this.dataType +
-				                                   ")");
+				throw new IllegalArgumentException("Normalized data cannot be used as Uniform! (" + this.dataType + ")");
 			}
 		}
 

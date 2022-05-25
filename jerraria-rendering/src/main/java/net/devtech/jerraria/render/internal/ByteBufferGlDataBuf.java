@@ -48,4 +48,9 @@ public abstract class ByteBufferGlDataBuf implements GlData.Buf {
 		this.getBuffer().putDouble(d);
 		return this;
 	}
+
+	@Override
+	public GlData.Buf o(Object o) {
+		throw new UnsupportedOperationException();
+	}
 }

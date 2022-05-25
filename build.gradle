@@ -71,20 +71,23 @@ task startServer(type: JavaExec) {
 
 ext.genOutputDir = file("$buildDir/generated-resources")
 def resources = file("$projectDir/src/main/resources")
+def renderingResources = file("${project(":jerraria-rendering").projectDir}/src/main/resources")
 task generateFileIndex {
 	inputs.dir(resources)
+	inputs.dir(renderingResources)
 	def outputFile = file("$genOutputDir/index.txt")
 	outputs.file(outputFile)
 
 	doLast {
 		def files = [], dirs = []
-		def outDir = resources.toPath()
-		resources.traverse { file ->
-			def relative = outDir.relativize(file.toPath()).toString().replace('\\', '/')
-			if (file.isDirectory()) {
-				dirs << relative
-			} else {
-				files << relative
+		[resources, renderingResources].each { dir ->
+			dir.traverse { file ->
+				def relative = dir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
+				if (file.isDirectory()) {
+					dirs << relative
+				} else {
+					files << relative
+				}
 			}
 		}
 

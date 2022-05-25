@@ -1,21 +1,7 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL31.GL_READ_ONLY;
-import static org.lwjgl.opengl.GL31.GL_READ_WRITE;
-import static org.lwjgl.opengl.GL31.GL_WRITE_ONLY;
-import static org.lwjgl.opengl.GL31.glActiveTexture;
-import static org.lwjgl.opengl.GL31.glBindTexture;
-import static org.lwjgl.opengl.GL31.glUniform1f;
-import static org.lwjgl.opengl.GL31.glUniform1i;
-import static org.lwjgl.opengl.GL31.glUniform2f;
-import static org.lwjgl.opengl.GL31.glUniform2i;
-import static org.lwjgl.opengl.GL31.glUniform3f;
-import static org.lwjgl.opengl.GL31.glUniform3i;
-import static org.lwjgl.opengl.GL31.glUniform4f;
-import static org.lwjgl.opengl.GL31.glUniform4i;
-import static org.lwjgl.opengl.GL31.glUniformMatrix2fv;
-import static org.lwjgl.opengl.GL31.glUniformMatrix3fv;
-import static org.lwjgl.opengl.GL31.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL42.glBindImageTexture;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -26,12 +12,11 @@ import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL42;
 
 /**
  * Non buffer object uniform data
  */
-public abstract class Uniform implements GlData.Buf {
+public abstract class Uniform implements GlData.BufAdapter {
 	ProgramDefaultUniformState state;
 	final DataType type;
 	final int location;
@@ -87,41 +72,6 @@ public abstract class Uniform implements GlData.Buf {
 		uniform.copyTo(copy);
 		copy.reupload = true;
 		return copy;
-	}
-
-	@Override
-	public GlData.Buf f(float f) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf i(int i) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf b(byte b) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf bool(boolean b) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf s(short s) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf c(char c) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public GlData.Buf d(double d) {
-		throw new UnsupportedOperationException();
 	}
 
 	abstract void copyTo(GlData.Buf uniform);
@@ -389,7 +339,7 @@ public abstract class Uniform implements GlData.Buf {
 		@Override
 		void alwaysUpload() {
 			// format from id: GL46.glGetIntegeri(GL46.GL_IMAGE_BINDING_FORMAT, imageId)
-			GL42.glBindImageTexture(
+			glBindImageTexture(
 				this.imageUnit,
 				this.imageId,
 				0,

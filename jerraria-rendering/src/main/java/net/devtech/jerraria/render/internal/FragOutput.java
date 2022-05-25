@@ -1,5 +1,7 @@
 package net.devtech.jerraria.render.internal;
 
+import static org.lwjgl.opengl.GL33.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +11,6 @@ import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.Id;
-import static org.lwjgl.opengl.GL46.*;
 
 public class FragOutput extends GlData {
 	final int frameBuffer;

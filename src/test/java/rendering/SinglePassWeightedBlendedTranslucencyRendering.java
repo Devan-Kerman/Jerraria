@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL42.*;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.shaders.TestTranslucentShader;
 import net.devtech.jerraria.render.shaders.WBTransRecordShader;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -19,9 +20,9 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 			int revealage = allocateTexture(800, 600, GL_R32F); // doesn't need to get cleared
 			int accum = allocateTexture(800, 600, GL_RGBA32F);
 			RenderThread.addRenderStage(() -> {
-				WBTransRecordShader rendering = WBTransRecordShader.INSTANCE;
-				rendering.accum.tex(accum);
-				rendering.reveal.tex(revealage);
+				TestTranslucentShader rendering = TestTranslucentShader.INSTANCE;
+				rendering.singlePassWeighted.accum.tex(accum);
+				rendering.singlePassWeighted.reveal.tex(revealage);
 
 				Matrix3f identity = new Matrix3f();
 

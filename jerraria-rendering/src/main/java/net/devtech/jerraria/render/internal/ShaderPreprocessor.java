@@ -22,10 +22,13 @@ public final class ShaderPreprocessor {
 
 	public ShaderPreprocessor(ShaderPreprocessor old) {
 		this.includePreprocessor = old.includePreprocessor;
-		this.includeParameters.putAll(old.includeParameters);
 	}
 
 	public void insert(String string, List<String> lines) {
+		if(this.includeParameters.remove("version") instanceof String s) {
+			lines.add("#version " + s + " core\n");
+		}
+
 		boolean reset = false;
 		if(!this.sourceInjections.isEmpty()) {
 			lines.add("#line 67000\n");
@@ -33,13 +36,14 @@ public final class ShaderPreprocessor {
 			for(String injection : this.sourceInjections) {
 				this.parseInclude(lines, ln++, injection);
 			}
+			this.sourceInjections.clear();
 			reset = true;
 		}
 
-		if(this.includeParameters.get("defines") instanceof Iterable<?> i) {
+		if(this.includeParameters.remove("defines") instanceof Iterable<?> i) {
 			lines.add("#line 88000\n");
 			for(Object o : i) {
-				lines.add("#define " + o);
+				lines.add("#define " + o + "\n");
 			}
 			reset = true;
 		}

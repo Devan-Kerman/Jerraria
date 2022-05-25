@@ -129,7 +129,11 @@ public class BareShader {
 		List<String> lines = new ArrayList<>();
 		source.left().insert(source.value(), lines);
 		int glId = glCreateShader(type);
-		glShaderSource(glId, lines.toArray(String[]::new));
+		String[] strings = lines.toArray(String[]::new);
+		System.out.println("=====================================================");
+		System.out.println(String.join("", strings));
+		System.out.println("=====================================================");
+		glShaderSource(glId, strings);
 		glCompileShader(glId);
 		return glId;
 	}
@@ -247,9 +251,6 @@ public class BareShader {
 		}
 	}
 
-	public void teardownDraw() {
-	}
-
 	public static final class GlIdReference {
 		public int glId;
 	}
@@ -270,31 +271,20 @@ public class BareShader {
 			this.outputFields = new HashMap<>();
 		}
 
-		public Uncompiled vert(DataType type, String name, String groupName, Object optional) {
-			this.vertexFields.put(name, new Field(type, name, groupName, optional));
-			return this;
-		}
+		public void type(GlValue.Loc type, DataType local, String name, String groupName, Object extra, boolean isOptional) {
+			if(DataType.UNSUPPORTED_TYPES.contains(local)) {
+				throw new UnsupportedOperationException(local + " is unsupported on this machine!");
+			}
 
-		public Uncompiled uniform(DataType type, String name, String groupName, Object optional) {
-			this.uniformFields.put(name, new Field(type, name, groupName, optional));
-			return this;
-		}
-
-		public Uncompiled output(DataType type, String name, String groupName, Object optional) {
-			this.outputFields.put(name, new Field(type, name, groupName, optional));
-			return this;
-		}
-
-		public Uncompiled type(GlValue.Loc type, DataType local, String name, String groupName, Object optional) {
-			return switch(type) {
-				case UNIFORM -> this.uniform(local, name, groupName, optional);
-				case ATTRIBUTE -> this.vert(local, name, groupName, optional);
-				case OUTPUT -> this.output(local, name, groupName, optional);
-			};
+			(switch(type) {
+				case UNIFORM -> this.uniformFields;
+				case ATTRIBUTE -> this.vertexFields;
+				case OUTPUT -> this.outputFields;
+			}).put(name, new Field(local, name, groupName, extra, isOptional));
 		}
 	}
 
-	public record Field(DataType type, String name, String groupName, Object optional) {
+	public record Field(DataType type, String name, String groupName, Object extra, boolean isOptional) {
 		public String groupName(boolean isUniform) {
 			String name = this.groupName;
 			if(name != null || isUniform) {
@@ -302,6 +292,10 @@ public class BareShader {
 			} else {
 				return "default_";
 			}
+		}
+
+		public boolean isMandatory() {
+			return !this.isOptional;
 		}
 	}
 }

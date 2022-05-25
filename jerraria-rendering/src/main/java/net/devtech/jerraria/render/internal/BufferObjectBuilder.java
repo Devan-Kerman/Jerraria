@@ -1,13 +1,6 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glBufferSubData;
-import static org.lwjgl.opengl.GL31.GL_COPY_READ_BUFFER;
-import static org.lwjgl.opengl.GL31.GL_COPY_WRITE_BUFFER;
-import static org.lwjgl.opengl.GL31.glCopyBufferSubData;
-import static org.lwjgl.opengl.GL46.glGenBuffers;
+import static org.lwjgl.opengl.GL33.*;
 
 import java.lang.ref.Cleaner;
 import java.nio.ByteBuffer;
