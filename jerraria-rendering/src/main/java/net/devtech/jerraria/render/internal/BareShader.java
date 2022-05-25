@@ -43,7 +43,7 @@ public class BareShader {
 	public EBO ebo;
 	public AutoStrat strategy = AutoStrat.TRIANGLE;
 	int lastCopiedVertex;
-	GlIdReference id;
+	public GlIdReference id;
 	int currentGlId;
 
 	public BareShader(int glId, VAO data, UniformData uniformData, @Nullable FragOutput output) {
@@ -208,7 +208,7 @@ public class BareShader {
 		}
 	}
 
-	private int setupDraw(boolean bindVao) {
+	public int setupDraw(boolean bindVao) {
 		int id = this.id.glId;
 		GLContextState.bindProgram(id);
 		if(id != this.currentGlId) {
@@ -251,7 +251,7 @@ public class BareShader {
 	}
 
 	public static final class GlIdReference {
-		int glId;
+		public int glId;
 	}
 
 	public static final class Uncompiled {

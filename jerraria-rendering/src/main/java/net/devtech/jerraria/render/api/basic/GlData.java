@@ -29,6 +29,8 @@ public abstract class GlData {
 		Buf c(char c);
 
 		Buf d(double d);
+
+		Buf o(Object o);
 	}
 
 	public interface BufAdapter extends Buf {
@@ -64,6 +66,11 @@ public abstract class GlData {
 
 		@Override
 		default Buf d(double d) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		default Buf o(Object o) {
 			throw new UnsupportedOperationException();
 		}
 	}
