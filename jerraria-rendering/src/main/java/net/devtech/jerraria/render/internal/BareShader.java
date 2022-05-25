@@ -165,10 +165,7 @@ public class BareShader {
 	public void deleteVertexData() {
 		this.vao.flush();
 		this.lastCopiedVertex = 0;
-		if(this.ebo != null) {
-			this.ebo.clear();
-			this.ebo = null;
-		}
+		this.ebo = null;
 	}
 
 	private static int getOrCompileShader(SourceProvider src, ShaderPreprocessor libSrc, Object2IntMap<Id> cache, Id sourceId, int type) {

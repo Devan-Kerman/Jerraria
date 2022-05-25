@@ -185,9 +185,9 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	private int genBufferObject() {
-		BufferReclamation.reclaimBuffers();
+		GLReclamation.reclaimBuffers();
 		int glId = this.glId = glGenBuffers();
-		Cleaner.Cleanable register = BufferReclamation.manageBuffer(this, glId);
+		Cleaner.Cleanable register = GLReclamation.manageBuffer(this, glId);
 		Cleaner.Cleanable release = this.glIdRelease;
 		if(release != null) {
 			release.clean();

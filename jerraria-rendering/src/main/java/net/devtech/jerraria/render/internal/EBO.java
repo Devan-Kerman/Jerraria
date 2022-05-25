@@ -15,19 +15,19 @@ public class EBO {
 
 	public EBO() {
 		this.builder = new BufferBuilder(1, 256);
-		this.glId = glGenBuffers();
+		this.glId = GLReclamation.genBuffer(this);
 		this.currentType = GL_UNSIGNED_BYTE;
 	}
 
 	public EBO(EBO ebo) {
-		this.glId = glGenBuffers();
+		this.glId = GLReclamation.genBuffer(this);
 		this.builder = new BufferBuilder(ebo.builder);
 		this.currentType = ebo.currentType;
 		this.isDirty = true;
 	}
 
 	public EBO(ShapeStrat strat, int elements) {
-		this.glId = glGenBuffers();
+		this.glId = GLReclamation.genBuffer(this);
 		this.builder = new BufferBuilder(strat.builder, elements);
 		this.currentType = strat.getType();
 		this.isDirty = true;
@@ -91,9 +91,5 @@ public class EBO {
 			this.builder = new_;
 			this.currentType = GL_UNSIGNED_SHORT;
 		}
-	}
-
-	public void clear() {
-		glDeleteBuffers(this.glId);
 	}
 }

@@ -34,10 +34,11 @@ public class FragOutput extends GlData {
 	}
 
 	public FragOutput(FragOutput output) {
+		GLReclamation.reclaimBuffers();
 		int buffer = this.frameBuffer = glGenFramebuffers();
 		this.indices = output.indices;
 		this.binds = output.binds.stream().map(OutputBind::new).toList();
-		BareShader.GL_CLEANUP.register(this, () -> glDeleteFramebuffers(buffer));
+		GLReclamation.manageFrameBuffer(this, buffer);
 	}
 
 	@Override
