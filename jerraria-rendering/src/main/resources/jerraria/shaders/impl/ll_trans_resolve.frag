@@ -6,8 +6,6 @@
 #define MAX_SORT 10
 #endif
 
-#define Z_FIGHTING_FIX
-
 layout (early_fragment_tests) in;
 
 layout(rgba32ui) uniform readonly coherent uimageBuffer translucencyBuffer;
@@ -27,13 +25,13 @@ void sort(inout uvec2 fragments[MAX_SORT], int n) {
 			float depthB = uintBitsToFloat(comp.y);
 
 			#ifndef Z_FIGHTING_FIX
-				if (depthA > depthB) {
+				if (depthA < depthB) {
 					fragments[r+1] = comp;
 				} else {
 					break;
 				}
 			#else
-				if (depthA > depthB || (depthA == depthB && comp.x > current.x)) {
+				if (depthA < depthB || (depthA == depthB && comp.x > current.x)) {
 					fragments[r+1] = comp;
 				} else {
 					break;
@@ -52,7 +50,7 @@ vec4 insert(inout uvec2 fragments[MAX_SORT], uvec2 vec) {
 	uvec2 last = fragments[MAX_SORT-1];
 	float depthLast = uintBitsToFloat(last.y);
 	float depthB = uintBitsToFloat(vec.y);
-	if (depthLast > depthB) {
+	if (depthLast < depthB) {
 		return unpackUnorm4x8(vec.x);// if vector is not within Kth closest, tail sort it
 	} else {
 		// sorting heuristic: we assume that render order is *roughly* in the correct order because we can render
@@ -61,7 +59,7 @@ vec4 insert(inout uvec2 fragments[MAX_SORT], uvec2 vec) {
 		for (; i >= 0; i--) {
 			uvec2 current = fragments[i];// current Kth furthest fragment
 			float depthA = uintBitsToFloat(current.y);
-			if (depthB > depthA) {
+			if (depthB < depthA) {
 				fragments[i+1] = fragments[i];
 			} else {
 				break;

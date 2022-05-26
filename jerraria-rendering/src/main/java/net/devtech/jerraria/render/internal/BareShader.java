@@ -1,7 +1,5 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.opengl.GL31.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL31.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL31.glCompileShader;
@@ -130,14 +128,14 @@ public class BareShader {
 		source.left().insert(source.value(), lines);
 		int glId = glCreateShader(type);
 		String[] strings = lines.toArray(String[]::new);
-		System.out.println("=====================================================");
-		System.out.println(String.join("", strings));
-		System.out.println("=====================================================");
 		glShaderSource(glId, strings);
 		glCompileShader(glId);
 		return glId;
 	}
 
+	/**
+	 * call {@link #bindProgram()} first
+	 */
 	public void draw() {
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
@@ -148,6 +146,9 @@ public class BareShader {
 		}
 	}
 
+	/**
+	 * call {@link #bindProgram()} first
+	 */
 	public void drawInstanced(int count) {
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
@@ -212,9 +213,8 @@ public class BareShader {
 		}
 	}
 
-	public int setupDraw(boolean bindVao) {
+	public void bindProgram() {
 		int id = this.id.glId;
-		GLContextState.bindProgram(id);
 		if(id != this.currentGlId) {
 			// this should be rebind not reupload
 			//this.vao.markForReupload();
@@ -224,7 +224,10 @@ public class BareShader {
 			this.uniforms.markForRebind();
 			this.currentGlId = id;
 		}
+		GLContextState.bindProgram(id);
+	}
 
+	public int setupDraw(boolean bindVao) {
 		this.uniforms.upload();
 		if(this.outputs != null) {
 			this.outputs.bind();

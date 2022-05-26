@@ -3,7 +3,6 @@ package net.devtech.jerraria.render.api.translucency;
 import java.util.function.Supplier;
 
 import net.devtech.jerraria.render.api.OpenGLSupport;
-import org.lwjgl.opengl.GL33;
 
 public enum TranslucencyStrategy {
 	/**
@@ -18,7 +17,7 @@ public enum TranslucencyStrategy {
 	 *     - requires gl >4.3
 	 * </p>
 	 */
-	LINKED_LIST,
+	LINKED_LIST(TranslucentShaderType.LINKED_LIST, "430"),
 
 	/**
 	 * <b><a href="https://jcgt.org/published/0002/02/09/">Original Paper</a></b>
@@ -30,11 +29,33 @@ public enum TranslucencyStrategy {
 	 *     - requires gl >4.0
 	 * </p>
 	 */
-	SINGLE_PASS_WEIGHTED_BLENDED;
+	SINGLE_PASS_WEIGHTED_BLENDED(TranslucentShaderType.SINGLE_PASS, "330"),
+
+	DOUBLE_PASS_WEIGHTED_BLENDED(null, "330");
 
 	public static final boolean SUPPORTS_LINKED_LIST = OpenGLSupport.ATOMIC_COUNTERS & OpenGLSupport.IMAGE_LOAD_SIZE & OpenGLSupport.IMAGE_LOAD_STORE;
+	public static final boolean SUPPORTS_SINGLE_PASS_WEIGHTED_BLENDED = OpenGLSupport.BLEND_FUNC_I;
 
-	public static final TranslucencyStrategy RECOMMENDED = SUPPORTS_LINKED_LIST ? LINKED_LIST : SINGLE_PASS_WEIGHTED_BLENDED;
+	public static final TranslucencyStrategy RECOMMENDED;
+
+	static {
+		if(SUPPORTS_LINKED_LIST) {
+			RECOMMENDED = LINKED_LIST;
+		} else if(SUPPORTS_SINGLE_PASS_WEIGHTED_BLENDED) {
+			RECOMMENDED = SINGLE_PASS_WEIGHTED_BLENDED;
+		} else {
+			RECOMMENDED = DOUBLE_PASS_WEIGHTED_BLENDED;
+		}
+	}
+
+	public final TranslucentShaderType shader;
+
+	public final String minGlslVersion;
+
+	TranslucencyStrategy(TranslucentShaderType type_, String version) {
+		this.shader = type_;
+		this.minGlslVersion = version;
+	}
 
 	public <T> T calcIf(TranslucencyStrategy strategy, Supplier<T> value) {
 		return strategy == this ? value.get() : null;

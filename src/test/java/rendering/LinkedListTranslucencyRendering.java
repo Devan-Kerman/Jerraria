@@ -28,7 +28,7 @@ public class LinkedListTranslucencyRendering {
 
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
-			int translucencyBuffer = allocateTranslucencyBuffer(800, 600, 64); // doesn't need to get cleared
+			int translucencyBuffer = allocateTranslucencyBuffer(800, 600, 16); // doesn't need to get cleared
 			RenderThread.addRenderStage(() -> {
 				int imageListHead = allocateImageListHead(802, 602);
 				LLTransRecordShader rendering = LLTransRecordShader.INSTANCE;
@@ -78,7 +78,6 @@ public class LinkedListTranslucencyRendering {
 		int type = DataType.UINT_IMAGE_BUFFER.elementType;
 		glBindBuffer(type, buf);
 		int size = JMath.nearestPowerOf2(width * height * K * 16);
-		System.out.println(size);
 		glBufferData(type, size, GL_STATIC_DRAW);
 		glBindTexture(type, tex);
 		glTexBuffer(type, GL_RGBA32UI, buf);

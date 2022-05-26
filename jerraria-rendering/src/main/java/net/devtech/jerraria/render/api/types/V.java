@@ -74,7 +74,10 @@ public abstract class V<N extends GlValue<?>> extends AbstractGlValue<N> impleme
 		}
 
 		public N ui(long value) {
-			this.data.element(this.element).i(Math.toIntExact(value));
+			if(value > 0xFFFFFFFFL) {
+				throw new IllegalArgumentException(value + " > 4294967295");
+			}
+			this.data.element(this.element).i((int) value);
 			return this.getNext();
 		}
 	}

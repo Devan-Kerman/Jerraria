@@ -54,6 +54,18 @@ public class FragOutput extends GlData {
 		return this.indices.get(name);
 	}
 
+	public void copyDefaultDepth() {
+		int[] dims = new int[4];
+		glGetIntegerv(GL_VIEWPORT, dims);
+		this.copyDepth(0, dims[2], dims[3]);
+	}
+
+	public void copyDepth(int frameBuffer, int width, int height) {
+		GLContextState.bindReadFBO(frameBuffer);
+		GLContextState.bindDrawFBO(this.frameBuffer);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	}
+
 	public void bind() {
 		GLContextState.bindFrameBuffer(this.frameBuffer);
 		for(OutputBind bind : this.binds) {
@@ -64,7 +76,7 @@ public class FragOutput extends GlData {
 	}
 
 	public void flushBuffer() {
-		glBindFramebuffer(GL_FRAMEBUFFER, this.frameBuffer);
+		GLContextState.bindFrameBuffer(this.frameBuffer);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
@@ -103,6 +115,5 @@ public class FragOutput extends GlData {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, this.attachment, this.imageType.elementType, this.texture, 0);
 			this.rebind = false;
 		}
-
 	}
 }

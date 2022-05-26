@@ -9,6 +9,8 @@ public class OpenGLSupport {
 	public static final boolean ATOMIC_COUNTERS_PLUS = greaterThan(4, 6);
 	public static final boolean IMAGE_LOAD_STORE = greaterThan(4, 2);
 	public static final boolean IMAGE_LOAD_SIZE = greaterThan(4, 3);
+	public static final boolean BLEND_FUNC_I = greaterThan(4, 0);
+
 	public static boolean greaterThan(int major, int minor) {
 		return MAJOR_V > major || (MAJOR_V == major && MINOR_V >= minor);
 	}

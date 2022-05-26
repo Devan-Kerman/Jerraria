@@ -28,7 +28,7 @@ public abstract class Uniform implements GlData.BufAdapter {
 	}
 
 	public static Uniform createImage(DataType type, int location, int imageUnit, ImageFormat format) {
-		String name = type.name();
+		String name = type.glslName;
 		int access;
 		if(name.startsWith("writeonly")) {
 			access = GL_WRITE_ONLY;

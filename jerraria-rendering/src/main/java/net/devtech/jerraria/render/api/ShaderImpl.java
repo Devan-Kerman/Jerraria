@@ -19,12 +19,12 @@ import net.devtech.jerraria.util.Id;
  * Implementation of the shader class moved into out to make the main class easier to read
  */
 class ShaderImpl {
-	static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T createShader(
-		Id id, Shader.Copier<T> copyFunction, Shader.Initializer<N, T> initializer) {
+	static <T extends Shader<?>> T createShader(
+		Id id, Shader.Copier<T> copyFunction, Shader.Initializer<T> initializer) {
 		VFBuilderImpl<End> builder = new VFBuilderImpl<>();
 		@SuppressWarnings("unchecked")
 		T shader = initializer.create(id, builder, copyFunction);
-		compile(shader);
+		compile((Shader<?>)shader);
 		return shader;
 	}
 
@@ -52,6 +52,7 @@ class ShaderImpl {
 		if(shader.verticesSinceStrategy == 0)
 			return;
 		validateAndFlushVertex(shader, shader.getStrategy());
+		shader.shader.bindProgram();
 		shader.shader.draw();
 	}
 
@@ -59,6 +60,7 @@ class ShaderImpl {
 		if(shader.verticesSinceStrategy == 0)
 			return;
 		validateAndFlushVertex(shader, shader.getStrategy());
+		shader.shader.bindProgram();
 		shader.shader.drawInstanced(count);
 	}
 
@@ -102,8 +104,7 @@ class ShaderImpl {
 		return type.create(shader.uniformData, null);
 	}
 
-	static FrameOut addOutput(
-		Shader<?> shader, String name, DataType imageType) {
+	static FrameOut addOutput(Shader<?> shader, String name, DataType imageType) {
 		GlValue.Type<FrameOut> out = FrameOut.out(name, imageType);
 		if(!shader.isCopy) {
 			out.validateOutput();

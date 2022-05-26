@@ -429,7 +429,9 @@ public class UniformData extends GlData {
 		}
 
 		public BufferObjectBuilder buffer() {
-			return this.manager.forIndex(this.alloc);
+			BufferObjectBuilder builder = this.manager.forIndex(this.alloc);
+			builder.next();
+			return builder;
 		}
 
 		void upload() {

@@ -61,7 +61,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		ShaderImpl.copyPostInit(this, shader, method);
 	}
 
-	public static <N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> T createShader(Id id, Copier<T> copyFunction, Initializer<N, T> initializer) {
+	public static <T extends Shader<?>> T createShader(Id id, Copier<T> copyFunction, Initializer<T> initializer) {
 		return ShaderImpl.createShader(id, copyFunction, initializer);
 	}
 
@@ -214,7 +214,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		T copy(T old, SCopy method);
 	}
 
-	public interface Initializer<N extends GlValue<?> & GlValue.Attribute, T extends Shader<N>> {
+	public interface Initializer<T extends Shader<?>> {
 		T create(Id id, VFBuilder<End> builder, Object context);
 	}
 }

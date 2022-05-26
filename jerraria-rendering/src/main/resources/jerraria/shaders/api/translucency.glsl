@@ -2,6 +2,7 @@
 	#include jerraria:impl/record_ll_trans
 #endif
 
-#ifdef SINGLE_PASS_WEIGHTED_BLENDED
+#ifdef SINGLE_PASS
 	#include jerraria:impl/record_spwb_trans
 #endif
+

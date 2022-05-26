@@ -54,6 +54,9 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				shader.vert().vec3f(1, 0, 0);
 				shader.vert().vec3f(0, 1, 0);
 				shader.vert().vec3f(1, 1, 0);
+				glDepthFunc(GL_ALWAYS);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				shader.render();
 				shader.deleteVertexData();
 
