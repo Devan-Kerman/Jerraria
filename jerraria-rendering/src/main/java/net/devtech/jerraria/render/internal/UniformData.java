@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.devtech.jerraria.render.api.basic.DataType;
@@ -305,9 +306,6 @@ public class UniformData extends GlData {
 		for(Uniform uniform : this.uniforms) {
 			uniform.reupload = true;
 		}
-		for(UniformBufferBlock group : this.groups) {
-			group.manager.currentlyBoundIndex = -1;
-		}
 	}
 
 	record ActiveUniform(String name, int location, // normal uniforms
@@ -325,8 +323,8 @@ public class UniformData extends GlData {
 		final String name;
 		final GLContextState.IndexedBufferTargetState bind;
 		final BufferObjectBuilder buffer;
+		final Int2ObjectMap<IntList> deferredCopies = new Int2ObjectOpenHashMap<>();
 		int nextNewId;
-		int currentlyBoundIndex = -1;
 
 		UniformBufferBlockManager(String group, int program, int binding, int index, int type) {
 			this.name = group;
@@ -347,7 +345,13 @@ public class UniformData extends GlData {
 			this.postInit();
 		}
 
-		public BufferObjectBuilder forIndex(int alloc) {
+		public BufferObjectBuilder forIndex(int alloc) { // todo deferred copy
+			//IntList remove = this.deferredCopies.remove(alloc);
+			//if(remove != null) {
+			//	for(int i = 0; i < remove.size(); i++) {
+			//		this.buffer.copyFrom(remove.getInt(i), this.buffer, alloc, 1);
+			//	}
+			//}
 			this.buffer.index(alloc);
 			return this.buffer;
 		}
@@ -400,6 +404,8 @@ public class UniformData extends GlData {
 		final IntSet uniformIndices;
 		final int bufferType;
 		final String name;
+
+		// todo deferred copy
 
 		public UniformBufferBlock(UniformBufferBlockManager manager, int bufferType) {
 			this.manager = manager;

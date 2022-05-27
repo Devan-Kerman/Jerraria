@@ -11,6 +11,7 @@ import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL46;
 
 public final class GLContextState {
+	private static final int[][] BUFFER_ARRAYS;
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
 	public static final IntState DEPTH_FUNC = new IntState(GL46::glDepthFunc, GL_LESS);
@@ -18,21 +19,25 @@ public final class GLContextState {
 	public static final EnableState DEPTH_TEST = new EnableState(GL_DEPTH_TEST, false);
 	public static final EnableState BLEND = new EnableState(GL_BLEND, false);
 	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
-
 	public static final BlendStateI[] BLEND_STATE_IS;
-	private static BlendStateI defaultManager;
+	private static final BlendStateI defaultManager;
 
-	static int currentGlId, currentVAO, readFBO, writeFBO;
-	// todo framebuffer
+	static int currentGlId, currentVAO, readFBO, writeFBO, defaultFBO;
+
+	public static void bindDefaultFrameBuffer() {
+		bindFrameBuffer(defaultFBO);
+	}
 
 	public static void bindFrameBuffer(int frameBufferId) {
-		if(readFBO != frameBufferId && writeFBO != frameBufferId) {
+		boolean read = readFBO != frameBufferId;
+		boolean write = writeFBO != frameBufferId;
+		if(read && write) {
 			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 			writeFBO = readFBO = frameBufferId;
-		} else if(readFBO != frameBufferId) {
+		} else if(read) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBufferId);
 			readFBO = frameBufferId;
-		} else if(writeFBO != frameBufferId) {
+		} else if(write) {
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferId);
 			writeFBO = frameBufferId;
 		}
@@ -86,6 +91,8 @@ public final class GLContextState {
 			}
 		} else {
 			diff = defaultManager.src != src || defaultManager.dst != dst;
+			defaultManager.src = src;
+			defaultManager.dst = dst;
 		}
 
 		if(diff) {
@@ -93,13 +100,31 @@ public final class GLContextState {
 		}
 	}
 
+	public static void setDefaultFrameBuffer(int defaultFBO) {
+		GLContextState.defaultFBO = defaultFBO;
+	}
+
+	public static void setAndBindDefaultFrameBuffer(int defaultFBO) {
+		setDefaultFrameBuffer(defaultFBO);
+		bindDefaultFrameBuffer();
+	}
+
+	public static int getDefaultFramebuffer() {
+		return defaultFBO;
+	}
+
+	public static void drawBuffers(int amount) {
+		glDrawBuffers(BUFFER_ARRAYS[amount]);
+	}
+
 	public static final class IntState {
 		final IntConsumer binder;
+		public final int default_;
 		int id;
 
 		public IntState(IntConsumer binder, int default_) {
 			this.binder = binder;
-			this.id = default_;
+			this.default_ = this.id = default_;
 		}
 
 		public void set(int id) {
@@ -113,11 +138,12 @@ public final class GLContextState {
 
 	public static final class BoolState {
 		final BooleanConsumer binder;
+		public final boolean default_;
 		boolean state;
 
 		public BoolState(BooleanConsumer binder, boolean default_) {
 			this.binder = binder;
-			this.state = default_;
+			this.default_ = this.state = default_;
 		}
 
 		public void set(boolean value) {
@@ -131,11 +157,12 @@ public final class GLContextState {
 
 	public static final class EnableState {
 		final int type;
+		public final boolean default_;
 		boolean state;
 
 		public EnableState(int type, boolean default_) {
 			this.type = type;
-			this.state = default_;
+			this.default_ = this.state = default_;
 		}
 
 		public void set(boolean enable) {
@@ -145,13 +172,15 @@ public final class GLContextState {
 				} else {
 					glDisable(this.type);
 				}
+				this.state = enable;
 			}
 		}
 	}
 
 	public static final class BlendStateI {
 		final int index;
-		int src = GL_ONE, dst = GL_ZERO;
+		public final int defaultSrc = GL_ONE, defaultDst = GL_ZERO;
+		int src = this.defaultSrc, dst = this.defaultDst;
 
 		public BlendStateI(int index) {
 			this.index = index;
@@ -209,14 +238,21 @@ public final class GLContextState {
 		}
 	}
 
-
 	static {
 		if(OpenGLSupport.BLEND_FUNC_I) {
 			BLEND_STATE_IS = new BlendStateI[32];
+			defaultManager = null;
 			Arrays.setAll(BLEND_STATE_IS, BlendStateI::new);
 		} else {
 			BLEND_STATE_IS = null;
 			defaultManager = new BlendStateI(0);
+		}
+
+		BUFFER_ARRAYS = new int[32][];
+		for(int i = 0; i < BUFFER_ARRAYS.length; i++) {
+			int[] len = new int[i];
+			Arrays.setAll(len, v -> v + GL_COLOR_ATTACHMENT0);
+			BUFFER_ARRAYS[i] = len;
 		}
 	}
 }

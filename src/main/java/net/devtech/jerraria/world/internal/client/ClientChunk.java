@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import com.google.common.collect.Iterables;
 import net.devtech.jerraria.jerracode.JCTagView;
+import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -109,7 +110,7 @@ public class ClientChunk extends Chunk {
 				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1-y) << World.LOG2_CHUNK_QUADRANT_SIZE);
 			for(BakedClientChunkQuadrantData layer : quadrant.opaqueLayers) {
 				layer.configurator.configureUniforms(copy, layer.vertexData);
-				layer.vertexData.render();
+				layer.vertexData.drawKeep(layer.state);
 			}
 		}
 	}
@@ -186,7 +187,8 @@ public class ClientChunk extends Chunk {
 	record BakedClientChunkQuadrantData<T extends Shader<?>>(AutoBlockLayerInvalidation invalidation,
 	                                                         T vertexData,
 	                                                         ShaderSource.ShaderConfigurator<T> configurator,
-	                                                         DrawMethod primitive) {}
+	                                                         DrawMethod primitive,
+	                                                         BuiltGlState state) {}
 
 	@SuppressWarnings("rawtypes")
 	static final class BakedClientChunkQuadrant {

@@ -105,7 +105,6 @@ public class VAO extends GlData {
 		this.groups = groups;
 		this.elements = vao.elements;
 		this.last = last;
-
 		this.reference = new LazyVAOReference();
 	}
 

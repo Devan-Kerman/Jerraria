@@ -33,6 +33,10 @@ public abstract class GlData {
 		Buf o(Object o);
 	}
 
+	public interface Atomic {
+		long value();
+	}
+
 	public interface BufAdapter extends Buf {
 		@Override
 		default Buf f(float f) {

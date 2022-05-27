@@ -11,7 +11,7 @@ import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class WBTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> {
-	public static final WBTransRecordShader INSTANCE = createShader(
+	public static final WBTransRecordShader INSTANCE = create(
 		Id.create("jerraria", "trans/spwb_trans_record"),
 		WBTransRecordShader::new,
 		WBTransRecordShader::new

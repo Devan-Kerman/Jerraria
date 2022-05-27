@@ -11,7 +11,7 @@ import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
 
 public class LLTransResolveShader extends Shader<Vec3.F<End>> {
-	public static final LLTransResolveShader INSTANCE = createShader(
+	public static final LLTransResolveShader INSTANCE = create(
 		Id.create("jerraria", "impl/ll_trans_resolve"),
 		LLTransResolveShader::new,
 		LLTransResolveShader::new

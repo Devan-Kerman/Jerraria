@@ -23,11 +23,11 @@ public class InstancedRendering {
 					color.vec3f(.5f, .5f, .5f);
 				}
 
-				shader.renderInstanced(32);
+				shader.drawInstancedKeep(32);
 				shader.deleteVertexData();
 
 				InstancedSolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH);
-				copy.renderInstanced(32);
+				copy.drawInstancedKeep(32);
 
 				for(Vec3.F<?> offset : shader.offsets) {
 					offset.vec3f((float) Math.random(), (float) Math.random(), 0);
@@ -38,7 +38,7 @@ public class InstancedRendering {
 				}
 
 				shader.drawRect(mat, 0, 0, .1f, .1f);
-				shader.renderInstanced(32);
+				shader.drawInstancedKeep(32);
 				shader.deleteVertexData();
 			}, 10);
 			return null;

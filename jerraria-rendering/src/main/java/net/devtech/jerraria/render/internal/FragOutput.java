@@ -14,7 +14,7 @@ import net.devtech.jerraria.util.Id;
 
 public class FragOutput extends GlData {
 	final int frameBuffer;
-	final Map<String, OutputIndex> indices;
+	public final Map<String, OutputIndex> indices;
 	final List<OutputBind> binds;
 
 	public FragOutput(Map<String, BareShader.Field> outputs, int program, Id id) {
@@ -29,13 +29,14 @@ public class FragOutput extends GlData {
 			}
 			binds.add(new OutputBind(value.type(), GL_COLOR_ATTACHMENT0 + location));
 		}
+
 		this.frameBuffer = buffer;
 		this.indices = indices;
 		this.binds = binds;
 	}
 
 	public FragOutput(FragOutput output) {
-		GLReclamation.reclaimBuffers();
+		GLReclamation.reclaimFrameBuffers();
 		int buffer = this.frameBuffer = glGenFramebuffers();
 		this.indices = output.indices;
 		this.binds = output.binds.stream().map(OutputBind::new).toList();
@@ -73,6 +74,11 @@ public class FragOutput extends GlData {
 				bind.attach();
 			}
 		}
+		GLContextState.drawBuffers(this.binds.size());
+		int i = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (i != GL_FRAMEBUFFER_COMPLETE) {
+			throw new IllegalStateException("Framebuffer is incomplete! Err: " + i);
+		}
 	}
 
 	public void flushBuffer() {
@@ -86,7 +92,6 @@ public class FragOutput extends GlData {
 		final DataType imageType;
 		final int attachment;
 		boolean rebind;
-		boolean clear;
 		int texture;
 
 		public OutputBind(DataType type, int attachment) {
@@ -96,18 +101,13 @@ public class FragOutput extends GlData {
 
 		public OutputBind(OutputBind outputBind) {
 			this(outputBind.imageType, outputBind.attachment);
+			this.texture = outputBind.texture;
 			this.rebind = true;
 		}
 
 		@Override
 		public Buf i(int i) {
 			this.texture = i;
-			return this;
-		}
-
-		@Override
-		public Buf bool(boolean b) {
-			this.clear = b;
 			return this;
 		}
 

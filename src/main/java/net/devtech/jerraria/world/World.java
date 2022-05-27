@@ -94,7 +94,7 @@ public interface World {
 
 	/**
 	 * These are very tricky to use, they allow for permanent linking between chunks, they do not keep track of redundant links, therefore
-	 *  if you call link on the same chunk 4 times, u must call unlink {@link #getUnsafeUnlinkingAccess(int, int)} on that chunk 4 times as well.
+	 *  if you exec link on the same chunk 4 times, u must exec unlink {@link #getUnsafeUnlinkingAccess(int, int)} on that chunk 4 times as well.
 	 *
 	 * @param startChunkX the x <b>chunk</b> coordinate that the linking should start from
 	 *  you must use the exact same value in {{@link #getUnsafeUnlinkingAccess(int, int)}}!

@@ -46,7 +46,7 @@ public abstract class GlValue<N extends GlValue<?>> {
 	}
 
 	/**
-	 * @param type A GlValueFactory, this should call your constructor
+	 * @param type A GlValueFactory, this should exec your constructor
 	 * @param dataType the type of this AbstractGlValue, this is the glsl type + normalized variants and the like.
 	 * @param name the full path of the uniform or vertex attribute in the shader
 	 * @param groupName <p>&#09;If this is used as a vertex attribute, the group name simply identifies the buffer the

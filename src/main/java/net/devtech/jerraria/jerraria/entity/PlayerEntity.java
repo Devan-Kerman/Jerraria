@@ -2,10 +2,7 @@ package net.devtech.jerraria.jerraria.entity;
 
 import java.util.List;
 
-import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
-import net.devtech.jerraria.render.textures.Texture;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.util.math.Rectangle;
@@ -67,7 +64,7 @@ public class PlayerEntity extends BaseEntity {
 		public void renderEntity(Matrix3f matrix) {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
 			shader.drawRect(matrix, 10, 10, 10, 10, 0xFFFFFFFF);
-			shader.renderAndDelete();
+			shader.draw();
 		}
 	}
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
-import net.devtech.jerraria.render.internal.ShaderPreprocessor;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.internal.ShaderManager;
@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL46;
 import org.lwjgl.system.MemoryUtil;
 
 class ClientInit {
@@ -41,15 +40,32 @@ class ClientInit {
 	static boolean init(VirtualFile.Directory directory) {
 		// handled by static block
 		titleTextCollection = readSplashText(directory, "boot/title.txt");
-		GLFW.glfwInit();
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4);
-		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 5);
-		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
-
 		String title = titleTextCollection.next();
 		ClientInit.title = title;
+		GLFW.glfwInit();
 
-		long window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
+		int[][] maxGlVersions = {{4, 6, 0}, {3, 3, 3}};
+		long window = MemoryUtil.NULL;
+		outer:
+		for(int[] version : maxGlVersions) {
+			int major = version[0];
+			GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, major);
+			int minMinor = version[2];
+			for(int minor = version[1]; minor >= minMinor; minor--) {
+				GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, minor);
+				GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+				window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
+				if(window != MemoryUtil.NULL) {
+					System.out.println("Using OpenGL " + major + "." + minor);
+					break outer;
+				}
+			}
+		}
+
+		if(window == MemoryUtil.NULL) {
+			throw new IllegalStateException("Computer must support OpenGL 3.3 or higher to play Jerraria!");
+		}
+
 		glMainWindow = window;
 		GLFW.glfwMakeContextCurrent(window);
 		GLFW.glfwSwapInterval(1);
@@ -110,11 +126,12 @@ class ClientInit {
 		// loading screen
 		boolean exit;
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
+			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			Matrix3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
-			box.renderAndDelete();
-			text.renderAndDelete();
+			box.draw();
+			text.draw();
 			for(int i = renderThreadTasks.size() - 1; i >= 0; i--) {
 				renderThreadTasks.remove(i).run();
 			}

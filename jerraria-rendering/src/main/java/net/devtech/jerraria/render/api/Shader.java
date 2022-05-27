@@ -16,6 +16,7 @@ import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
+import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
@@ -29,11 +30,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	// todo ticking for Instancer
 	// todo custom invalidation for Instancer
 	// todo more flexible "allocation" of instances
-	// todo avoid storing VAO/UBO data in CPU memory
 	// todo effecient copy commands (lazily evaluated, and can operate on whole ranges)
 
 	public final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();
+	RenderHandler handler;
 	List<GlValue.Type<?>> uniforms, outputs;
 	GlData uniformData, outData;
 	VFBuilderImpl<T> builder;
@@ -50,7 +51,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	 */
 	protected Shader(Id id, VFBuilder<T> builder, Object context) {
 		this.id = id;
-		ShaderImpl.postInit(this, (VFBuilderImpl<T>) builder, (Copier<Shader<?>>) context);
+		ShaderImpl.postInit(this, (VFBuilderImpl<T>) builder, (ShaderImpl.ShaderInitContext) context);
 	}
 
 	/**
@@ -61,12 +62,12 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 		ShaderImpl.copyPostInit(this, shader, method);
 	}
 
-	public static <T extends Shader<?>> T createShader(Id id, Copier<T> copyFunction, Initializer<T> initializer) {
-		return ShaderImpl.createShader(id, copyFunction, initializer);
+	public static <T extends Shader<?>> T create(Id id, Copier<T> copyFunction, Initializer<T> initializer) {
+		return ShaderImpl.createShader(id, copyFunction, initializer, RenderHandler.INSTANCE);
 	}
 
 	/**
-	 * Starts writing the next vertex data, you must call all the GlValues in the chain before calling this again!
+	 * Starts writing the next vertex data, you must exec all the GlValues in the chain before calling this again!
 	 *
 	 * @return T the vertex configurator
 	 * @see GlValue#getNext()
@@ -87,30 +88,48 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	/**
-	 * Bind the shader and render its contents
+	 * Bind the shader and render and retain its contents to be redrawn another time.
+	 *
+	 * @param state the gl state to use prior to drawing
+	 * @see #draw(BuiltGlState)
 	 */
-	public final void render() {
-		this.preRender(RenderCall.RENDER);
-		ShaderImpl.renderNoFlush(this);
-		this.postRender(RenderCall.RENDER);
+	public final void drawKeep(BuiltGlState state) {
+		this.preRender(RenderCall.DRAW);
+		ShaderImpl.drawKeep(this, state);
+		this.postRender(RenderCall.DRAW);
+	}
+
+	public final void drawKeep() {
+		this.drawKeep(this.handler.defaultGlState());
 	}
 
 	/**
-	 * Bind the shader and render its contents X times using opengl's instanced rendering
+	 * Bind the shader and render its contents X times using opengl's instanced rendering and retain its contents to be redrawn another time.
 	 */
-	public final void renderInstanced(int count) {
-		this.preRender(RenderCall.RENDER_INSTANCED);
-		ShaderImpl.renderInstancedNoFlush(this, count);
-		this.postRender(RenderCall.RENDER_INSTANCED);
+	public final void drawInstancedKeep(BuiltGlState state, int count) {
+		this.preRender(RenderCall.DRAW_INSTANCED);
+		ShaderImpl.drawInstancedKeep(this, state, count);
+		this.postRender(RenderCall.DRAW_INSTANCED);
+	}
+
+	public final void drawInstancedKeep(int instances) {
+		this.drawInstancedKeep(this.handler.defaultGlState(), instances);
 	}
 
 	/**
 	 * Bind the shader, render its contents, and then delete all it's vertex data
 	 */
-	public final void renderAndDelete() {
-		this.preRender(RenderCall.RENDER_AND_DELETE);
-		ShaderImpl.renderAndFlush(this);
-		this.postRender(RenderCall.RENDER_AND_DELETE);
+	public final void draw(BuiltGlState state) {
+		this.drawKeep(state);
+		this.deleteVertexData();
+	}
+
+	public final void draw() {
+		this.draw(this.handler.defaultGlState());
+	}
+
+	public BuiltGlState defaultState() {
+		return this.handler.defaultGlState();
 	}
 
 	public static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform(U from, U to) {
@@ -118,7 +137,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public final void deleteVertexData() {
-		ShaderImpl.flushVertex(this);
+		this.shader.deleteVertexData();
+		this.verticesSinceStrategy = 0;
 	}
 
 	/**
@@ -141,7 +161,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	@ApiStatus.Internal
 	public BareShader getShader() {
-		return shader;
+		return this.shader;
+	}
+
+	public void flushFrameBuffer() { // todo SETTINGS
+		ShaderImpl.emptyFrameBuffer(this);
 	}
 
 	protected void preRender(RenderCall call) {
@@ -163,10 +187,6 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 
 	protected final FrameOut imageOutput(String name) {
 		return this.addOutput(name, DataType.TEXTURE_2D);
-	}
-
-	public void flushFrameBuffer() {
-		ShaderImpl.emptyFrameBuffer(this);
 	}
 
 	/**
@@ -199,13 +219,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	protected enum RenderCall {
-		RENDER(false, false), RENDER_INSTANCED(false, true), RENDER_AND_DELETE(true, false);
+		DRAW(false), DRAW_INSTANCED(true);
 
-		public final boolean doesDelete;
 		public final boolean isInstanced;
 
-		RenderCall(boolean delete, boolean instanced) {
-			this.doesDelete = delete;
+		RenderCall(boolean instanced) {
 			this.isInstanced = instanced;
 		}
 	}

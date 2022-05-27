@@ -1,8 +1,12 @@
-package net.devtech.jerraria.render.api.translucency;
+package net.devtech.jerraria.render.internal.renderhandler;
 
 import java.util.function.Supplier;
 
 import net.devtech.jerraria.render.api.OpenGLSupport;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.AbstractTranslucencyRenderHandler;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.LinkedListTranslucentRenderer;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.DoublePassWeightedRenderer;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.WeightedTranslucentRenderer;
 
 public enum TranslucencyStrategy {
 	/**
@@ -17,7 +21,7 @@ public enum TranslucencyStrategy {
 	 *     - requires gl >4.3
 	 * </p>
 	 */
-	LINKED_LIST(TranslucentShaderType.LINKED_LIST, "430"),
+	LINKED_LIST("430"),
 
 	/**
 	 * <b><a href="https://jcgt.org/published/0002/02/09/">Original Paper</a></b>
@@ -29,9 +33,9 @@ public enum TranslucencyStrategy {
 	 *     - requires gl >4.0
 	 * </p>
 	 */
-	SINGLE_PASS_WEIGHTED_BLENDED(TranslucentShaderType.SINGLE_PASS, "330"),
+	SINGLE_PASS_WEIGHTED_BLENDED("330"),
 
-	DOUBLE_PASS_WEIGHTED_BLENDED(null, "330");
+	DOUBLE_PASS_WEIGHTED_BLENDED("330");
 
 	public static final boolean SUPPORTS_LINKED_LIST = OpenGLSupport.ATOMIC_COUNTERS & OpenGLSupport.IMAGE_LOAD_SIZE & OpenGLSupport.IMAGE_LOAD_STORE;
 	public static final boolean SUPPORTS_SINGLE_PASS_WEIGHTED_BLENDED = OpenGLSupport.BLEND_FUNC_I;
@@ -48,12 +52,17 @@ public enum TranslucencyStrategy {
 		}
 	}
 
-	public final TranslucentShaderType shader;
+	public static AbstractTranslucencyRenderHandler createTranslucentRenderer(TranslucencyStrategy strategy) {
+		return switch(strategy) {
+			case LINKED_LIST -> new LinkedListTranslucentRenderer();
+			case SINGLE_PASS_WEIGHTED_BLENDED -> new WeightedTranslucentRenderer();
+			case DOUBLE_PASS_WEIGHTED_BLENDED -> new DoublePassWeightedRenderer();
+		};
+	}
 
 	public final String minGlslVersion;
 
-	TranslucencyStrategy(TranslucentShaderType type_, String version) {
-		this.shader = type_;
+	TranslucencyStrategy(String version) {
 		this.minGlslVersion = version;
 	}
 

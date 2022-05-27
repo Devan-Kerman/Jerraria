@@ -5,16 +5,14 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
-import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Tex;
-import net.devtech.jerraria.render.api.types.V;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class TestSolidColorShader extends Shader<Vec3.F<End>> {
-	public static final TestSolidColorShader INSTANCE = createShader(Id.create("jerraria", "test_solid_color"), TestSolidColorShader::new, TestSolidColorShader::new);
+	public static final TestSolidColorShader INSTANCE = create(Id.create("jerraria", "test_solid_color"), TestSolidColorShader::new, TestSolidColorShader::new);
 
 	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 

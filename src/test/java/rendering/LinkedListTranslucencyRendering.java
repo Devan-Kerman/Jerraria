@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL42.glTexStorage2D;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.shaders.LLTransRecordShader;
 import net.devtech.jerraria.render.shaders.LLTransResolveShader;
 import net.devtech.jerraria.util.math.JMath;
@@ -45,20 +46,20 @@ public class LinkedListTranslucencyRendering {
 				}
 
 				// render to translucency buffer
-				rendering.render();
+				rendering.drawKeep();
 				rendering.deleteVertexData();
 				glMemoryBarrier(-1);
+				System.out.println(rendering.counter.getValue());
 
 				LLTransResolveShader shader = LLTransResolveShader.INSTANCE;
 				shader.translucencyBuffer.tex(translucencyBuffer);
 				shader.imgListHead.tex(imageListHead);
+				shader.strategy(AutoStrat.QUADS);
 				shader.vert().vec3f(0, 0, 0);
 				shader.vert().vec3f(0, 1, 0);
-				shader.vert().vec3f(1, 0, 0);
-				shader.vert().vec3f(1, 0, 0);
-				shader.vert().vec3f(0, 1, 0);
 				shader.vert().vec3f(1, 1, 0);
-				shader.render();
+				shader.vert().vec3f(1, 0, 0);
+				shader.drawKeep();
 				shader.deleteVertexData();
 
 				try {

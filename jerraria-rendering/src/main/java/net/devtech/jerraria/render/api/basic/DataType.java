@@ -297,7 +297,7 @@ public enum DataType {
 	static {
 		for(DataType value : DataType.values()) {
 			COMPATIBLE_DATA_TYPES.computeIfAbsent(value.glslType, i -> new HashSet<>()).add(value);
-			if(!OpenGLSupport.IMAGE_LOAD_STORE) {
+			if(!OpenGLSupport.IMAGE_LOAD_STORE && value.isImage) {
 				UNSUPPORTED_TYPES.add(value);
 			}
 		}

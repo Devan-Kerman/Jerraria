@@ -1,86 +1,52 @@
 package net.devtech.jerraria.world.tile.render;
 
+import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.tile.render.ShaderSource.ShaderConfigurator;
 
-public record ShaderKey<T extends Shader<?>>(Id id,
+public record ShaderKey<T extends Shader<?>>(
                                              ShaderConfigurator<? super T> config,
                                              T shader,
                                              SCopy copy,
                                              AutoBlockLayerInvalidation invalidation,
-                                             DrawMethod primitive) {
-	public ShaderKey(
-		Id id,
-		ShaderConfigurator<? super T> config,
-		T shader,
-		AutoBlockLayerInvalidation invalidation,
-		DrawMethod primitive) {
-		this(id, config, shader, SCopy.PRESERVE_NEITHER, invalidation, primitive);
+                                             DrawMethod primitive,
+                                             BuiltGlState state) {
+
+	public ShaderKey(ShaderConfigurator<? super T> config, T shader) {
+		this(
+			config,
+			shader,
+			SCopy.PRESERVE_NEITHER,
+			AutoBlockLayerInvalidation.ON_BLOCK_UPDATE,
+			DrawMethod.TRIANGLE,
+			BuiltGlState.DEFAULT
+		);
 	}
 
-	public ShaderKey(
-		Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		this(id, config, shader, copy, invalidation, DrawMethod.TRIANGLE);
+	public ShaderKey<T> withConfigurator(ShaderConfigurator<? super T> config) {
+		return new ShaderKey<>(config, this.shader, this.copy, this.invalidation, this.primitive, this.state);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy, DrawMethod primitive) {
-		this(id, config, shader, copy, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE, primitive);
+	public <S extends Shader<?>> ShaderKey<S> withShader(S shader, ShaderConfigurator<? super S> config) {
+		return new ShaderKey<>(config, shader, this.copy, this.invalidation, this.primitive, this.state);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, SCopy copy) {
-		this(id, config, shader, copy, DrawMethod.TRIANGLE);
+	public ShaderKey<T> withCopy(SCopy copy) {
+		return new ShaderKey<>(this.config, this.shader, copy, this.invalidation, this.primitive, this.state);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, DrawMethod primitive) {
-		this(id, config, shader, SCopy.PRESERVE_NEITHER, primitive);
+	public ShaderKey<T> withInvalidation(AutoBlockLayerInvalidation invalidation) {
+		return new ShaderKey<>(this.config, this.shader, this.copy, invalidation, this.primitive, this.state);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader, AutoBlockLayerInvalidation invalidation) {
-		this(id, config, shader, SCopy.PRESERVE_NEITHER, invalidation);
+	public ShaderKey<T> withMethod(DrawMethod primitive) {
+		return new ShaderKey<>(this.config, this.shader, this.copy, this.invalidation, primitive, this.state);
 	}
 
-	public ShaderKey(Id id, ShaderConfigurator<? super T> config, T shader) {
-		this(id, config, shader, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
+	public ShaderKey<T> withState(BuiltGlState state) {
+		return new ShaderKey<>(this.config, this.shader, this.copy, this.invalidation, this.primitive, state);
 	}
 
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation, DrawMethod drawMethod) {
-		return new ShaderKey<T>(id, shader, shader, copy, invalidation, drawMethod);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, AutoBlockLayerInvalidation invalidation, DrawMethod drawMethod) {
-		return key(id, shader, SCopy.PRESERVE_NEITHER, invalidation, drawMethod);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, SCopy copy, AutoBlockLayerInvalidation invalidation) {
-		return key(id, shader, copy, invalidation, DrawMethod.TRIANGLE);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, SCopy copy, DrawMethod prim) {
-		return key(id, shader, copy, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE, prim);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(Id id, T shader, SCopy copy) {
-		return key(id, shader, copy, DrawMethod.TRIANGLE);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, DrawMethod drawMethod) {
-		return key(id, shader, SCopy.PRESERVE_NEITHER, drawMethod);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(
-		Id id, T shader, AutoBlockLayerInvalidation invalidation) {
-		return key(id, shader, SCopy.PRESERVE_NEITHER, invalidation);
-	}
-
-	public static <T extends Shader<?> & ShaderConfigurator<? super T>> ShaderKey<T> key(Id id, T shader) {
-		return key(id, shader, AutoBlockLayerInvalidation.ON_BLOCK_UPDATE);
-	}
 }

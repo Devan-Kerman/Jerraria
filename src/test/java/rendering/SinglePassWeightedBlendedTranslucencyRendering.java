@@ -4,9 +4,11 @@ import static org.lwjgl.opengl.GL42.*;
 
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
+import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.shaders.TestTranslucentShader;
-import net.devtech.jerraria.render.shaders.WBTransRecordShader;
+import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;
 import net.devtech.jerraria.util.math.Matrix3f;
 
@@ -17,9 +19,9 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
-			int revealage = allocateTexture(800, 600, GL_R32F); // doesn't need to get cleared
-			int accum = allocateTexture(800, 600, GL_RGBA32F);
 			RenderThread.addRenderStage(() -> {
+				int revealage = allocateTexture(800, 600, GL_R32F); // doesn't need to get cleared
+				int accum = allocateTexture(800, 600, GL_RGBA32F);
 				TestTranslucentShader rendering = TestTranslucentShader.INSTANCE;
 				rendering.singlePassWeighted.accum.tex(accum);
 				rendering.singlePassWeighted.reveal.tex(revealage);
@@ -33,35 +35,37 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				}
 
 				// render to translucency buffer
-				glEnable(GL_DEPTH_TEST);
-				glDepthFunc(GL_LESS);
-				glDepthMask(false);
-				glEnable(GL_BLEND);
-				glBlendFunci(0, GL_ONE, GL_ONE); // accumulation blend target
-				glBlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR); // revealge blend target
-				glBlendEquation(GL_FUNC_ADD);
+				//GLContextState.DEPTH_TEST.set(true);
+				//GLContextState.DEPTH_FUNC.set(GL_LESS);
+				//GLContextState.DEPTH_MASK.set(false);
+				//GLContextState.BLEND.set(true);
+				//GLContextState.BLEND_STATE_IS[0].set(GL_ONE, GL_ONE);
+				//GLContextState.BLEND_STATE_IS[1].set(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+				//GLContextState.BLEND_EQUATION.set(GL_FUNC_ADD);
 
-				rendering.render();
-				rendering.deleteVertexData();
+				rendering.draw(TranslucentShaderType.SINGLE_PASS.defaultState);
 				glMemoryBarrier(-1);
 
 				WBTransResolveShader shader = WBTransResolveShader.INSTANCE;
 				shader.reveal.tex(revealage);
 				shader.accum.tex(accum);
+				shader.strategy(AutoStrat.QUADS);
 				shader.vert().vec3f(0, 0, 0);
 				shader.vert().vec3f(0, 1, 0);
-				shader.vert().vec3f(1, 0, 0);
-				shader.vert().vec3f(1, 0, 0);
-				shader.vert().vec3f(0, 1, 0);
 				shader.vert().vec3f(1, 1, 0);
-				glDepthFunc(GL_ALWAYS);
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				shader.render();
-				shader.deleteVertexData();
+				shader.vert().vec3f(1, 0, 0);
+				//GLContextState.DEPTH_FUNC.set(GL_ALWAYS);
+				//GLContextState.BLEND.set(true);
+				//GLContextState.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				shader.draw(GLStateBuilder
+					.builder()
+					.depthFunc(GL_ALWAYS)
+					.blend(true)
+					.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+					.build());
 
 				try {
-					Thread.sleep(100);
+					Thread.sleep(1000);
 				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}

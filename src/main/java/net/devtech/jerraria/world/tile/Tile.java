@@ -103,8 +103,8 @@ public abstract class Tile implements IdentifiedObject {
 			throw new IllegalStateException(
 				"""
 					Cannot add property after blockstate cache has been initialized,
-					\tdo not call getDefaultState/getProperties before addProperty
-					\tand only call addProperty in your constructor (or field init)""",
+					\tdo not exec getDefaultState/getProperties before addProperty
+					\tand only exec addProperty in your constructor (or field init)""",
 				this.variantTableInitializationStacktrace);
 		}
 		String name = property.getName();
@@ -239,7 +239,7 @@ public abstract class Tile implements IdentifiedObject {
 
 	static final class TileVariantCacheInitializationStackTrace extends RuntimeException {
 		public TileVariantCacheInitializationStackTrace(String methodName) {
-			super("call to method " + methodName + " forced initialization of TileVariant table");
+			super("exec to method " + methodName + " forced initialization of TileVariant table");
 		}
 	}
 

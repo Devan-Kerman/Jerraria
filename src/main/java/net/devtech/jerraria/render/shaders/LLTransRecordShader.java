@@ -5,23 +5,22 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.api.types.AtomicCounter;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Tex;
-import net.devtech.jerraria.render.api.types.V;
-import net.devtech.jerraria.render.api.types.Vec2;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class LLTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> { // vertex attributes
-	public static final LLTransRecordShader INSTANCE = createShader(
+	public static final LLTransRecordShader INSTANCE = create(
 		Id.create("jerraria", "trans/ll_trans_record"),
 		LLTransRecordShader::new,
 		LLTransRecordShader::new
 	);
 
-	public final V.UI<?> counter = this.uni(V.atomic_ui("counter"));
+	public final AtomicCounter counter = this.uni(AtomicCounter.atomic_ui("counter"));
 	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 	public final Tex translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 

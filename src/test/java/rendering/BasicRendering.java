@@ -16,7 +16,7 @@ public class BasicRendering {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
 			Matrix3f mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
-			RenderThread.addRenderStage(shader::render, 10);
+			RenderThread.addRenderStage(shader::drawKeep, 10);
 			return null;
 		});
 	}

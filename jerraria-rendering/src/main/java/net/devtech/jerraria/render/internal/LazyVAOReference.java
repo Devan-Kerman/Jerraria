@@ -39,7 +39,7 @@ class LazyVAOReference {
 
 		GLContextState.bindVAO(id);
 		for(VertexBufferObject group : groups) {
-			if(group.bindAndUpload()) {
+			if(gen || group.bindAndUpload()) {
 				for(GlData.Element v : group.elements) {
 					ElementImpl value = (ElementImpl) v;
 					DataType type = value.type();
@@ -51,7 +51,6 @@ class LazyVAOReference {
 						group.byteLength,
 						value.byteOffset()
 					);
-					//glEnableVertexAttribArray(value.location());
 				}
 			}
 		}

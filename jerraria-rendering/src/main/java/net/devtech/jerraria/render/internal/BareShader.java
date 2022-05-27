@@ -15,6 +15,7 @@ import java.util.Map;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.basic.DataType;
@@ -134,9 +135,10 @@ public class BareShader {
 	}
 
 	/**
-	 * call {@link #bindProgram()} first
+	 * exec {@link #bindProgram()} first
 	 */
-	public void draw() {
+	public void drawKeep(BuiltGlState state) {
+		state.apply();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
 		if(type == -1) {
@@ -147,9 +149,10 @@ public class BareShader {
 	}
 
 	/**
-	 * call {@link #bindProgram()} first
+	 * exec {@link #bindProgram()} first
 	 */
-	public void drawInstanced(int count) {
+	public void drawInstancedKeep(BuiltGlState state, int count) {
+		state.apply();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
 		if(type == -1) {
@@ -225,16 +228,15 @@ public class BareShader {
 			this.currentGlId = id;
 		}
 		GLContextState.bindProgram(id);
+		if(this.outputs != null) {
+			this.outputs.bind();
+		} else {
+			GLContextState.bindDefaultFrameBuffer();
+		}
 	}
 
 	public int setupDraw(boolean bindVao) {
 		this.uniforms.upload();
-		if(this.outputs != null) {
-			this.outputs.bind();
-		} else {
-			GLContextState.bindFrameBuffer(0);
-		}
-
 		if(bindVao) {
 			this.vao.bind();
 			if(this.ebo == null && this.strategy instanceof AutoElementFamily f && f.byte_ instanceof Seq) {

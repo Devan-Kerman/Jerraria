@@ -29,7 +29,7 @@ public class AtomicCounterRendering {
 			Matrix3f mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
 			RenderThread.addRenderStage(() -> {
-				shader.render();
+				shader.drawKeep();
 				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}, 10);
 			return null;

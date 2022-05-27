@@ -6,13 +6,11 @@ import java.lang.ref.Cleaner;
 import java.nio.ByteBuffer;
 import java.util.function.IntConsumer;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.math.JMath;
 
+// todo lazy copy for translucency api!
 public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
-	private static final IntList RECLAIMED_BUFFERS = new IntArrayList();
 	private final IntConsumer binder;
 	private final int target;
 	private final int componentLength;
@@ -25,7 +23,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public BufferObjectBuilder(BufferObjectBuilder builder, int copyCount) {
-		this(builder.binder, builder.target, builder.componentLength, 1024);
+		this(builder.binder, builder.target, builder.componentLength, JMath.nearestPowerOf2(copyCount));
 		if(builder.totalCount() < copyCount) {
 			throw new IllegalArgumentException("totalCount is " + builder.totalCount() + " but requested to copy " + copyCount + " elements!");
 		}
@@ -61,17 +59,17 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		this.copyFrom(this.totalCount(), builder, off, len);
 	}
 
-	public void copyFrom(int index, BufferObjectBuilder builder, int off, int objects) {
+	public void copyFrom(int index, BufferObjectBuilder src, int off, int objects) {
 		if(objects > 0) {
-			if(builder != this) {
-				builder.upload(false);
+			if(src != this) {
+				src.upload(false);
 			}
 			this.resize((index + objects) * this.componentLength);
 			this.upload(false); // flush
 
 			int read = GL_COPY_WRITE_BUFFER;
-			if(builder != this) {
-				glBindBuffer(GL_COPY_READ_BUFFER, builder.glId);
+			if(src != this) {
+				glBindBuffer(GL_COPY_READ_BUFFER, src.glId);
 				read = GL_COPY_READ_BUFFER;
 			}
 			glBindBuffer(GL_COPY_WRITE_BUFFER, this.glId);
@@ -110,6 +108,14 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	public void reset() {
 		this.objectIndex = 0;
 		this.storedCount = 0;
+	}
+
+	@SuppressWarnings("IntegerMultiplicationImplicitCastToLong")
+	public long read() {
+		GLContextState.UNIFORM_BUFFER.bindBuffer(this.glId);
+		int[] buf = new int[1];
+		glGetBufferSubData(GL_UNIFORM_BUFFER, this.objectIndex*this.componentLength, buf);
+		return buf[0] & 0xFFFFFFFFL;
 	}
 
 	public boolean upload(boolean forceBind) {
@@ -163,8 +169,10 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public void index(int count) {
-		this.upload(false); // flush existing
-		this.objectIndex = count;
+		if(this.objectIndex != count) {
+			this.upload(false); // flush existing
+			this.objectIndex = count;
+		}
 	}
 
 	public void next() {

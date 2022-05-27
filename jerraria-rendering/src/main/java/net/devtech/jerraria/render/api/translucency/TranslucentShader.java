@@ -6,6 +6,7 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.api.types.AtomicCounter;
 import net.devtech.jerraria.render.api.types.FrameOut;
 import net.devtech.jerraria.render.api.types.Tex;
 import net.devtech.jerraria.render.api.types.V;
@@ -14,9 +15,12 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A shader that can use multiple methods of translucency
+ * @see TranslucencyRenderer
  */
 public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute> extends Shader<T> {
-	public final TranslucentShaderType strategy;
+	public final TranslucentShaderType type;
+
+	TranslucentShader<?> secondPass;
 
 	@Nullable
 	public final LinkedList linkedListUniforms;
@@ -31,7 +35,7 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 	public final DoublePassWeightedB doublePassWeightedB;
 
 	public final class LinkedList {
-		public final V.UI<?> counter = uni(V.atomic_ui("counter"));
+		public final AtomicCounter counter = uni(AtomicCounter.atomic_ui("counter"));
 		public final Tex imgListHead = uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 		public final Tex translucencyBuffer = uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 	}
@@ -51,7 +55,7 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 
 	protected TranslucentShader(Id id, VFBuilder<T> builder, Object context, TranslucentShaderType strat) {
 		super(id, builder, context);
-		this.strategy = strat;
+		this.type = strat;
 		this.linkedListUniforms = strat.calcIf(TranslucentShaderType.LINKED_LIST, LinkedList::new);
 		this.singlePassWeighted = strat.calcIf(TranslucentShaderType.SINGLE_PASS, SinglePassWeighted::new);
 		this.doublePassWeightedA = strat.calcIf(TranslucentShaderType.DOUBLE_PASS_A, DoublePassWeightedA::new);
@@ -60,16 +64,24 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 		this.putParameter("version", strat.glslVers);
 	}
 
-	protected TranslucentShader(
-		Shader<T> shader, SCopy method, TranslucentShaderType strat) {
+	protected TranslucentShader(Shader<T> shader, SCopy method, TranslucentShaderType strat) {
 		super(shader, method);
-		if(method.preserveUniforms && shader instanceof TranslucentShader t && t.strategy != strat) {
-			throw new UnsupportedOperationException("Cannot convert between " + strat + " and " + t.strategy);
+		if(method.preserveUniforms && shader instanceof TranslucentShader t && t.type != strat) {
+			throw new UnsupportedOperationException("Cannot convert between " + strat + " and " + t.type);
 		}
-		this.strategy = strat;
+		this.type = strat;
 		this.linkedListUniforms = strat.calcIf(TranslucentShaderType.LINKED_LIST, LinkedList::new);
 		this.singlePassWeighted = strat.calcIf(TranslucentShaderType.SINGLE_PASS, SinglePassWeighted::new);
 		this.doublePassWeightedA = strat.calcIf(TranslucentShaderType.DOUBLE_PASS_A, DoublePassWeightedA::new);
 		this.doublePassWeightedB = strat.calcIf(TranslucentShaderType.DOUBLE_PASS_B, DoublePassWeightedB::new);
+		this.secondPass = ((TranslucentShader<?>) shader).secondPass;
+	}
+
+	@Override
+	public void flushFrameBuffer() {
+		super.flushFrameBuffer();
+		if(this.secondPass != null) {
+			this.secondPass.flushFrameBuffer();
+		}
 	}
 }

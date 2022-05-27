@@ -2,8 +2,8 @@
 
 in vec4 oColor;
 
-out vec4 accum;
-out float reveal;
+layout(location=0) out vec4 accum;
+layout(location=1) out float reveal;
 
 void main() {
 	vec4 color = oColor;

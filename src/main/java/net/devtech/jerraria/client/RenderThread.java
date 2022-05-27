@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import org.lwjgl.glfw.GLFW;
@@ -17,6 +18,7 @@ public class RenderThread {
 
 	static void startRender() {
 		while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
+			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GLFW.glfwPollEvents();
 			long src = System.currentTimeMillis();

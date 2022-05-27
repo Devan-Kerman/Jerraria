@@ -9,7 +9,7 @@ import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class InstancedSolidColorShader extends Shader<Vec3.F<End>> {
-	public static final InstancedSolidColorShader INSTANCE = createShader(Id.create("jerraria", "test_instanced"), InstancedSolidColorShader::new, InstancedSolidColorShader::new);
+	public static final InstancedSolidColorShader INSTANCE = create(Id.create("jerraria", "test_instanced"), InstancedSolidColorShader::new, InstancedSolidColorShader::new);
 
 	public final Vec3.F<?>[] offsets = new Vec3.F[32];
 	public final Vec3.F<?>[] colors = new Vec3.F[32];

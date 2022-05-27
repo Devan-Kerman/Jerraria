@@ -12,8 +12,6 @@ layout(rgba32ui) uniform readonly coherent uimageBuffer translucencyBuffer;
 layout(r32ui) uniform readonly coherent uimage2D imgListHead;
 uniform vec2 screenSpace;
 
-in vec3 oPos;
-
 // sort impl is broken
 void sort(inout uvec2 fragments[MAX_SORT], int n) {
 	for (int i = 1; i < n; i++) {
@@ -71,7 +69,7 @@ vec4 insert(inout uvec2 fragments[MAX_SORT], uvec2 vec) {
 }
 
 void main() {
-	ivec2 coord = ivec2(oPos.xy*imageSize(imgListHead));
+	ivec2 coord = ivec2(gl_FragCoord.xy);
 	uvec2 fragments[MAX_SORT];// test init
 
 	// head pointer
