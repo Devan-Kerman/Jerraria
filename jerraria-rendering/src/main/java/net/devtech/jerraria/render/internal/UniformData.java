@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +42,7 @@ import net.devtech.jerraria.util.math.JMath;
 public class UniformData extends GlData {
 	public static final int UBO_PADDING = glGetInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
 	final Map<String, Element> elements;
-	final List<UniformBufferBlock> groups;
+	final UniformBufferBlock[] groups;
 	final List<Uniform> uniforms;
 
 	public UniformData(Map<String, BareShader.Field> fields, int program, Id id) {
@@ -209,9 +210,12 @@ public class UniformData extends GlData {
 			elements.put(uniform.name, element);
 		}
 
-		this.groups = new ArrayList<>(blocksByName.values());
-		this.groups.sort(Comparator.comparingInt(i -> i.groupIndex));
-
+		int max = blocksByName.values().stream().mapToInt(i -> i.groupIndex).max().orElse(0)+1;
+		UniformBufferBlock[] groups = new UniformBufferBlock[max];
+		for(UniformBufferBlock value : blocksByName.values()) {
+			groups[value.groupIndex] = value;
+		}
+		this.groups = groups;
 		this.elements = elements;
 		uniforms.forEach(u -> u.state = new ProgramDefaultUniformState());
 		this.uniforms = uniforms;
@@ -219,12 +223,12 @@ public class UniformData extends GlData {
 
 	public UniformData(UniformData data, boolean preserveUniforms) {
 		this.elements = data.elements;
-		List<UniformBufferBlock> list = new ArrayList<>();
+		UniformBufferBlock[] groups = new UniformBufferBlock[data.groups.length];
 		for(UniformBufferBlock group : data.groups) {
 			UniformBufferBlock uniformBufferBlock = new UniformBufferBlock(group, preserveUniforms);
-			list.add(uniformBufferBlock);
+			groups[group.groupIndex] = uniformBufferBlock;
 		}
-		this.groups = list;
+		this.groups = groups;
 		this.uniforms = data.uniforms
 			.stream()
 			.map(u -> preserveUniforms ? Uniform.copy(u) : Uniform.createNew(u))
@@ -241,7 +245,7 @@ public class UniformData extends GlData {
 			return uniform;
 		} else {
 			ElementImpl e = (ElementImpl) element;
-			UniformBufferBlock group = this.groups.get(e.groupIndex());
+			UniformBufferBlock group = this.groups[e.groupIndex()];
 			BufferObjectBuilder buffer = group.buffer();
 			buffer.offset(e.byteOffset());
 			buffer.next();
@@ -261,7 +265,9 @@ public class UniformData extends GlData {
 	@Override
 	public void invalidate() {
 		for(UniformBufferBlock group : this.groups) {
-			group.close();
+			if(group != null) {
+				group.close();
+			}
 		}
 	}
 
@@ -290,8 +296,8 @@ public class UniformData extends GlData {
 			if(fromE.type() != toE.type()) {
 				throw new IllegalArgumentException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
 			}
-			UniformBufferBlock fromGroup = this.groups.get(fromE.groupIndex());
-			UniformBufferBlock toGroup = toData.groups.get(toE.groupIndex());
+			UniformBufferBlock fromGroup = this.groups[fromE.groupIndex()];
+			UniformBufferBlock toGroup = toData.groups[toE.groupIndex()];
 			BufferObjectBuilder fromBuffer = fromGroup.buffer();
 			BufferObjectBuilder toBuffer = toGroup.buffer();
 			toBuffer.copyAttribute(toGroup.alloc,
@@ -306,7 +312,9 @@ public class UniformData extends GlData {
 	public UniformData upload() {
 		this.validate();
 		for(UniformBufferBlock group : this.groups) {
-			group.upload();
+			if(group != null) {
+				group.upload();
+			}
 		}
 		for(Uniform uniform : this.uniforms) {
 			if(uniform.state.updateUniform(uniform, uniform.reupload)) {
