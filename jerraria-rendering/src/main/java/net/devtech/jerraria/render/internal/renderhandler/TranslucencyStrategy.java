@@ -3,7 +3,7 @@ package net.devtech.jerraria.render.internal.renderhandler;
 import java.util.function.Supplier;
 
 import net.devtech.jerraria.render.api.OpenGLSupport;
-import net.devtech.jerraria.render.internal.renderhandler.translucent.AbstractTranslucencyRenderHandler;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.AbstractTranslucencyRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.LinkedListTranslucentRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.DoublePassWeightedRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.WeightedTranslucentRenderer;
@@ -52,7 +52,7 @@ public enum TranslucencyStrategy {
 		}
 	}
 
-	public static AbstractTranslucencyRenderHandler createTranslucentRenderer(TranslucencyStrategy strategy) {
+	public static AbstractTranslucencyRenderer createTranslucentRenderer(TranslucencyStrategy strategy) {
 		return switch(strategy) {
 			case LINKED_LIST -> new LinkedListTranslucentRenderer();
 			case SINGLE_PASS_WEIGHTED_BLENDED -> new WeightedTranslucentRenderer();

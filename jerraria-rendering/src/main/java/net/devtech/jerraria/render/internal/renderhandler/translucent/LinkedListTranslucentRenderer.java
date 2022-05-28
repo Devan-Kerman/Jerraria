@@ -2,8 +2,6 @@ package net.devtech.jerraria.render.internal.renderhandler.translucent;
 
 import static org.lwjgl.opengl.GL42.*;
 
-import java.util.ArrayList;
-
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
@@ -12,7 +10,7 @@ import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.shaders.LLTransResolveShader;
 import net.devtech.jerraria.util.math.JMath;
 
-public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderHandler {
+public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer {
 	int clearingFramebuffer = glGenFramebuffers();
 	int translucencyBufferTex, translucencyBuffer;
 	int imageListHead;

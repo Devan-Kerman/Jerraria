@@ -17,11 +17,11 @@ import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 
-public abstract class AbstractTranslucencyRenderHandler extends RenderHandler implements TranslucencyRenderer {
+public abstract class AbstractTranslucencyRenderer extends RenderHandler implements TranslucencyRenderer {
 	public List<RenderCall> renderQueue = new ArrayList<>();
 	public record RenderCall(Shader<?> shader, Consumer<Shader<?>> exec) {}
 
-	public AbstractTranslucencyRenderHandler() {
+	public AbstractTranslucencyRenderer() {
 		int[] dims = new int[4];
 		glGetIntegerv(GL_VIEWPORT, dims);
 		int width = dims[2], height = dims[3];

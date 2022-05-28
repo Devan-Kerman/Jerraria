@@ -23,7 +23,7 @@ import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.internal.FragOutput;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;
 
-public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderHandler {
+public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderer {
 	public static final float[] ZEROS = {
 		0,
 		0,
