@@ -33,6 +33,11 @@ public final class LazyGlData extends GlData {
 		}
 	}
 
+	@Override
+	protected void invalidate() throws Exception {
+		extract.apply(shader.getShader()).close();
+	}
+
 	public UniformData getUniforms() {
 		return this.shader.getShader().uniforms;
 	}

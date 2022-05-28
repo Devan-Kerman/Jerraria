@@ -13,7 +13,7 @@ public class AtomicCounter extends V.UI<End> { // todo get atomic int value
 	/**
 	 * This may be unreliable with multiple elements
 	 */
-	public long getValue() {
+	public long read() {
 		return ((BufferObjectBuilder)this.data.element(this.element)).read();
 	}
 

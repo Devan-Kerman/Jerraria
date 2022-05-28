@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 
-// todo move EBO into VAO class
+// todo move EBO into VAO class?
 public class EBO {
 	final int glId;
 	int currentType;
@@ -15,19 +15,19 @@ public class EBO {
 
 	public EBO() {
 		this.builder = new BufferBuilder(1, 256);
-		this.glId = GLReclamation.genBuffer(this);
+		this.glId = glGenBuffers();
 		this.currentType = GL_UNSIGNED_BYTE;
 	}
 
 	public EBO(EBO ebo) {
-		this.glId = GLReclamation.genBuffer(this);
+		this.glId = glGenBuffers();
 		this.builder = new BufferBuilder(ebo.builder);
 		this.currentType = ebo.currentType;
 		this.isDirty = true;
 	}
 
 	public EBO(ShapeStrat strat, int elements) {
-		this.glId = GLReclamation.genBuffer(this);
+		this.glId = glGenBuffers();
 		this.builder = new BufferBuilder(strat.builder, elements);
 		this.currentType = strat.getType();
 		this.isDirty = true;
@@ -91,5 +91,9 @@ public class EBO {
 			this.builder = new_;
 			this.currentType = GL_UNSIGNED_SHORT;
 		}
+	}
+
+	public void close() {
+		glDeleteBuffers(this.glId);
 	}
 }

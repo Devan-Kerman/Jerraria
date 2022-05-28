@@ -170,6 +170,7 @@ public class ShaderImpl {
 		shader.isCopy = true;
 		shader.compilationConfig.putAll(copy.compilationConfig);
 		shader.handler = copy.handler;
+		BareShader.GL_CLEANUP.register(shader, bare.manager);
 	}
 
 	static <T extends GlValue<?> & GlValue.Attribute> void postInit(

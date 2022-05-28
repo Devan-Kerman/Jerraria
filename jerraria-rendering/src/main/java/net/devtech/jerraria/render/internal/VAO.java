@@ -108,15 +108,16 @@ public class VAO extends GlData {
 		this.reference = new LazyVAOReference();
 	}
 
-	public VAO flush() {
+	public void flush() {
+		this.validate();
 		for(VertexBufferObject group : this.groups) {
 			group.getBuilder().reset();
 		}
-		return this;
 	}
 
 	@Override
 	public Buf element(GlData.Element elem) {
+		this.validate();
 		ElementImpl element = (ElementImpl) elem;
 		BufferObjectBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
 		buffer.offset(element.byteOffset());
@@ -125,10 +126,12 @@ public class VAO extends GlData {
 
 	@Override
 	public GlData.Element getElement(String name) {
+		this.validate();
 		return this.elements.get(name);
 	}
 
 	public VAO next() {
+		this.validate();
 		for(VertexBufferObject group : this.groups) {
 			group.getBuilder().next();
 		}
@@ -136,23 +139,36 @@ public class VAO extends GlData {
 	}
 
 	public VAO bind() {
+		this.validate();
 		this.reference.bind(this.groups);
 		return this;
 	}
 
 	public void drawArrays(int mode) {
+		this.validate();
 		glDrawArrays(mode, 0, this.last.getBuilder().totalCount());
 	}
 
 	public void drawArraysInstanced(int mode, int count) {
+		this.validate();
 		glDrawArraysInstanced(mode, 0, this.last.getBuilder().totalCount(), count);
 	}
 
 	public void drawElements(int mode, int elements, int type) {
+		this.validate();
 		glDrawElements(mode, elements, type,0L);
 	}
 
 	public void drawElementsInstanced(int mode, int elements, int type, int count) {
+		this.validate();
 		glDrawElementsInstanced(mode, elements, type, 0L, count);
+	}
+
+	@Override
+	public void invalidate() {
+		this.reference.close();
+		for(VertexBufferObject group : this.groups) {
+			group.close();
+		}
 	}
 }

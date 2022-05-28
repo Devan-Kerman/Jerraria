@@ -36,15 +36,14 @@ public class FragOutput extends GlData {
 	}
 
 	public FragOutput(FragOutput output) {
-		GLReclamation.reclaimFrameBuffers();
-		int buffer = this.frameBuffer = glGenFramebuffers();
+		this.frameBuffer = glGenFramebuffers();
 		this.indices = output.indices;
 		this.binds = output.binds.stream().map(OutputBind::new).toList();
-		GLReclamation.manageFrameBuffer(this, buffer);
 	}
 
 	@Override
 	public Buf element(Element element) {
+		this.validate();
 		OutputBind bind = this.binds.get(((OutputIndex) element).index);
 		bind.rebind = true;
 		return bind;
@@ -52,22 +51,26 @@ public class FragOutput extends GlData {
 
 	@Override
 	public Element getElement(String name) {
+		this.validate();
 		return this.indices.get(name);
 	}
 
 	public void copyDefaultDepth() {
+		this.validate();
 		int[] dims = new int[4];
 		glGetIntegerv(GL_VIEWPORT, dims);
 		this.copyDepth(0, dims[2], dims[3]);
 	}
 
 	public void copyDepth(int frameBuffer, int width, int height) {
+		this.validate();
 		GLContextState.bindReadFBO(frameBuffer);
 		GLContextState.bindDrawFBO(this.frameBuffer);
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	}
 
 	public void bind() {
+		this.validate();
 		GLContextState.bindFrameBuffer(this.frameBuffer);
 		for(OutputBind bind : this.binds) {
 			if(bind.rebind) {
@@ -82,8 +85,15 @@ public class FragOutput extends GlData {
 	}
 
 	public void flushBuffer() {
+		this.validate();
 		GLContextState.bindFrameBuffer(this.frameBuffer);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	}
+
+	@Override
+	public void invalidate() {
+		glDeleteFramebuffers(this.frameBuffer);
+		GLContextState.untrackFBOIfBound(this.frameBuffer);
 	}
 
 	public record OutputIndex(int index) implements Element {}

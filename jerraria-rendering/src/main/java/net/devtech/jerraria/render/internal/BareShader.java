@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -32,29 +33,37 @@ import org.lwjgl.opengl.GL20;
 /**
  * Un-abstracted view of a "shader object" (think VAO or UBO) thing. The shader object has its own VAO and its own UBO.
  */
-public class BareShader {
+public class BareShader implements AutoCloseable {
+	public static final boolean IN_DEV = Boolean.getBoolean("jerraria.dev");
 	public static final Cleaner GL_CLEANUP = Cleaner.create();
+	public final AtomicInteger uniqueIdCounter;
+	public final int uniqueId;
+	public final Id srcId;
 	public final VAO vao;
 	public final UniformData uniforms;
-	@Nullable
-	public final FragOutput outputs;
-	@Nullable
-	public EBO ebo;
+	public final ReclamationManager manager;
+	@Nullable public final FragOutput outputs;
+	@Nullable public EBO ebo;
 	public AutoStrat strategy = AutoStrat.TRIANGLE;
-	int lastCopiedVertex;
 	public GlIdReference id;
+	int lastCopiedVertex;
 	int currentGlId;
 
-	public BareShader(int glId, VAO data, UniformData uniformData, @Nullable FragOutput output) {
+	public BareShader(Id id, int glId, VAO data, UniformData uniformData, @Nullable FragOutput output) {
 		this.id = new GlIdReference();
 		this.id.glId = glId;
 		this.currentGlId = glId;
 		this.vao = data;
 		this.uniforms = uniformData;
 		this.outputs = output;
+		this.srcId = id;
+		this.uniqueIdCounter = new AtomicInteger();
+		this.uniqueId = this.uniqueIdCounter.getAndIncrement();
+		this.manager = new ReclamationManager(null);
 	}
 
-	public BareShader(BareShader shader, SCopy method) {
+	public BareShader(BareShader shader, SCopy method) { // todo keep track of initialization stacktrace
+		this.srcId = shader.srcId;
 		this.id = shader.id;
 		this.currentGlId = shader.currentGlId;
 		this.vao = new VAO(shader.vao, method.preserveVertexData);
@@ -68,21 +77,36 @@ public class BareShader {
 		} else {
 			this.outputs = null;
 		}
+		this.uniqueIdCounter = shader.uniqueIdCounter;
+		this.uniqueId = this.uniqueIdCounter.getAndIncrement();
+
+		StackTraceElement[] init = IN_DEV ? new Throwable().getStackTrace() : null;
+		ReclamationManager manager = new ReclamationManager(init);
+		this.manager = manager;
+		GL_CLEANUP.register(this, manager);
 	}
 
 	public static Map<Id, BareShader> compileShaders(
-		SourceProvider fragSrc,
-		SourceProvider vertSrc,
-		Map<String, Object> initialArgs,
-		List<Uncompiled> shaders) {
-		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders = new Object2IntOpenHashMap<>();
+		SourceProvider fragSrc, SourceProvider vertSrc, Map<String, Object> initialArgs, List<Uncompiled> shaders) {
+		Object2IntMap<Id> fragmentShaders = new Object2IntOpenHashMap<>(), vertexShaders =
+			                                                                   new Object2IntOpenHashMap<>();
 		Map<Id, BareShader> compiledShaders = new HashMap<>();
 		for(Uncompiled uncompiled : shaders) {
 			ShaderPreprocessor preprocessor = new ShaderPreprocessor(ShaderManager.LIB_SRC);
 			preprocessor.getIncludeParameters().putAll(initialArgs);
 			try {
-				int fragmentShader = getOrCompileShader(fragSrc, preprocessor, fragmentShaders, uncompiled.frag, GL_FRAGMENT_SHADER);
-				int vertexShader = getOrCompileShader(vertSrc, preprocessor, vertexShaders, uncompiled.vert, GL_VERTEX_SHADER);
+				int fragmentShader = getOrCompileShader(fragSrc,
+					preprocessor,
+					fragmentShaders,
+					uncompiled.frag,
+					GL_FRAGMENT_SHADER
+				);
+				int vertexShader = getOrCompileShader(vertSrc,
+					preprocessor,
+					vertexShaders,
+					uncompiled.vert,
+					GL_VERTEX_SHADER
+				);
 				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
 				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
 				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
@@ -95,7 +119,7 @@ public class BareShader {
 				} else {
 					output = null;
 				}
-				BareShader shader = new BareShader(program, vertex, uniform, output);
+				BareShader shader = new BareShader(uncompiled.id, program, vertex, uniform, output);
 				compiledShaders.put(uncompiled.id, shader);
 			} catch(Throwable t) {
 				ShaderValidationException rethrow = new ShaderValidationException(String.format(
@@ -113,13 +137,18 @@ public class BareShader {
 		return compiledShaders;
 	}
 
-	static final class ShaderValidationException extends Exception {
-		public ShaderValidationException(String message, Throwable cause) {
-			super(message, cause);
-		}
-
-		public ShaderValidationException(String message) {
-			super(message);
+	@Override
+	public void close() throws Exception {
+		if(!this.manager.isInvalid) {
+			this.manager.isInvalid = true;
+			this.uniforms.close();
+			this.vao.close();
+			if(this.outputs != null) {
+				this.outputs.close();
+			}
+			if(this.ebo != null) {
+				this.ebo.close();
+			}
 		}
 	}
 
@@ -138,6 +167,7 @@ public class BareShader {
 	 * exec {@link #bindProgram()} first
 	 */
 	public void drawKeep(BuiltGlState state) {
+		this.validateState();
 		state.apply();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
@@ -152,6 +182,7 @@ public class BareShader {
 	 * exec {@link #bindProgram()} first
 	 */
 	public void drawInstancedKeep(BuiltGlState state, int count) {
+		this.validateState();
 		state.apply();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
@@ -163,6 +194,7 @@ public class BareShader {
 	}
 
 	public int getVertexCount() {
+		this.validateState();
 		if(this.ebo == null) {
 			return this.strategy.elementsForVertexData(this.vao.last.getBuilder().totalCount());
 		} else {
@@ -171,18 +203,14 @@ public class BareShader {
 	}
 
 	public void deleteVertexData() {
+		this.validateState();
 		this.vao.flush();
 		this.lastCopiedVertex = 0;
 		this.ebo = null;
 	}
 
-	private static int getOrCompileShader(SourceProvider src, ShaderPreprocessor libSrc, Object2IntMap<Id> cache, Id sourceId, int type) {
-		return cache.computeIfAbsent(sourceId, (Id id) -> createProgram(src, libSrc, type, id));
-	}
-
 	public void hotswapStrategy(AutoStrat strategy, boolean force) {
-		// if strategy is not same
-			// populate EBO with old strategy data
+		this.validateState();
 		AutoStrat current = this.strategy;
 		if(current != strategy || force) {
 			if(this.vao.last.getBuilder().totalCount() == this.lastCopiedVertex) {
@@ -217,13 +245,9 @@ public class BareShader {
 	}
 
 	public void bindProgram() {
+		this.validateState();
 		int id = this.id.glId;
 		if(id != this.currentGlId) {
-			// this should be rebind not reupload
-			//this.vao.markForReupload();
-			//if(this.ebo != null) {
-			//	this.ebo.markForReupload();
-			//}
 			this.uniforms.markForRebind();
 			this.currentGlId = id;
 		}
@@ -236,6 +260,7 @@ public class BareShader {
 	}
 
 	public int setupDraw(boolean bindVao) {
+		this.validateState();
 		this.uniforms.upload();
 		if(bindVao) {
 			this.vao.bind();
@@ -247,12 +272,71 @@ public class BareShader {
 				return this.ebo.currentType;
 			} else {
 				// custom strategy without hotswaps
-				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last.getBuilder().totalCount());
+				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last
+					.getBuilder()
+					.totalCount());
 				strat.bind();
 				return strat.getType();
 			}
 		} else {
 			return -1;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return this.srcId + "#" + this.uniqueId;
+	}
+
+	private static int getOrCompileShader(
+		SourceProvider src, ShaderPreprocessor libSrc, Object2IntMap<Id> cache, Id sourceId, int type) {
+		return cache.computeIfAbsent(sourceId, (Id id) -> createProgram(src, libSrc, type, id));
+	}
+
+	private void validateState() {
+		if(this.manager.isInvalid) {
+			throw new IllegalStateException(this + " was closed!");
+		}
+	}
+
+	static class InitializationStacktrace extends Throwable {
+		public InitializationStacktrace() {
+			super("GPU Memory Leak: did not close BareShader instance!");
+		}
+	}
+
+	public static class ReclamationManager implements Runnable {
+		public final StackTraceElement[] init;
+		public boolean isInvalid;
+
+		public ReclamationManager(StackTraceElement[] init) {
+			this.init = init;
+		}
+
+		@Override
+		public void run() {
+			if(!this.isInvalid) {
+				this.isInvalid = true;
+				if(this.init == null) {
+					System.err.println(
+						"GPU Memory Leak: did not close BareShader instance! Use -Djerraria.dev=true to find out " +
+						"where you created the leaked instance!");
+				} else {
+					InitializationStacktrace stacktrace = new InitializationStacktrace();
+					stacktrace.setStackTrace(this.init);
+					stacktrace.printStackTrace();
+				}
+			}
+		}
+	}
+
+	static final class ShaderValidationException extends Exception {
+		public ShaderValidationException(String message, Throwable cause) {
+			super(message, cause);
+		}
+
+		public ShaderValidationException(String message) {
+			super(message);
 		}
 	}
 
@@ -276,7 +360,8 @@ public class BareShader {
 			this.outputFields = new HashMap<>();
 		}
 
-		public void type(GlValue.Loc type, DataType local, String name, String groupName, Object extra, boolean isOptional) {
+		public void type(
+			GlValue.Loc type, DataType local, String name, String groupName, Object extra, boolean isOptional) {
 			if(DataType.UNSUPPORTED_TYPES.contains(local)) {
 				throw new UnsupportedOperationException(local + " is unsupported on this machine!");
 			}

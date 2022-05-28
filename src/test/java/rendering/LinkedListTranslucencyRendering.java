@@ -49,7 +49,7 @@ public class LinkedListTranslucencyRendering {
 				rendering.drawKeep();
 				rendering.deleteVertexData();
 				glMemoryBarrier(-1);
-				System.out.println(rendering.counter.getValue());
+				System.out.println(rendering.counter.read());
 
 				LLTransResolveShader shader = LLTransResolveShader.INSTANCE;
 				shader.translucencyBuffer.tex(translucencyBuffer);

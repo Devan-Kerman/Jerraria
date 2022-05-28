@@ -8,7 +8,6 @@ import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
-import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;
 import net.devtech.jerraria.util.math.Matrix3f;
 
@@ -31,7 +30,7 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				int[] colors = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF,
 				                0x0000FF, 0xFF00FF, 0xFFFFFF, 0xAAAAAA};
 				for(float i = 0; i < 1; i+=.125) {
-					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i, 0x80000000 | colors[(int) (i * 8)]);
+					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i);
 				}
 
 				// render to translucency buffer

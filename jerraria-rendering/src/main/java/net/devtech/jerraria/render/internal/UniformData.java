@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -19,12 +20,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
@@ -50,7 +54,7 @@ public class UniformData extends GlData {
 		Map<String, ActiveUniform> uniformMap = new LinkedHashMap<>();
 		Map<String, UniformBufferBlock> blocksByName = new LinkedHashMap<>();
 		Int2ObjectMap<UniformBufferBlock> blocksByIndex = new Int2ObjectOpenHashMap<>();
-		Int2ObjectMap<UniformBufferBlock> atomicBuffers = new Int2ObjectOpenHashMap<>();
+		Int2ObjectMap<UniformBufferBlock> atomics = new Int2ObjectOpenHashMap<>();
 		for(int i = 0; i < uniformCount; i++) {
 			String name = glGetActiveUniform(program, i, aBuf, bBuf);
 			if(name.startsWith("gl_")) { // ignore builtins
@@ -61,11 +65,11 @@ public class UniformData extends GlData {
 			int atomicIndex = glGetActiveUniformsi(program, i, GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX);
 			if(atomicIndex != -1) {
 				UniformBufferBlock block;
-				if(!atomicBuffers.containsKey(atomicIndex)) {
-					int binding = glGetActiveAtomicCounterBufferi(program,
-						atomicIndex,
-						GL_ATOMIC_COUNTER_BUFFER_BINDING
-					);
+				int binding = glGetActiveAtomicCounterBufferi(program,
+					atomicIndex,
+					GL_ATOMIC_COUNTER_BUFFER_BINDING
+				);
+				if(!atomics.containsKey(binding)) {
 					block = new UniformBufferBlock(name + "Family",
 						program,
 						binding,
@@ -73,9 +77,9 @@ public class UniformData extends GlData {
 						GL_ATOMIC_COUNTER_BUFFER
 					);
 					blocksByName.put(block.name, block);
-					atomicBuffers.put(atomicIndex, block);
+					atomics.put(binding, block);
 				} else {
-					block = atomicBuffers.get(atomicIndex);
+					block = atomics.get(binding);
 				}
 				blocksByIndex.put(i, block);
 			}
@@ -84,8 +88,7 @@ public class UniformData extends GlData {
 			if(size > 1) { // add arrays
 				String baseName;
 				if(name.charAt(name.length() - 1) == ']') {
-					baseName = name.substring(
-						0,
+					baseName = name.substring(0,
 						Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name)
 					);
 				} else {
@@ -114,8 +117,9 @@ public class UniformData extends GlData {
 		Set<String> unresolvedUniforms = new LinkedHashSet<>(unoptionalNames);
 		unresolvedUniforms.removeAll(uniformMap.keySet());
 		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
-			throw new IllegalStateException("Uniform(s) with name(s) " + unreferencedUniforms + " were not referenced!" +
-			                                " Uniform(s) with name(s) " + unresolvedUniforms + " were not found!");
+			throw new IllegalStateException("Uniform(s) with name(s) " + unreferencedUniforms + " were not " +
+			                                "referenced!" + " Uniform(s) with name(s) " + unresolvedUniforms + " were "
+			                                + "not found!");
 		}
 
 		// uniform blocks
@@ -138,7 +142,7 @@ public class UniformData extends GlData {
 			glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, uniformIndexes);
 
 			int bindingPoint;
-			while(atomicBuffers.containsKey(bindingPoint = bindingPointCounter++)) {
+			while(atomics.containsKey(bindingPoint = bindingPointCounter++)) {
 			}
 
 			UniformBufferBlock block = new UniformBufferBlock(name, program, bindingPoint, i, GL_UNIFORM_BUFFER);
@@ -184,8 +188,7 @@ public class UniformData extends GlData {
 				}
 			} else {
 				if(type.isOpaque()) {
-					throw new UnsupportedOperationException("Opaque types like " + type + " cannot exist in uniform " +
-					                                        "buffer blocks!");
+					throw new UnsupportedOperationException("Opaque types like " + type + " cannot exist in uniform " + "buffer blocks!");
 				}
 
 				// for nested arrays or arrays of a vanilla type, we must start at the [0] index and calculate forward!
@@ -207,6 +210,8 @@ public class UniformData extends GlData {
 		}
 
 		this.groups = new ArrayList<>(blocksByName.values());
+		this.groups.sort(Comparator.comparingInt(i -> i.groupIndex));
+
 		this.elements = elements;
 		uniforms.forEach(u -> u.state = new ProgramDefaultUniformState());
 		this.uniforms = uniforms;
@@ -228,6 +233,7 @@ public class UniformData extends GlData {
 
 	@Override
 	public Buf element(Element element) {
+		this.validate();
 		if(element instanceof StandardUniform s) {
 			Uniform uniform = this.uniforms.get(s.uniformIndex);
 			uniform.reupload = true;
@@ -238,6 +244,7 @@ public class UniformData extends GlData {
 			UniformBufferBlock group = this.groups.get(e.groupIndex());
 			BufferObjectBuilder buffer = group.buffer();
 			buffer.offset(e.byteOffset());
+			buffer.next();
 			return buffer;
 		}
 	}
@@ -247,10 +254,19 @@ public class UniformData extends GlData {
 
 	@Override
 	public Element getElement(String name) {
+		this.validate();
 		return this.elements.get(name);
 	}
 
+	@Override
+	public void invalidate() {
+		for(UniformBufferBlock group : this.groups) {
+			group.close();
+		}
+	}
+
 	public void copyTo(Element from, UniformData toData, Element to) {
+		this.validate();
 		if(from instanceof LazyElement l) {
 			from = l.getSelf();
 		}
@@ -278,8 +294,7 @@ public class UniformData extends GlData {
 			UniformBufferBlock toGroup = toData.groups.get(toE.groupIndex());
 			BufferObjectBuilder fromBuffer = fromGroup.buffer();
 			BufferObjectBuilder toBuffer = toGroup.buffer();
-			toBuffer.copyAttribute(
-				toGroup.alloc,
+			toBuffer.copyAttribute(toGroup.alloc,
 				fromE.byteOffset(),
 				fromE.type().byteCount,
 				fromBuffer,
@@ -289,6 +304,7 @@ public class UniformData extends GlData {
 	}
 
 	public UniformData upload() {
+		this.validate();
 		for(UniformBufferBlock group : this.groups) {
 			group.upload();
 		}
@@ -303,6 +319,7 @@ public class UniformData extends GlData {
 	}
 
 	public void markForRebind() {
+		this.validate();
 		for(Uniform uniform : this.uniforms) {
 			uniform.reupload = true;
 		}
@@ -323,7 +340,10 @@ public class UniformData extends GlData {
 		final String name;
 		final GLContextState.IndexedBufferTargetState bind;
 		final BufferObjectBuilder buffer;
-		final Int2ObjectMap<IntList> deferredCopies = new Int2ObjectOpenHashMap<>();
+		/**
+		 * to -> from
+		 */
+		final Int2IntMap deferredCopies = new Int2IntOpenHashMap();
 		int nextNewId;
 
 		UniformBufferBlockManager(String group, int program, int binding, int index, int type) {
@@ -334,58 +354,87 @@ public class UniformData extends GlData {
 			if(type == GL_UNIFORM_BUFFER) {
 				glUniformBlockBinding(program, index, binding);
 				this.byteLength = glGetActiveUniformBlocki(program, index, GL_UNIFORM_BLOCK_DATA_SIZE);
+				this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
 				this.bind = GLContextState.UNIFORM_BUFFER;
+				this.buffer = BufferObjectBuilder.uniform(this.paddedByteLength);
 			} else {
 				this.byteLength = glGetActiveAtomicCounterBufferi(program, index, GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
+				this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
 				this.bind = GLContextState.ATOMIC_COUNTERS;
+				this.buffer = BufferObjectBuilder.atomic_counter(this.paddedByteLength);
 			}
 
-			this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
-			this.buffer = BufferObjectBuilder.uniform(this.paddedByteLength);
 			this.postInit();
+			this.deferredCopies.defaultReturnValue(-1);
 		}
 
-		public BufferObjectBuilder forIndex(int alloc) { // todo deferred copy
-			//IntList remove = this.deferredCopies.remove(alloc);
-			//if(remove != null) {
-			//	for(int i = 0; i < remove.size(); i++) {
-			//		this.buffer.copyFrom(remove.getInt(i), this.buffer, alloc, 1);
-			//	}
-			//}
+		public BufferObjectBuilder forIndex(int alloc) {
+			synchronized(this.deferredCopies) {
+				int from = this.deferredCopies.remove(alloc);
+				if(from != -1) {
+					this.buffer.copyFrom(alloc, this.buffer, from, 1, true);
+				}
+				var iterator = this.deferredCopies.int2IntEntrySet().iterator();
+				while(iterator.hasNext()) {
+					Int2IntMap.Entry entry = iterator.next();
+					if(entry.getIntValue() == alloc) { // from == this
+						int key = entry.getIntKey();
+						this.buffer.copyFrom(key, this.buffer, alloc, 1, true);
+						iterator.remove();
+					}
+				}
+			}
+
 			this.buffer.index(alloc);
 			return this.buffer;
 		}
 
+		public void addDeferredCopy(int from, int to) {
+			synchronized(this.deferredCopies) {
+				//this.buffer.copyFrom(to, this.buffer, from, 1, true);
+				this.deferredCopies.put(to, from);
+			}
+		}
+
 		public void bindRange(int alloc) {
+			int real;
+			synchronized(this.deferredCopies) {
+				real = this.deferredCopies.getOrDefault(alloc, alloc);
+			}
 			this.buffer.upload(false); // flush contents
-			this.bind.bindBufferRange(
-				this.bindingIndex,
-				this.buffer.getOrGenId(),
-				alloc * this.paddedByteLength,
+			this.bind.bindBufferRange(this.binding,
+				this.buffer.getId(),
+				real * this.paddedByteLength,
 				this.byteLength
 			);
 		}
 
-		public int allocate(UniformBufferBlock block, boolean permanent) {
+		public int allocate() {
 			int allocated;
-			IntArrayList available = this.available;
-			synchronized(available) {
+			synchronized(this.available) {
+				IntArrayList available = this.available;
 				if(available.isEmpty()) {
 					allocated = this.nextNewId++;
 				} else {
 					allocated = available.popInt();
+					synchronized(this.deferredCopies) {
+						this.deferredCopies.remove(allocated);
+						for(Int2IntMap.Entry entry : this.deferredCopies.int2IntEntrySet()) {
+							if(entry.getIntValue() == allocated) {
+								this.buffer.copyFrom(entry.getIntKey(), this.buffer, allocated, 1, true);
+							}
+						}
+					}
 				}
 			}
 
-			if(!permanent) {
-				BareShader.GL_CLEANUP.register(block, () -> {
-					synchronized(available) {
-						available.add(allocated);
-					}
-				});
-			}
-
 			return allocated;
+		}
+
+		public void reclaim(int alloc) {
+			synchronized(this.available) {
+				this.available.add(alloc);
+			}
 		}
 
 		private void postInit() {
@@ -410,7 +459,7 @@ public class UniformData extends GlData {
 		public UniformBufferBlock(UniformBufferBlockManager manager, int bufferType) {
 			this.manager = manager;
 			this.name = manager.name;
-			this.alloc = this.manager.allocate(this, true);
+			this.alloc = this.manager.allocate();
 			this.groupIndex = this.manager.binding;
 			this.uniformIndices = new IntOpenHashSet();
 			this.bufferType = bufferType;
@@ -423,21 +472,22 @@ public class UniformData extends GlData {
 		public UniformBufferBlock(UniformBufferBlock group, boolean preserveUniforms) {
 			this.name = group.name;
 			this.manager = group.manager;
-			this.alloc = this.manager.allocate(this, false);
+			this.alloc = this.manager.allocate();
 			this.groupIndex = group.groupIndex;
 			this.uniformIndices = group.uniformIndices;
 			this.bufferType = group.bufferType;
 
 			if(preserveUniforms) {
-				BufferObjectBuilder builder = this.manager.forIndex(this.alloc);
-				builder.appendFrom(builder, 0, 1);
+				this.manager.addDeferredCopy(group.alloc, this.alloc);
 			}
 		}
 
 		public BufferObjectBuilder buffer() {
-			BufferObjectBuilder builder = this.manager.forIndex(this.alloc);
-			builder.next();
-			return builder;
+			return this.manager.forIndex(this.alloc);
+		}
+
+		public void close() {
+			this.manager.reclaim(this.alloc);
 		}
 
 		void upload() {

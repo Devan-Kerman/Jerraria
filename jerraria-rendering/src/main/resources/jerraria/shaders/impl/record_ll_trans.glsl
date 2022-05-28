@@ -4,7 +4,7 @@ layout (early_fragment_tests) in;
 
 layout(rgba32ui) uniform coherent uimageBuffer translucencyBuffer;
 layout(r32ui) uniform coherent uimage2D imgListHead;
-layout(binding=0) uniform atomic_uint counter;
+layout(binding=1) uniform atomic_uint counter;
 
 void emit(vec4 color) { // todo write solid pixels immediately?
 	uint idx = atomicCounterIncrement(counter) + 1u;// position where data is stored

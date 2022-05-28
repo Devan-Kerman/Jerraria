@@ -1,7 +1,9 @@
 #include jerraria:api/translucency
 
-in vec4 oColor;
+uniform Test {
+	vec4 color;
+};
 
 void main() {
-	emit(oColor);
+	emit(color);
 }

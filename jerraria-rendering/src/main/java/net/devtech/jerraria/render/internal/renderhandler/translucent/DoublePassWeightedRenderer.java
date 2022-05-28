@@ -91,4 +91,15 @@ public class DoublePassWeightedRenderer extends WeightedTranslucentRenderer {
 			built.accept(copy.getShader(), secondPass.type.defaultState);
 		}));
 	}
+
+	@Override
+	public void clearRenderQueue() throws Exception {
+		for(RenderCall call : this.renderQueue) {
+			TranslucentShader<?> shader = (TranslucentShader<?>) call.shader();
+			if(shader.type != TranslucentShaderType.DOUBLE_PASS_B) {
+				shader.close();
+			}
+		}
+		this.renderQueue.clear();
+	}
 }

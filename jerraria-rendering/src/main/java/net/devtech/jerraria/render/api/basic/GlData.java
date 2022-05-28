@@ -1,6 +1,8 @@
 package net.devtech.jerraria.render.api.basic;
 
-public abstract class GlData {
+public abstract class GlData implements AutoCloseable {
+	boolean isInvalid;
+
 	public Buf element(String name) {
 		return element(getElement(name));
 	}
@@ -8,6 +10,22 @@ public abstract class GlData {
 	public abstract Buf element(Element element);
 
 	public abstract Element getElement(String name);
+
+	@Override
+	public final void close() throws Exception {
+		if(!this.isInvalid) {
+			this.invalidate();
+			this.isInvalid = true;
+		}
+	}
+
+	protected abstract void invalidate() throws Exception;
+
+	public void validate() {
+		if(this.isInvalid) {
+			throw new UnsupportedOperationException(this + " was closed, it cannot be reused!");
+		}
+	}
 
 	public interface Element {
 		default Element getSelf() {

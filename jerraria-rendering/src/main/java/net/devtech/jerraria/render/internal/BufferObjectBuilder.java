@@ -1,9 +1,10 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL33.*;
+import static org.lwjgl.opengl.GL46.*;
 
-import java.lang.ref.Cleaner;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntConsumer;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
@@ -14,7 +15,9 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	private final IntConsumer binder;
 	private final int target;
 	private final int componentLength;
-	private Cleaner.Cleanable glIdRelease;
+	List<BufferObjectBuilder> copies;
+	BufferObjectBuilder deferredSource;
+	int copyCount;
 	private int objectIndex, storedCount, bufferLength, glId;
 	private ByteBuffer store;
 
@@ -24,10 +27,19 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 
 	public BufferObjectBuilder(BufferObjectBuilder builder, int copyCount) {
 		this(builder.binder, builder.target, builder.componentLength, JMath.nearestPowerOf2(copyCount));
+		// todo chain copies and for UBOs
 		if(builder.totalCount() < copyCount) {
 			throw new IllegalArgumentException("totalCount is " + builder.totalCount() + " but requested to copy " + copyCount + " elements!");
 		}
-		this.copyFrom(0, builder, 0, copyCount);
+		builder.upload(false);
+		this.deferredSource = builder;
+		this.copyCount = copyCount;
+		if(builder.copies == null) {
+			builder.copies = new ArrayList<>();
+		}
+		builder.copies.add(this);
+
+		//this.copyFrom(0, builder, 0, copyCount);
 	}
 
 	public BufferObjectBuilder(IntConsumer binder, int target, int componentLength, int toStoreCount) {
@@ -48,6 +60,14 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		);
 	}
 
+	public static BufferObjectBuilder atomic_counter(int uniformLength) {
+		return new BufferObjectBuilder(GLContextState.ATOMIC_COUNTERS::bindBuffer,
+			GLContextState.ATOMIC_COUNTERS.type,
+			uniformLength,
+			1024
+		);
+	}
+
 	/**
 	 * VAOs are not bound to global state, and we create a new one for each "shader object" anyways
 	 */
@@ -56,12 +76,12 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public void appendFrom(BufferObjectBuilder builder, int off, int len) {
-		this.copyFrom(this.totalCount(), builder, off, len);
+		this.copyFrom(this.totalCount(), builder, off, len, true);
 	}
 
-	public void copyFrom(int index, BufferObjectBuilder src, int off, int objects) {
+	public void copyFrom(int index, BufferObjectBuilder src, int off, int objects, boolean updateSrc) {
 		if(objects > 0) {
-			if(src != this) {
+			if(src != this && updateSrc) {
 				src.upload(false);
 			}
 			this.resize((index + objects) * this.componentLength);
@@ -88,7 +108,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		if(builder != this) {
 			builder.upload(false);
 		}
-		this.resize((objectIndex+1) * this.componentLength);
+		this.resize((objectIndex + 1) * this.componentLength);
 		this.upload(false); // flush
 
 		int read = GL_COPY_WRITE_BUFFER;
@@ -112,19 +132,20 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 
 	@SuppressWarnings("IntegerMultiplicationImplicitCastToLong")
 	public long read() {
-		GLContextState.UNIFORM_BUFFER.bindBuffer(this.glId);
+		GLContextState.ATOMIC_COUNTERS.bindBuffer(this.glId);
 		int[] buf = new int[1];
-		glGetBufferSubData(GL_UNIFORM_BUFFER, this.objectIndex*this.componentLength, buf);
+		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, this.objectIndex * this.componentLength, buf);
 		return buf[0] & 0xFFFFFFFFL;
 	}
 
 	public boolean upload(boolean forceBind) {
 		boolean genned = false;
 		if(this.storedCount > 0) {
+			this.updateIfCopy();
+			this.updateCopies();
 			int newBufferLen = (this.objectIndex + this.storedCount) * this.componentLength;
 			long bufferObjectLen = (long) this.objectIndex * this.componentLength;
-			if(newBufferLen > this.bufferLength || this.glId == 0) {
-				this.resize(newBufferLen);
+			if(this.resize(newBufferLen)) {
 				genned = true;
 			} else {
 				this.binder.accept(this.glId);
@@ -137,30 +158,25 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 			this.objectIndex += this.storedCount;
 			this.storedCount = 0;
 		} else if(forceBind) {
-			this.binder.accept(this.glId);
+			this.binder.accept(this.getId());
 		}
 		return genned;
 	}
 
-	private void resize(int newBufferLen) {
-		int alloc = JMath.nearestPowerOf2(newBufferLen + 1024);
-		int old = this.glId;
-		this.binder.accept(this.genBufferObject());
-		glBufferData(this.target, alloc, GL_STATIC_DRAW);
-		int bufferObjectLen = this.objectIndex * this.componentLength;
-		if(bufferObjectLen > 0) {
-			glBindBuffer(GL_COPY_READ_BUFFER, old);
-			glCopyBufferSubData(GL_COPY_READ_BUFFER, this.target, 0, 0, bufferObjectLen);
+	public int getId() {
+		BufferObjectBuilder builder = this;
+		while(builder.deferredSource != null) {
+			builder = builder.deferredSource;
 		}
-		this.bufferLength = alloc;
-	}
-
-	public int getOrGenId() {
-		return this.glId;
+		return builder.glId;
 	}
 
 	public int totalCount() {
-		return this.objectIndex + this.storedCount;
+		int i = this.objectIndex + this.storedCount;
+		if(this.deferredSource != null) {
+			i += this.copyCount;
+		}
+		return i;
 	}
 
 	public void offset(int byteOffset) {
@@ -185,17 +201,56 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		}
 	}
 
-	private int genBufferObject() {
-		GLReclamation.reclaimBuffers();
-		int glId = this.glId = glGenBuffers();
-		Cleaner.Cleanable register = GLReclamation.manageBuffer(this, glId);
-		Cleaner.Cleanable release = this.glIdRelease;
-		if(release != null) {
-			release.clean();
-			// do not immediately reclaim, release just pushes it into a queue
+	public void close() {
+		if(this.glId != 0) {
+			this.updateCopies();
+			glDeleteBuffers(this.glId);
 		}
-		this.glIdRelease = register;
-		return glId;
+	}
+
+	public void updateIfCopy() {
+		BufferObjectBuilder source = this.deferredSource;
+		if(source != null) {
+			List<BufferObjectBuilder> copies = source.copies;
+			if(copies != null) {
+				copies.remove(this);
+			}
+			this.deferredSource = null;
+			this.copyFrom(0, source, 0, this.copyCount, false);
+		}
+	}
+
+	public void updateCopies() {
+		if(this.copies != null) { // copy to all BufferedObjectBuilders that needed this instance
+			List<BufferObjectBuilder> to = this.copies;
+			this.copies = null;
+			for(BufferObjectBuilder copy : to) {
+				copy.deferredSource = null;
+				copy.copyFrom(0, this, 0, copy.copyCount, true);
+			}
+		}
+	}
+
+	private boolean resize(int newBufferLen) {
+		if(newBufferLen > this.bufferLength || this.glId == 0) {
+			int alloc = JMath.nearestPowerOf2(newBufferLen + 1024);
+			int old = this.glId;
+			int new_ = this.glId = glGenBuffers();
+			this.binder.accept(new_); // todo nuke old glId
+			glBufferData(this.target, alloc, GL_STATIC_DRAW);
+			int bufferObjectLen = this.objectIndex * this.componentLength;
+			if(bufferObjectLen > 0) {
+				glBindBuffer(GL_COPY_READ_BUFFER, old);
+				glCopyBufferSubData(GL_COPY_READ_BUFFER, this.target, 0, 0, bufferObjectLen);
+			}
+			if(old != 0) {
+				glDeleteBuffers(old);
+			}
+			this.bufferLength = alloc;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override

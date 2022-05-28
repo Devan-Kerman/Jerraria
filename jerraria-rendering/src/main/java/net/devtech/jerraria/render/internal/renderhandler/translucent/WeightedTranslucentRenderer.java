@@ -38,6 +38,7 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderHandl
 	static final BuiltGlState RESOLVE_STATE = GLStateBuilder
 		.builder()
 		.depthFunc(GL_ALWAYS)
+		.depthMask(false)
 		.blend(true)
 		.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 		.build();
@@ -45,13 +46,21 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderHandl
 	int revealage; // doesn't need to get cleared
 	int accum;
 
+	private static int allocTranslucencyBuffer(int width, int height, int storageType) {
+		int tex = glGenTextures();
+		int type = DataType.TEXTURE_2D.elementType;
+		glBindTexture(type, tex);
+		glTexStorage2D(type, 1, storageType, width, height);
+		return tex;
+	}
+
 	@Override
 	protected TranslucentShaderType type() {
 		return TranslucentShaderType.SINGLE_PASS;
 	}
 
 	@Override
-	public void renderResolve() {
+	public void renderResolve() throws Exception {
 		WBTransResolveShader shader = WBTransResolveShader.INSTANCE;
 		shader.accum.tex(this.accum);
 		shader.reveal.tex(this.revealage);
@@ -63,7 +72,7 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderHandl
 			this.refreshBuffers(lucent, i);
 			call.exec().accept(call.shader());
 		}
-		this.renderQueue.clear();
+		this.clearRenderQueue();
 
 		shader.strategy(AutoStrat.QUADS);
 		shader.vert().vec3f(0, 0, 0);
@@ -82,14 +91,6 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderHandl
 	protected void initialize(TranslucentShader<?> lucent) {
 		lucent.singlePassWeighted.accum.tex(this.accum);
 		lucent.singlePassWeighted.reveal.tex(this.revealage);
-	}
-
-	private static int allocTranslucencyBuffer(int width, int height, int storageType) {
-		int tex = glGenTextures();
-		int type = DataType.TEXTURE_2D.elementType;
-		glBindTexture(type, tex);
-		glTexStorage2D(type, 1, storageType, width, height);
-		return tex;
 	}
 
 	protected void refreshBuffers(Shader<?> shader, int count) {

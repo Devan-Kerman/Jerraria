@@ -47,4 +47,8 @@ class VertexBufferObject {
 		}
 		return this.buffer.upload(true);
 	}
+
+	public void close() {
+		this.buffer.close();
+	}
 }

@@ -71,13 +71,10 @@ public final class GLContextState {
 		}
 	}
 
-	public static void untrackVAOIfBound(int[] arrays) {
+	public static void untrackVAOIfBound(int vao) {
 		int curr = currentVAO;
-		for(int array : arrays) {
-			if(curr == array) {
-				currentVAO = 0;
-				break;
-			}
+		if(curr == vao) {
+			currentVAO = 0;
 		}
 	}
 
@@ -115,6 +112,15 @@ public final class GLContextState {
 
 	public static void drawBuffers(int amount) {
 		glDrawBuffers(BUFFER_ARRAYS[amount]);
+	}
+
+	public static void untrackFBOIfBound(int buffer) {
+		if(writeFBO == buffer) {
+			writeFBO = 0;
+		}
+		if(readFBO == buffer) {
+			readFBO = 0;
+		}
 	}
 
 	public static final class IntState {
@@ -199,6 +205,7 @@ public final class GLContextState {
 		public final int type;
 		final long[] ids;
 		final int maxBindings;
+		long generic;
 
 		public IndexedBufferTargetState(int type, int maxQuery) {
 			int maxBindings = glGetInteger(maxQuery);
@@ -208,17 +215,19 @@ public final class GLContextState {
 		}
 
 		public void bindBufferRange(int index, int bufferId, int offset, int byteLength) {
-			long toBind = JMath.combineInts(bufferId, offset ^ 0b101010101); // prevent offset 0 and index-less bind from conflicting
+			long ubid = JMath.combineInts(bufferId, offset ^ 0b101010101); // prevent offset 0 and index-less bind from conflicting
 			long current = this.ids[index];
-			if(current != toBind) {
-				glBindBufferRange(
-					this.type,
-					index,
-					bufferId,
-					offset,
-					byteLength
-				);
-				this.ids[index] = toBind;
+			glBindBufferRange(
+				this.type,
+				index,
+				bufferId,
+				offset,
+				byteLength
+			);
+			if(current != ubid || this.generic != ubid) {
+
+				this.ids[index] = ubid;
+				this.generic = ubid;
 			}
 		}
 
@@ -227,14 +236,18 @@ public final class GLContextState {
 		 */
 		public void bindBufferBase(int index, int bufferId) {
 			long current = this.ids[index];
-			if(current != bufferId) {
-				glBindBuffer(this.type, bufferId);
+			if(current != bufferId || this.generic != bufferId) {
+				glBindBufferBase(this.type, index, bufferId);
 				this.ids[index] = bufferId;
+				this.generic = bufferId;
 			}
 		}
 
 		public void bindBuffer(int bufferId) {
-			this.bindBufferBase(0, bufferId);
+			if(this.generic != bufferId) {
+				glBindBuffer(this.type, bufferId);
+				this.generic = bufferId;
+			}
 		}
 	}
 

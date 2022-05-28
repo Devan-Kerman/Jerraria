@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
@@ -36,6 +37,10 @@ public class RenderThread {
 				RENDER_QUEUE.remove(i).run();
 			}
 			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
+
+			if(BareShader.IN_DEV) {
+				System.gc();
+			}
 		}
 	}
 

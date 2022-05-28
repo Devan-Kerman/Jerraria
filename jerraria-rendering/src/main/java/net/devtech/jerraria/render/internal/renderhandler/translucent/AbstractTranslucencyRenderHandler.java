@@ -18,7 +18,7 @@ import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 
 public abstract class AbstractTranslucencyRenderHandler extends RenderHandler implements TranslucencyRenderer {
-	public final List<RenderCall> renderQueue = new ArrayList<>();
+	public List<RenderCall> renderQueue = new ArrayList<>();
 	public record RenderCall(Shader<?> shader, Consumer<Shader<?>> exec) {}
 
 	public AbstractTranslucencyRenderHandler() {
@@ -26,6 +26,13 @@ public abstract class AbstractTranslucencyRenderHandler extends RenderHandler im
 		glGetIntegerv(GL_VIEWPORT, dims);
 		int width = dims[2], height = dims[3];
 		this.frameSize(width, height);
+	}
+
+	public void clearRenderQueue() throws Exception {
+		for(RenderCall call : this.renderQueue) {
+			call.shader.close();
+		}
+		this.renderQueue.clear();
 	}
 
 	@Override
@@ -57,7 +64,7 @@ public abstract class AbstractTranslucencyRenderHandler extends RenderHandler im
 
 	public void renderStart() {}
 
-	public abstract void renderResolve();
+	public abstract void renderResolve() throws Exception;
 
 	public abstract void frameSize(int width, int height);
 

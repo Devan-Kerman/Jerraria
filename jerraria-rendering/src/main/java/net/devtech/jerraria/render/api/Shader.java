@@ -18,6 +18,7 @@ import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
-public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
+public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implements AutoCloseable {
 	// todo ticking for Instancer
 	// todo custom invalidation for Instancer
 	// todo more flexible "allocation" of instances
@@ -215,6 +216,15 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> {
 			c.add(value);
 		} else {
 			throw new IllegalStateException(name + " is not a list!");
+		}
+	}
+
+	@Override
+	public void close() {
+		try {
+			this.shader.close();
+		} catch(Exception e) {
+			throw Validate.rethrow(e);
 		}
 	}
 

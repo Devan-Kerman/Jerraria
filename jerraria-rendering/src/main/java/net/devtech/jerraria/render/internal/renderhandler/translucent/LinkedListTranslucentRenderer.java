@@ -2,6 +2,8 @@ package net.devtech.jerraria.render.internal.renderhandler.translucent;
 
 import static org.lwjgl.opengl.GL42.*;
 
+import java.util.ArrayList;
+
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
@@ -21,19 +23,23 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderHan
 	}
 
 	@Override
-	public void renderResolve() {
+	public void renderResolve() throws Exception {
 		GLContextState.bindFrameBuffer(this.clearingFramebuffer);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.imageListHead, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+		long counter = 0L;
 		for(RenderCall call : this.renderQueue) {
 			TranslucentShader<?> shader = (TranslucentShader<?>) call.shader();
-			shader.linkedListUniforms.counter.ui(0L); // todo this is incorrect, need to getValue
+			shader.linkedListUniforms.counter.ui(counter);
 			shader.linkedListUniforms.translucencyBuffer.tex(this.translucencyBufferTex);
 			shader.linkedListUniforms.imgListHead.tex(this.imageListHead);
 			call.exec().accept(shader);
+			counter = shader.linkedListUniforms.counter.read();
 		}
-		this.renderQueue.clear();
+
+		glMemoryBarrier(-1);
+		this.clearRenderQueue();
 
 		LLTransResolveShader shader = LLTransResolveShader.INSTANCE;
 		shader.translucencyBuffer.tex(this.translucencyBufferTex);
