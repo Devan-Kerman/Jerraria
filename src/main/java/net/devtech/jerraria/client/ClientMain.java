@@ -1,16 +1,11 @@
 package net.devtech.jerraria.client;
 
-import static java.util.Objects.requireNonNull;
-
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class ClientMain {
 
 	public static void main(String[] argv) {
 		Bootstrap.startClient(argv, () -> {
-
-
-
 
 			return null;
 		});

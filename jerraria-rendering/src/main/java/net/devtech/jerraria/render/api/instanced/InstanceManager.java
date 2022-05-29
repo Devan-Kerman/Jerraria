@@ -34,7 +34,13 @@ public class InstanceManager {
 		binaryRemove(this.active, id, -1);
 	}
 
+	/**
+	 * @return -1 if there are no available ids
+	 */
 	public int allocateId() {
+		if(this.unused.isEmpty()) {
+			return -1;
+		}
 		int from = this.unused.removeInt(this.unused.size() - 1);
 		if(this.active.isEmpty() || this.active.getInt(this.active.size() - 1) > from) {
 			this.active.add(from); // mini optimization

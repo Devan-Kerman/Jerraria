@@ -5,6 +5,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.textures.Texture;
+import net.devtech.jerraria.util.math.Matrix3f;
 
 /**
  * A 2d vector of a primitive gl value
@@ -44,6 +45,10 @@ public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N>
 	public static class F<N extends GlValue<?>> extends Vec2<N> {
 		protected F(GlData data, GlValue<?> next, String name) {
 			super(data, next, name);
+		}
+
+		public N vec2f(Matrix3f mat, float x, float y) {
+			return this.vec2f(mat.mulX(x, y, 1), mat.mulY(x, y, 1));
 		}
 
 		public N vec2f(float a, float b) {
