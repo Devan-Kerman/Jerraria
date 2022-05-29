@@ -10,11 +10,11 @@ import it.unimi.dsi.fastutil.ints.IntList;
  */
 public class InstanceManager {
 	/**
-	 * Stores unused ids in reverse order
+	 * Stores unused ids in reverse order.
 	 */
 	final IntList unused;
 	/**
-	 * Stores currently active instance ids in reverse order
+	 * Stores currently active instance ids in reverse order.
 	 */
 	final IntList active;
 	int maxInstances;
@@ -36,7 +36,11 @@ public class InstanceManager {
 
 	public int allocateId() {
 		int from = this.unused.removeInt(this.unused.size() - 1);
-		binaryInsert(this.active, from, -1);
+		if(this.active.isEmpty() || this.active.getInt(this.active.size() - 1) > from) {
+			this.active.add(from); // mini optimization
+		} else {
+			binaryInsert(this.active, from, -1);
+		}
 		return from;
 	}
 
@@ -62,26 +66,6 @@ public class InstanceManager {
 	 */
 	public int getActiveInstances() {
 		return this.active.size();
-	}
-
-	/**
-	 * SSBO instanced rendering has an "unlimited" size
-	 */
-	public static class Resizable extends InstanceManager {
-		public Resizable(int expectedInstances) {
-			super(expectedInstances);
-		}
-
-		@Override
-		public int allocateId() {
-			if(this.unused.isEmpty()) {
-				for(int i = this.maxInstances*2; i > 0; i--) {
-					this.unused.add((i-1) + this.maxInstances);
-				}
-				this.maxInstances *= 2;
-			}
-			return super.allocateId();
-		}
 	}
 
 	/**
@@ -123,5 +107,25 @@ public class InstanceManager {
 
 	public interface CopyHandler {
 		void relocate(int originalId, int newId);
+	}
+
+	/**
+	 * SSBO instanced rendering has an "unlimited" size
+	 */
+	public static class Resizable extends InstanceManager {
+		public Resizable(int expectedInstances) {
+			super(expectedInstances);
+		}
+
+		@Override
+		public int allocateId() {
+			if(this.unused.isEmpty()) {
+				for(int i = this.maxInstances * 2; i > 0; i--) {
+					this.unused.add((i - 1) + this.maxInstances);
+				}
+				this.maxInstances *= 2;
+			}
+			return super.allocateId();
+		}
 	}
 }
