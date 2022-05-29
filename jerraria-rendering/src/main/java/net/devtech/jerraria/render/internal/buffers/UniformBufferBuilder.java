@@ -52,16 +52,14 @@ public class UniformBufferBuilder extends ByteBufferGlDataBuf {
 	public void copyFrom(int index, UniformBufferBuilder src, int off, int byteOff, int byteLen) {
 		if(src != this) {
 			src.flush();
-		} else if(off >= this.capacity) {
+		} else if((off+byteLen/this.length) > this.capacity) {
 			// make space, technically we could just set index to zero but im lazy
 			// this is a rare case anyways
 			this.switchTo(off);
 		}
 
-		if(this.blockId != index) {
-			this.switchTo(index);
-		} else {
-			this.bind(index); // don't bother uploading data if we will overwrite it right after
+		if(!(index == this.blockId && byteLen == this.length)) {
+			this.flush();
 		}
 
 		int read;
@@ -80,7 +78,7 @@ public class UniformBufferBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public void switchTo(int blockId) {
-		if(!this.contains.isEmpty()) {
+		if(!this.contains.isEmpty() && blockId != this.blockId) {
 			this.upload(this.blockId);
 		}
 		this.blockId = blockId;
