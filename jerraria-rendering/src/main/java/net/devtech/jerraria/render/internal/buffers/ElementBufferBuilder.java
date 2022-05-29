@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.internal;
+package net.devtech.jerraria.render.internal.buffers;
 
 import static org.lwjgl.opengl.GL31.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL31.glBufferData;
@@ -7,23 +7,24 @@ import static org.lwjgl.opengl.GL31.glBufferSubData;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.util.math.JMath;
 
-public final class BufferBuilder extends ByteBufferGlDataBuf {
+public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 	final int vertexLength;
 	int vertexCount;
 	ByteBuffer buffer;
 
-	public BufferBuilder(int vertexLength) {
+	public ElementBufferBuilder(int vertexLength) {
 		this.vertexLength = vertexLength;
 		this.buffer = allocateBuffer(Math.max(1024, vertexLength*16));
 	}
 
-	public BufferBuilder(BufferBuilder builder) {
+	public ElementBufferBuilder(ElementBufferBuilder builder) {
 		this(builder, builder.vertexCount);
 	}
 
-	public BufferBuilder(BufferBuilder builder, int vertices) {
+	public ElementBufferBuilder(ElementBufferBuilder builder, int vertices) {
 		this.vertexLength = builder.vertexLength;
 		this.vertexCount = vertices;
 		ByteBuffer buffer = builder.buffer;
@@ -36,13 +37,13 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		}
 	}
 
-	public BufferBuilder(int vertexLength, int expectedSize) {
+	public ElementBufferBuilder(int vertexLength, int expectedSize) {
 		this.vertexLength = vertexLength;
 		// compute the next highest power of 2 of 32-bit v
 		this.buffer = allocateBuffer(JMath.nearestPowerOf2(expectedSize));
 	}
 
-	public void copyVertexes(BufferBuilder builder, int from, int len) {
+	public void copyVertexes(ElementBufferBuilder builder, int from, int len) {
 		if(builder.vertexLength != this.vertexLength) {
 			throw new UnsupportedOperationException("cannot copy from " + builder.vertexLength + " to " + this.vertexLength);
 		}
@@ -55,7 +56,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.vertexCount += len;
 	}
 
-	public void copyVertex(BufferBuilder builder, int vertexId) {
+	public void copyVertex(ElementBufferBuilder builder, int vertexId) {
 		int vertexOffset = vertexId * this.vertexLength;
 		ByteBuffer buffer = this.buffer;
 		buffer.put(buffer.position(), builder.buffer, vertexOffset, this.vertexLength);
@@ -66,7 +67,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		this.buffer.position(0);
 	}
 
-	public BufferBuilder next() {
+	public ElementBufferBuilder next() {
 		// the order here is correct, looks wrong but it's right
 		this.vertexCount++;
 		this.allocate(this.vertexLength);
@@ -100,15 +101,15 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 		return buffer;
 	}
 
-	int vertexOffset() {
+	public int vertexOffset() {
 		return this.vertexCount * this.vertexLength;
 	}
 
-	void uniformCount() {
+	public void uniformCount() {
 		this.vertexCount = 1;
 	}
 
-	void subUpload(int bufferType, long offset, int vertexLimit) {
+	public void subUpload(int bufferType, long offset, int vertexLimit) {
 		if(this.vertexCount > vertexLimit) {
 			throw new IllegalStateException("BufferBuilder has more vertices than was allocated for this instance!");
 		}
@@ -126,7 +127,7 @@ public final class BufferBuilder extends ByteBufferGlDataBuf {
 	/**
 	 * Ensure the BufferBuilder has enough space to add the given amount of bytes to it
 	 */
-	ByteBuffer allocate(int neededForNext) {
+	public ByteBuffer allocate(int neededForNext) {
 		ByteBuffer buffer = this.buffer;
 		if((buffer.limit() - this.vertexOffset()) < neededForNext) {
 			ByteBuffer old = buffer;

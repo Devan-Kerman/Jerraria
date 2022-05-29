@@ -4,31 +4,32 @@ import static org.lwjgl.opengl.GL15.*;
 
 import java.nio.ByteBuffer;
 
+import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 
 // todo move EBO into VAO class?
 public class EBO {
 	final int glId;
 	int currentType;
-	BufferBuilder builder;
+	ElementBufferBuilder builder;
 	boolean isDirty;
 
 	public EBO() {
-		this.builder = new BufferBuilder(1, 256);
+		this.builder = new ElementBufferBuilder(1, 256);
 		this.glId = glGenBuffers();
 		this.currentType = GL_UNSIGNED_BYTE;
 	}
 
 	public EBO(EBO ebo) {
 		this.glId = glGenBuffers();
-		this.builder = new BufferBuilder(ebo.builder);
+		this.builder = new ElementBufferBuilder(ebo.builder);
 		this.currentType = ebo.currentType;
 		this.isDirty = true;
 	}
 
 	public EBO(ShapeStrat strat, int elements) {
 		this.glId = glGenBuffers();
-		this.builder = new BufferBuilder(strat.builder, elements);
+		this.builder = new ElementBufferBuilder(strat.builder, elements);
 		this.currentType = strat.getType();
 		this.isDirty = true;
 	}
@@ -59,18 +60,18 @@ public class EBO {
 	private void ensureCanIndex(int index) {
 		if(index >= 65536 && this.currentType < GL_UNSIGNED_INT) {
 			// resize to int
-			BufferBuilder current = this.builder;
-			ByteBuffer buffer = current.buffer;
-			BufferBuilder new_ = new BufferBuilder(4, current.vertexCount*4+1024);
+			ElementBufferBuilder current = this.builder;
+			ByteBuffer buffer = current.getBuffer();
+			ElementBufferBuilder new_ = new ElementBufferBuilder(4, current.getVertexCount() * 4 + 1024);
 			ByteBuffer newBuf = new_.getBuffer();
 			buffer.flip();
 			if(this.currentType == GL_UNSIGNED_SHORT) { // short -> int
-				for(int i = 0; i < current.vertexCount; i++) {
+				for(int i = 0; i < current.getVertexCount(); i++) {
 					newBuf.putInt(buffer.getShort());
 					new_.next();
 				}
 			} else { // byte -> int
-				for(int i = 0; i < current.vertexCount; i++) {
+				for(int i = 0; i < current.getVertexCount(); i++) {
 					newBuf.putInt(buffer.get());
 					new_.next();
 				}
@@ -79,12 +80,12 @@ public class EBO {
 			this.currentType = GL_UNSIGNED_INT;
 		} else if(index >= 256 && this.currentType < GL_UNSIGNED_SHORT) {
 			// resize to short
-			BufferBuilder current = this.builder;
-			ByteBuffer buffer = current.buffer;
-			BufferBuilder new_ = new BufferBuilder(2, current.vertexCount*2+256);
+			ElementBufferBuilder current = this.builder;
+			ByteBuffer buffer = current.getBuffer();
+			ElementBufferBuilder new_ = new ElementBufferBuilder(2, current.getVertexCount() * 2 + 256);
 			ByteBuffer newBuf = new_.getBuffer();
 			buffer.flip();
-			for(int i = 0; i < current.vertexCount; i++) {
+			for(int i = 0; i < current.getVertexCount(); i++) {
 				newBuf.putShort(buffer.get());
 				new_.next();
 			}

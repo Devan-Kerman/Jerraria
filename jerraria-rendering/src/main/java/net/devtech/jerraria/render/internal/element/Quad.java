@@ -7,7 +7,7 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.BufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
 import net.devtech.jerraria.util.math.JMath;
 
 public final class Quad extends ShapeStrat {
@@ -18,7 +18,7 @@ public final class Quad extends ShapeStrat {
 	final long maxSize;
 
 	Quad(int unitLen, int maxSize, int glType, BufferInserter inserter) {
-		super(new BufferBuilder(unitLen, Math.min(maxSize, 16384) * unitLen * 6), inserter, glType);
+		super(new ElementBufferBuilder(unitLen, Math.min(maxSize, 16384) * unitLen * 6), inserter, glType);
 		this.maxSize = maxSize;
 		this.ensureCapacity(Math.min(maxSize, 16384));
 	}

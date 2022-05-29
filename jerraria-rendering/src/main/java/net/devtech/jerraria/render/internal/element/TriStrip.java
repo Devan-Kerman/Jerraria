@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.BufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
 
 public class TriStrip extends ShapeStrat {
 	public static final TriStrip BYTE_ = new TriStrip( ShapeStrat.BYTE, 1,  GL_UNSIGNED_BYTE);
@@ -18,7 +18,7 @@ public class TriStrip extends ShapeStrat {
 	public static final TriStrip INT_ = new TriStrip(ShapeStrat.INT, 4, GL_UNSIGNED_INT);
 
 	protected TriStrip(BufferInserter inserter, int unitLen, int type) {
-		super(new BufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384))*unitLen), inserter, type);
+		super(new ElementBufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384)) * unitLen), inserter, type);
 	}
 
 	@Override

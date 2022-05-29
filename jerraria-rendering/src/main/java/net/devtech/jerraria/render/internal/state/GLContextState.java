@@ -19,7 +19,7 @@ public final class GLContextState {
 	public static final EnableState DEPTH_TEST = new EnableState(GL_DEPTH_TEST, false);
 	public static final EnableState BLEND = new EnableState(GL_BLEND, false);
 	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
-	public static final BlendStateI[] BLEND_STATE_IS;
+	public static final BlendStateI[] BLEND_STATE_IS; // todo better version of this, we should store a "generic" target
 	private static final BlendStateI defaultManager;
 
 	static int currentGlId, currentVAO, readFBO, writeFBO, defaultFBO;

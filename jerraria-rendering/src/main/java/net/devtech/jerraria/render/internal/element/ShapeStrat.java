@@ -10,19 +10,19 @@ import static org.lwjgl.opengl.GL15.glGenBuffers;
 import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.BufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
 
 public abstract class ShapeStrat {
 	public static final BufferInserter BYTE = (b, i) -> b.put((byte) i);
 	public static final BufferInserter SHORT = (b, i) -> b.putShort((short) i);
 	public static final BufferInserter INT = ByteBuffer::putInt;
-	public final BufferBuilder builder;
+	public final ElementBufferBuilder builder;
 	final BufferInserter inserter;
 	final int elementBufferObject;
 	final int type;
 	boolean isDirty;
 
-	protected ShapeStrat(BufferBuilder builder, BufferInserter inserter, int type) {
+	protected ShapeStrat(ElementBufferBuilder builder, BufferInserter inserter, int type) {
 		this.builder = builder;
 		this.inserter = inserter;
 		this.type = type;

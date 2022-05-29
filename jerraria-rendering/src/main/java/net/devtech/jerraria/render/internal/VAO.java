@@ -16,6 +16,7 @@ import java.util.Set;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.internal.buffers.VertexBufferObjectBuilder;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 
@@ -119,7 +120,7 @@ public class VAO extends GlData {
 	public Buf element(GlData.Element elem) {
 		this.validate();
 		ElementImpl element = (ElementImpl) elem;
-		BufferObjectBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
+		VertexBufferObjectBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
 		buffer.offset(element.byteOffset());
 		return buffer;
 	}

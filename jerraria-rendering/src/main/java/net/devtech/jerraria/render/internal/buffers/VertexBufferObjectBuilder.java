@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.internal;
+package net.devtech.jerraria.render.internal.buffers;
 
 import static org.lwjgl.opengl.GL46.*;
 
@@ -7,27 +7,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 
+import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.math.JMath;
 
-// todo lazy copy for translucency api!
-public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
+public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 	private final IntConsumer binder;
 	private final int target;
 	private final int componentLength;
-	List<BufferObjectBuilder> copies;
-	BufferObjectBuilder deferredSource;
+	List<VertexBufferObjectBuilder> copies;
+	VertexBufferObjectBuilder deferredSource;
 	int copyCount;
 	private int objectIndex, storedCount, bufferLength, glId;
 	private ByteBuffer store;
 
-	public BufferObjectBuilder(BufferObjectBuilder builder) {
+	public VertexBufferObjectBuilder(VertexBufferObjectBuilder builder) {
 		this(builder, builder.totalCount());
 	}
 
-	public BufferObjectBuilder(BufferObjectBuilder builder, int copyCount) {
+	public VertexBufferObjectBuilder(VertexBufferObjectBuilder builder, int copyCount) {
 		this(builder.binder, builder.target, builder.componentLength, JMath.nearestPowerOf2(copyCount));
-		// todo chain copies and for UBOs
 		if(builder.totalCount() < copyCount) {
 			throw new IllegalArgumentException("totalCount is " + builder.totalCount() + " but requested to copy " + copyCount + " elements!");
 		}
@@ -38,30 +37,28 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 			builder.copies = new ArrayList<>();
 		}
 		builder.copies.add(this);
-
-		//this.copyFrom(0, builder, 0, copyCount);
 	}
 
-	public BufferObjectBuilder(IntConsumer binder, int target, int componentLength, int toStoreCount) {
+	public VertexBufferObjectBuilder(IntConsumer binder, int target, int componentLength, int toStoreCount) {
 		this.binder = binder;
 		this.target = target;
 		this.componentLength = componentLength;
-		this.store = BufferBuilder.allocateBuffer(toStoreCount * componentLength);
+		this.store = ElementBufferBuilder.allocateBuffer(toStoreCount * componentLength);
 	}
 
 	/**
 	 * uniforms are bound to global state so we use this
 	 */
-	public static BufferObjectBuilder uniform(int uniformLength) {
-		return new BufferObjectBuilder(GLContextState.UNIFORM_BUFFER::bindBuffer,
+	public static VertexBufferObjectBuilder uniform(int uniformLength) {
+		return new VertexBufferObjectBuilder(GLContextState.UNIFORM_BUFFER::bindBuffer,
 			GLContextState.UNIFORM_BUFFER.type,
 			uniformLength,
 			1024
 		);
 	}
 
-	public static BufferObjectBuilder atomic_counter(int uniformLength) {
-		return new BufferObjectBuilder(GLContextState.ATOMIC_COUNTERS::bindBuffer,
+	public static VertexBufferObjectBuilder atomic_counter(int uniformLength) {
+		return new VertexBufferObjectBuilder(GLContextState.ATOMIC_COUNTERS::bindBuffer,
 			GLContextState.ATOMIC_COUNTERS.type,
 			uniformLength,
 			1024
@@ -71,15 +68,15 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	/**
 	 * VAOs are not bound to global state, and we create a new one for each "shader object" anyways
 	 */
-	public static BufferObjectBuilder vaoBound(int type, int componentLength) {
-		return new BufferObjectBuilder(i -> glBindBuffer(type, i), type, componentLength, 1024);
+	public static VertexBufferObjectBuilder vaoBound(int type, int componentLength) {
+		return new VertexBufferObjectBuilder(i -> glBindBuffer(type, i), type, componentLength, 1024);
 	}
 
-	public void appendFrom(BufferObjectBuilder builder, int off, int len) {
+	public void appendFrom(VertexBufferObjectBuilder builder, int off, int len) {
 		this.copyFrom(this.totalCount(), builder, off, len, true);
 	}
 
-	public void copyFrom(int index, BufferObjectBuilder src, int off, int objects, boolean updateSrc) {
+	public void copyFrom(int index, VertexBufferObjectBuilder src, int off, int objects, boolean updateSrc) {
 		if(objects > 0) {
 			if(src != this && updateSrc) {
 				src.upload(false);
@@ -104,7 +101,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		}
 	}
 
-	public void copyAttribute(int objectIndex, int byteOffset, int byteLen, BufferObjectBuilder builder, int offset) {
+	public void copyAttribute(int objectIndex, int byteOffset, int byteLen, VertexBufferObjectBuilder builder, int offset) {
 		if(builder != this) {
 			builder.upload(false);
 		}
@@ -128,14 +125,6 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	public void reset() {
 		this.objectIndex = 0;
 		this.storedCount = 0;
-	}
-
-	@SuppressWarnings("IntegerMultiplicationImplicitCastToLong")
-	public long read() {
-		GLContextState.ATOMIC_COUNTERS.bindBuffer(this.glId);
-		int[] buf = new int[1];
-		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, this.objectIndex * this.componentLength, buf);
-		return buf[0] & 0xFFFFFFFFL;
 	}
 
 	public boolean upload(boolean forceBind) {
@@ -164,7 +153,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public int getId() {
-		BufferObjectBuilder builder = this;
+		VertexBufferObjectBuilder builder = this;
 		while(builder.deferredSource != null) {
 			builder = builder.deferredSource;
 		}
@@ -195,7 +184,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 		this.storedCount++;
 		int neededSize = this.storedCount * this.componentLength;
 		if(this.store.capacity() < neededSize) {
-			ByteBuffer buffer = BufferBuilder.allocateBuffer(JMath.nearestPowerOf2(neededSize + 1024));
+			ByteBuffer buffer = ElementBufferBuilder.allocateBuffer(JMath.nearestPowerOf2(neededSize + 1024));
 			buffer.put(0, this.store, 0, this.storedCount * this.componentLength);
 			this.store = buffer;
 		}
@@ -209,9 +198,9 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public void updateIfCopy() {
-		BufferObjectBuilder source = this.deferredSource;
+		VertexBufferObjectBuilder source = this.deferredSource;
 		if(source != null) {
-			List<BufferObjectBuilder> copies = source.copies;
+			List<VertexBufferObjectBuilder> copies = source.copies;
 			if(copies != null) {
 				copies.remove(this);
 			}
@@ -222,9 +211,9 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 
 	public void updateCopies() {
 		if(this.copies != null) { // copy to all BufferedObjectBuilders that needed this instance
-			List<BufferObjectBuilder> to = this.copies;
+			List<VertexBufferObjectBuilder> to = this.copies;
 			this.copies = null;
-			for(BufferObjectBuilder copy : to) {
+			for(VertexBufferObjectBuilder copy : to) {
 				copy.deferredSource = null;
 				copy.copyFrom(0, this, 0, copy.copyCount, true);
 			}
@@ -236,7 +225,7 @@ public final class BufferObjectBuilder extends ByteBufferGlDataBuf {
 			int alloc = JMath.nearestPowerOf2(newBufferLen + 1024);
 			int old = this.glId;
 			int new_ = this.glId = glGenBuffers();
-			this.binder.accept(new_); // todo nuke old glId
+			this.binder.accept(new_);
 			glBufferData(this.target, alloc, GL_STATIC_DRAW);
 			int bufferObjectLen = this.objectIndex * this.componentLength;
 			if(bufferObjectLen > 0) {

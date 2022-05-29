@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
-import net.devtech.jerraria.render.internal.BufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
 
 public final class Seq extends ShapeStrat {
 	public static final Seq BYTE_ = new Seq(1, GL_UNSIGNED_BYTE, ShapeStrat.BYTE);
@@ -26,7 +26,7 @@ public final class Seq extends ShapeStrat {
 	}
 
 	Seq(int unitLen, int glType, BufferInserter inserter) {
-		super(new BufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384))*unitLen), inserter, glType);
+		super(new ElementBufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384)) * unitLen), inserter, glType);
 		this.ensureCapacity(ifloor(min(pow(256, unitLen), 16384)));
 	}
 

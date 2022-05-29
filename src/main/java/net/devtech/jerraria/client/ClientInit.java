@@ -75,6 +75,7 @@ class ClientInit {
 		maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
 
 		// todo save viewport size
+
 		GL11.glViewport(0, 0, 800, 600);
 		GLFW.glfwSetFramebufferSizeCallback(window, ($, width, height) -> {
 			GL11.glViewport(0, 0, width, height);
