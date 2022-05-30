@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.Shader;
@@ -28,6 +29,14 @@ public class ShaderSource {
 	@ApiStatus.Internal
 	public Set<Map.Entry<ShaderKey<?>, Shader<?>>> entries() {
 		return this.shaderMap.entrySet();
+	}
+
+	public void close() {
+		RenderThread.queueRenderTask(() -> {
+			for(Shader<?> value : this.shaderMap.values()) {
+				value.close();
+			}
+		});
 	}
 
 	public interface ShaderConfigurator<T extends Shader<?>> {

@@ -163,7 +163,7 @@ public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 
 	public void next() {
 		this.storedCount++;
-		int neededSize = this.storedCount * this.componentLength;
+		int neededSize = (this.storedCount+1) * this.componentLength;
 		if(this.store.capacity() < neededSize) {
 			ByteBuffer buffer = ElementBufferBuilder.allocateBuffer(JMath.nearestPowerOf2(neededSize + 1024));
 			buffer.put(0, this.store, 0, this.storedCount * this.componentLength);

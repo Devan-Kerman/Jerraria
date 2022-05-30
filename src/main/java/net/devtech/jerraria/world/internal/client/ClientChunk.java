@@ -8,6 +8,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import com.google.common.collect.Iterables;
+import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.DrawMethod;
@@ -174,9 +175,15 @@ public class ClientChunk extends Chunk {
 					);
 					var baked = ClientChunkBakedTileQuadrantRenderer.bake(snapshot, absQuadX, absQuadY);
 					if(Thread.currentThread().isInterrupted()) {
+						if(baked != null) {
+							baked.close();
+						}
 						return;
 					}
-					this.quadrants.set(quadrantIndex, baked);
+					BakedClientChunkQuadrant set = this.quadrants.getAndSet(quadrantIndex, baked);
+					if(set != null) {
+						set.close();
+					}
 				} catch(Exception e) {
 					new IllegalStateException("Error when baking chunk", e).printStackTrace();
 				}
@@ -220,6 +227,14 @@ public class ClientChunk extends Chunk {
 				}
 			}
 			this.minInvalidation = AutoBlockLayerInvalidation.VALUES[minInvalidation];
+		}
+
+		public void close() {
+			RenderThread.queueRenderTask(() -> {
+				for(BakedClientChunkQuadrantData layer : this.opaqueLayers) {
+					layer.vertexData.close();
+				}
+			});
 		}
 	}
 }

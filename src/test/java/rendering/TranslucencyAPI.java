@@ -1,7 +1,6 @@
 package rendering;
 
 import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.util.func.TRunnable;

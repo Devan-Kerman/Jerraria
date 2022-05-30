@@ -17,8 +17,10 @@ import net.devtech.jerraria.world.tile.render.TileRenderer;
 public class ClientChunkBakedTileQuadrantRenderer {
 	public static ClientChunk.BakedClientChunkQuadrant bake(World localWorld, int absQuadrantX, int absQuadrantY) {
 		ShaderSource source = new ShaderSource();
-		int startX = absQuadrantX << World.LOG2_CHUNK_QUADRANT_SIZE, startY =
-			                                                             absQuadrantY << World.LOG2_CHUNK_QUADRANT_SIZE, endX = (absQuadrantX + 1) << World.LOG2_CHUNK_QUADRANT_SIZE, endY = (absQuadrantY + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
+		int startX = absQuadrantX << World.LOG2_CHUNK_QUADRANT_SIZE;
+		int startY = absQuadrantY << World.LOG2_CHUNK_QUADRANT_SIZE;
+		int endX = (absQuadrantX + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
+		int endY = (absQuadrantY + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
 
 		Thread current = Thread.currentThread();
 		Matrix3f mat = new Matrix3f();
@@ -26,6 +28,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 			for(int y = startY; y < endY; y++) {
 				for(TileLayers layer : TileLayers.LAYERS) {
 					if(current.isInterrupted()) {
+						source.close();
 						return null;
 					}
 					TileLayer tileLayer = localWorld.layerFor(layer);
@@ -50,6 +53,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 		Map<BuiltGlState, List<ClientChunk.BakedClientChunkQuadrantData>> data = new HashMap<>();
 		for(var entry : source.entries()) {
 			if(current.isInterrupted()) {
+				source.close();
 				return null;
 			}
 			var value = entry.getKey();
@@ -65,8 +69,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 
 		// todo order independent translucency
 
-		return new ClientChunk.BakedClientChunkQuadrant(
-			data.values().stream().flatMap(List::stream).toList(),
+		return new ClientChunk.BakedClientChunkQuadrant(data.values().stream().flatMap(List::stream).toList(),
 			List.of()
 		);
 	}
