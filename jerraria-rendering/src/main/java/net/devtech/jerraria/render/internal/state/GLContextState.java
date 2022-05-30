@@ -10,10 +10,13 @@ import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL46;
 
+// todo untrack binded deleted buffers
 public final class GLContextState {
 	private static final int[][] BUFFER_ARRAYS;
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
+	public static final IndexedBufferTargetState SHADER_BUFFER = new IndexedBufferTargetState(GL_SHADER_STORAGE_BUFFER, GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS);
+
 	public static final IntState DEPTH_FUNC = new IntState(GL46::glDepthFunc, GL_LESS);
 	public static final BoolState DEPTH_MASK = new BoolState(GL46::glDepthMask, true);
 	public static final EnableState DEPTH_TEST = new EnableState(GL_DEPTH_TEST, false);

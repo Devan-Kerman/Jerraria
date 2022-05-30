@@ -1,6 +1,14 @@
 package rendering;
 
-import static org.lwjgl.opengl.GL42.*;
+import static org.lwjgl.opengl.GL42.GL_ALWAYS;
+import static org.lwjgl.opengl.GL42.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL42.GL_R32F;
+import static org.lwjgl.opengl.GL42.GL_RGBA32F;
+import static org.lwjgl.opengl.GL42.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL42.glBindTexture;
+import static org.lwjgl.opengl.GL42.glGenTextures;
+import static org.lwjgl.opengl.GL42.glMemoryBarrier;
+import static org.lwjgl.opengl.GL42.glTexStorage2D;
 
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
@@ -30,7 +38,7 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				int[] colors = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF,
 				                0x0000FF, 0xFF00FF, 0xFFFFFF, 0xAAAAAA};
 				for(float i = 0; i < 1; i+=.125) {
-					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i);
+					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i, colors[(int) (i * 8)]);
 				}
 
 				// render to translucency buffer

@@ -1,7 +1,7 @@
 #include jerraria:api/translucency
 
-vec4 color;
+in vec4 vColor;
 
 void main() {
-	emit(color);
+	emit(vColor);
 }

@@ -4,7 +4,6 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.buffers.UniformBufferBuilder;
-import net.devtech.jerraria.render.internal.buffers.VertexBufferObjectBuilder;
 
 public class AtomicCounter extends V.UI<End> { // todo get atomic int value
 	protected AtomicCounter(GlData data, GlValue<?> next, String name) {

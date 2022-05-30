@@ -1,6 +1,7 @@
 package rendering;
 
 import net.devtech.jerraria.client.Bootstrap;
+import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.util.func.TRunnable;
@@ -15,19 +16,18 @@ public class TranslucencyAPI {
 		Bootstrap.startClient(args, () -> {
 			RenderThread.addRenderStage(TRunnable.of(() -> {
 				TestTranslucentShader.HANDLER.renderStart();
-				int[] colors = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF,
-				                0x0000FF, 0xFF00FF, 0xFFFFFF, 0xAAAAAA};
+				int[] colors = {0x80FF0000, 0x80FFFF00, 0x8000FF00, 0x8000FFFF,
+				                0x800000FF, 0x80FF00FF, 0x80FFFFFF, 0x80AAAAAA};
 
 				TestTranslucentShader rendering = TestTranslucentShader.INSTANCE;
-				rendering.color.vec4f(.2f, .8f, .5f, .5f);
-				Matrix3f identity = new Matrix3f();
+				Matrix3f idt = new Matrix3f();
 				for(float i = 0; i < 1; i+=.125) {
-					rendering.square(identity, i/2f, i/2f, .5f, .5f, -i);
+					rendering.square(idt, i/2f, i/2f, .5f, .5f, -i, colors[(int) (i * 8)]);
 				}
 				rendering.draw();
 
 				SolidColorShader background = SolidColorShader.INSTANCE;
-				background.drawRect(identity, -1, -1, 2, 2, 0xFFFFFFFF);
+				background.drawRect(idt, -1, -1, 2, 2, 0xFFFFFFFF);
 				background.draw();
 
 				TestTranslucentShader.HANDLER.renderResolve();

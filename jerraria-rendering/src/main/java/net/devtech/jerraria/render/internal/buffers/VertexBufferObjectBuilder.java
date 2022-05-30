@@ -47,25 +47,6 @@ public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	/**
-	 * uniforms are bound to global state so we use this
-	 */
-	public static VertexBufferObjectBuilder uniform(int uniformLength) {
-		return new VertexBufferObjectBuilder(GLContextState.UNIFORM_BUFFER::bindBuffer,
-			GLContextState.UNIFORM_BUFFER.type,
-			uniformLength,
-			1024
-		);
-	}
-
-	public static VertexBufferObjectBuilder atomic_counter(int uniformLength) {
-		return new VertexBufferObjectBuilder(GLContextState.ATOMIC_COUNTERS::bindBuffer,
-			GLContextState.ATOMIC_COUNTERS.type,
-			uniformLength,
-			1024
-		);
-	}
-
-	/**
 	 * VAOs are not bound to global state, and we create a new one for each "shader object" anyways
 	 */
 	public static VertexBufferObjectBuilder vaoBound(int type, int componentLength) {
