@@ -85,6 +85,15 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 		this.primary = this.variableStruct;
 	}
 
+	public void structVariable(int structIndex, int variableIndex) {
+		if(this.structIndex != structIndex) {
+			// upload original data
+			this.uploadStruct();
+		}
+		this.initializedVariables.set(variableIndex);
+		this.primary = this.variableStruct.position(this.structIntervals[variableIndex]);
+	}
+
 	public void bind(int index, int structIndex) {
 		if(this.structIndex == structIndex) {
 			this.flush();
@@ -160,6 +169,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 
 	public void close() {
 		if(this.glId != 0) {
+			this.targetState().untrackBuffer(this.glId);
 			glDeleteBuffers(this.glId);
 		}
 	}
@@ -182,6 +192,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 			glBindBuffer(GL_COPY_READ_BUFFER, old);
 			glCopyBufferSubData(GL_COPY_READ_BUFFER, this.targetState().type, 0, 0, this.bufferObjectLen);
 			if(delete) {
+				this.targetState().untrackBuffer(old);
 				glDeleteBuffers(old);
 			}
 		}

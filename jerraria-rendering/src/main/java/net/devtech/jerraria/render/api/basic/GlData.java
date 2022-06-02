@@ -11,6 +11,10 @@ public abstract class GlData implements AutoCloseable {
 
 	public abstract Element getElement(String name);
 
+	public GlData getSelf() {
+		return this;
+	}
+
 	@Override
 	public final void close() throws Exception {
 		if(!this.isInvalid) {

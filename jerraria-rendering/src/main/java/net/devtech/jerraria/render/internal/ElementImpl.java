@@ -8,4 +8,8 @@ import net.devtech.jerraria.render.api.basic.GlData;
  */
 public record ElementImpl(int groupIndex, String name, DataType type, int location, int byteOffset, int arrayIndex)
 	implements GlData.Element {
+
+	public ElementImpl(ElementImpl element, int index) {
+		this(element.groupIndex, element.name, element.type, element.location, element.byteOffset, element.arrayIndex());
+	}
 }

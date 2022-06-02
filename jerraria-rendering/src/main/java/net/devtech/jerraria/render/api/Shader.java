@@ -2,10 +2,12 @@ package net.devtech.jerraria.render.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.unimi.dsi.fastutil.Function;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
@@ -16,6 +18,7 @@ import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
+import net.devtech.jerraria.render.internal.arr.ShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
@@ -125,6 +128,15 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		this.deleteVertexData();
 	}
 
+	public final void drawInstanced(BuiltGlState state, int instances) {
+		this.drawInstancedKeep(state, instances);
+		this.deleteVertexData();
+	}
+
+	public final void drawInstanced(int instances) {
+		this.drawInstanced(this.handler.defaultGlState(), instances);
+	}
+
 	public final void draw() {
 		this.draw(this.handler.defaultGlState());
 	}
@@ -180,6 +192,27 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 */
 	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
 		return ShaderImpl.addUniform(this, type);
+	}
+
+	public interface BufferFunction<U> {
+		U apply(String name);
+	}
+
+	/**
+	 * @return the uniform configurator for the given variable
+	 */
+	protected final <U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, BufferFunction<GlValue.Type<U>> type) {
+		ShaderBufferImpl<U> array = new ShaderBufferImpl<>(this.uniformData, name, type, Integer.MAX_VALUE);
+		this.uniforms.add(array.new ArrayGlValue());
+		return array;
+	}
+
+	protected final <U extends GlValue<End> & GlValue.Uniform> List<U> array(String name, Function<String, GlValue.Type<U>> initializer, int len) {
+		List<U> list = new ArrayList<>();
+		for(int i = 0; i < len; i++) {
+			list.add(this.uni(initializer.apply(name + "[" + i + "]")));
+		}
+		return Collections.unmodifiableList(list);
 	}
 
 	protected final FrameOut addOutput(String name, DataType imageType) {

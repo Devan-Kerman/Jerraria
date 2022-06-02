@@ -150,7 +150,7 @@ public class UniformData extends GlData {
 					int type = answer.get(3), arrayStride2 = answer.get(4), arraySize2 = answer.get(5);
 					String varName = glGetProgramResourceName(program, GL_BUFFER_VARIABLE, varResource, maxVarLen);
 					if(arraySize2 != 0) {
-						if(arraySize == 0) {
+						if(arraySize == 1) {
 							uniformMap.put(varName, new ActiveUniform(varName, -1, ssbo, offset, type, -2));
 							fixed.add(offset);
 						} else {
@@ -168,7 +168,7 @@ public class UniformData extends GlData {
 						}
 						stride = arrayStride2;
 						off = Math.min(offset, off);
-						structArrayFields.add(new StructArrayField(varName, offset, type));
+						structArrayFields.add(new StructArrayField(arrayIndexTemplate(varName), offset, type));
 					}
 				}
 
@@ -368,10 +368,21 @@ public class UniformData extends GlData {
 			return uniform;
 		} else {
 			ElementImpl e = (ElementImpl) element;
-			UniformBufferBlock group = this.groups[e.groupIndex()];
-			UBOBuilder buffer = group.buffer();
-			buffer.structElement(e.location());
-			return buffer;
+			int index = e.arrayIndex();
+			if(index == -1) {
+				UniformBufferBlock group = this.groups[e.groupIndex()];
+				UBOBuilder buffer = group.buffer();
+				buffer.structElement(e.location());
+				return buffer;
+			} else if(index == -2) {
+				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
+				block.builder.offset(e.byteOffset());
+				return block.builder;
+			} else {
+				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
+				block.builder.structVariable(e.arrayIndex(), e.byteOffset());
+				return block.builder;
+			}
 		}
 	}
 
@@ -381,7 +392,17 @@ public class UniformData extends GlData {
 		return this.elements.get(name);
 	}
 
-
+	public Element getElement(Element name, int index) {
+		if(name instanceof ElementImpl e && e.arrayIndex() >= 0) {
+			return new ElementImpl((ElementImpl) name, index);
+		} else if(name instanceof ElementImpl e) {
+			return this.getElement(arrayIndexTemplate(e.name()) + "[" + index + "]");
+		} else if(name instanceof StandardUniform u) {
+			return this.getElement(arrayIndexTemplate(u.name()) + "[" + index + "]");
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
 	// todo when we add SSBOs, we need a deleteAll or something since the range in which it binds is variable
 
 	@Override
@@ -390,6 +411,9 @@ public class UniformData extends GlData {
 			if(group != null) {
 				group.close();
 			}
+		}
+		for(ShaderBufferBlock ssbo : this.ssbos) {
+			ssbo.builder.close();
 		}
 	}
 
@@ -418,10 +442,13 @@ public class UniformData extends GlData {
 			if(fromE.type() != toE.type()) {
 				throw new IllegalArgumentException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
 			}
+
+			// todo fix
+			UBOBuilder fromBuffer, toBuffer;
 			UniformBufferBlock fromGroup = this.groups[fromE.groupIndex()];
 			UniformBufferBlock toGroup = toData.groups[toE.groupIndex()];
-			UBOBuilder fromBuffer = fromGroup.buffer();
-			UBOBuilder toBuffer = toGroup.buffer();
+			fromBuffer = fromGroup.buffer();
+			toBuffer = toGroup.buffer();
 			toBuffer.copyStruct(fromBuffer, fromGroup.alloc, toGroup.alloc, fromE.byteOffset(), fromE.type().byteCount);
 		}
 	}
@@ -432,6 +459,9 @@ public class UniformData extends GlData {
 			if(group != null) {
 				group.upload();
 			}
+		}
+		for(ShaderBufferBlock ssbo : this.ssbos) {
+			ssbo.bind();
 		}
 		for(Uniform uniform : this.uniforms) {
 			if(uniform.state.updateUniform(uniform, uniform.reupload)) {

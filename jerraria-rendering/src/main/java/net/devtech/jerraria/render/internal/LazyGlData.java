@@ -41,4 +41,9 @@ public final class LazyGlData extends GlData {
 	public UniformData getUniforms() {
 		return this.shader.getShader().uniforms;
 	}
+
+	@Override
+	public GlData getSelf() {
+		return extract.apply(shader.getShader());
+	}
 }

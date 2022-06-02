@@ -218,7 +218,7 @@ public final class GLContextState {
 		}
 
 		public void bindBufferRange(int index, int bufferId, int offset, int byteLength) {
-			long ubid = JMath.combineInts(bufferId, offset ^ 0b101010101); // prevent offset 0 and index-less bind from conflicting
+			long ubid = JMath.combineInts(offset ^ 0b101010101, bufferId); // prevent offset 0 and index-less bind from conflicting
 			long current = this.ids[index];
 			if(current != ubid || this.generic != ubid) {
 				glBindBufferRange(
@@ -249,6 +249,17 @@ public final class GLContextState {
 			if(this.generic != bufferId) {
 				glBindBuffer(this.type, bufferId);
 				this.generic = bufferId;
+			}
+		}
+
+		public void untrackBuffer(int id) {
+			if(this.generic == id) {
+				this.generic = 0;
+			}
+			for(int i = 0; i < this.ids.length; i++) {
+				if((this.ids[i] & 0xFFFFFFFFL) == id) {
+					this.ids[i] = 0;
+				}
 			}
 		}
 	}
