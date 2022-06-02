@@ -2,7 +2,6 @@ package net.devtech.jerraria.render.internal.buffers;
 
 import static org.lwjgl.opengl.GL11.glGetInteger;
 import static org.lwjgl.opengl.GL46.GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT;
-import static org.lwjgl.opengl.GL33.glBufferSubData;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -17,7 +16,7 @@ public class SSBOBuilder extends UBOBuilder {
 	public static final int SSBO_PADDING = glGetInteger(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
 	final ByteBuffer fixedData;
 	final BitSet fixedInitialized;
-	final int[] fixedIntervals;
+	public final int[] fixedIntervals;
 	final int fixedDataLength;
 
 	public SSBOBuilder(int fixedLen, int[] fixedElementOffsets, int structLen, int[] structVariableOffsets, int structsStart) {
@@ -69,7 +68,7 @@ public class SSBOBuilder extends UBOBuilder {
 			this.evaluateDeferredCopies();
 			this.ensureBufferObjectCapacity(this.fixedDataLength);
 			GLContextState.SHADER_BUFFER.bindBuffer(this.glId);
-			uploadIntervals(GLContextState.SHADER_BUFFER.type,
+			this.uploadIntervals(GLContextState.SHADER_BUFFER.type,
 				this.fixedInitialized,
 				this.fixedData,
 				this.fixedIntervals,

@@ -3,5 +3,9 @@ package net.devtech.jerraria.render.internal;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 
-public record ElementImpl(int groupIndex, String name, DataType type, int location, int byteOffset)
-	implements GlData.Element {}
+/**
+ * @param arrayIndex only used by variable length arrays, is -1 for everything, -2 for non variable SSBOs and >-1 for actual elements
+ */
+public record ElementImpl(int groupIndex, String name, DataType type, int location, int byteOffset, int arrayIndex)
+	implements GlData.Element {
+}

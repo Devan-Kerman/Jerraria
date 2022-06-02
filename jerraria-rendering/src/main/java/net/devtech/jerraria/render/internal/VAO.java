@@ -84,7 +84,7 @@ public class VAO extends GlData {
 			}
 			last = vbos.computeIfAbsent(field.groupName(false), VertexBufferObject::new);
 			int groupIndex = new ArrayList<>(vbos.values()).indexOf(last);
-			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.byteLength);
+			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.byteLength, -1);
 			elements.put(name, element);
 			last.elements.add(element);
 			last.byteLength += element.type().byteCount;

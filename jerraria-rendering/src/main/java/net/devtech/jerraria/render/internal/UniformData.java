@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -22,10 +23,15 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntComparators;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.devtech.jerraria.render.api.OpenGLSupport;
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.internal.buffers.ABOBuilder;
+import net.devtech.jerraria.render.internal.buffers.SSBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.UBOBuilder;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
@@ -36,8 +42,20 @@ import net.devtech.jerraria.util.math.JMath;
 public class UniformData extends GlData {
 	final Map<String, Element> elements;
 	final UniformBufferBlock[] groups;
+	final List<ShaderBufferBlock> ssbos;
 	final List<Uniform> uniforms;
 
+	private static String arrayIndexTemplate(String name) {
+		String baseName;
+		if(name.charAt(name.length() - 1) == ']') {
+			baseName = name.substring(0,
+				Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name)
+			);
+		} else {
+			baseName = name;
+		}
+		return baseName;
+	}
 	public UniformData(Map<String, BareShader.Field> fields, int program, Id id) {
 		IntBuffer aBuf = buffer(1);
 		IntBuffer bBuf = buffer(1);
@@ -48,14 +66,14 @@ public class UniformData extends GlData {
 		Map<String, UniformBufferBlock> blocksByName = new LinkedHashMap<>();
 		Int2ObjectMap<UniformBufferBlock> blocksByIndex = new Int2ObjectOpenHashMap<>();
 		Int2ObjectMap<UniformBufferBlock> atomics = new Int2ObjectOpenHashMap<>();
-		for(int i = 0; i < uniformCount; i++) {
-			String name = glGetActiveUniform(program, i, aBuf, bBuf);
+		for(int uni = 0; uni < uniformCount; uni++) {
+			String name = glGetActiveUniform(program, uni, aBuf, bBuf);
 			if(name.startsWith("gl_")) { // ignore builtins
 				continue;
 			}
 			int location = glGetUniformLocation(program, name);
-			int offset = glGetActiveUniformsi(program, i, GL_UNIFORM_OFFSET);
-			int atomicIndex = glGetActiveUniformsi(program, i, GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX);
+			int offset = glGetActiveUniformsi(program, uni, GL_UNIFORM_OFFSET);
+			int atomicIndex = glGetActiveUniformsi(program, uni, GL_UNIFORM_ATOMIC_COUNTER_BUFFER_INDEX);
 			if(atomicIndex != -1) {
 				UniformBufferBlock block;
 				int binding = glGetActiveAtomicCounterBufferi(program, atomicIndex, GL_ATOMIC_COUNTER_BUFFER_BINDING);
@@ -72,32 +90,27 @@ public class UniformData extends GlData {
 				} else {
 					block = atomics.get(binding);
 				}
-				blocksByIndex.put(i, block);
+				blocksByIndex.put(uni, block);
 			}
 
 			int size = aBuf.get(0), type = bBuf.get(0);
 			if(size > 1) { // add arrays
-				String baseName;
-				if(name.charAt(name.length() - 1) == ']') {
-					baseName = name.substring(0,
-						Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name)
-					);
-				} else {
-					baseName = name;
-				}
-				int stride = glGetActiveUniformsi(program, i, GL_UNIFORM_ARRAY_STRIDE);
+				String baseName = arrayIndexTemplate(name);
+				int stride = glGetActiveUniformsi(program, uni, GL_UNIFORM_ARRAY_STRIDE);
 				for(int index = 0; index < size; index++) {
 					String indexName = String.format("%s[%d]", baseName, index);
 					int attribLocation = glGetUniformLocation(program, indexName);
 					int byteOffset = stride * index + offset;
-					uniformMap.put(indexName, new ActiveUniform(indexName, attribLocation, i, byteOffset, type));
+					uniformMap.put(indexName, new ActiveUniform(indexName, attribLocation, uni, byteOffset, type, -1));
 				}
 			} else {
-				uniformMap.put(name, new ActiveUniform(name, location, i, offset, type));
+				uniformMap.put(name, new ActiveUniform(name, location, uni, offset, type, -1));
 			}
 		}
 
+		List<ShaderBufferBlock> ssbos;
 		if(OpenGLSupport.SSBO) {
+			ssbos = new ArrayList<>();
 			int activeSSBOs = glGetProgramInterfacei(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES);
 			int maxSSBOLen = glGetProgramInterfacei(program, GL_SHADER_STORAGE_BLOCK, GL_MAX_NAME_LENGTH);
 			int maxVarLen = glGetProgramInterfacei(program, GL_BUFFER_VARIABLE, GL_MAX_NAME_LENGTH);
@@ -117,6 +130,12 @@ public class UniformData extends GlData {
 				buffer.limit(activeVars);
 				aBuf.put(0, GL_ACTIVE_VARIABLES);
 				glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, resource, aBuf, null, buffer);
+
+				record StructArrayField(String name, int rootOffset, int type) {}
+				IntList fixed = new IntArrayList();
+				List<StructArrayField> structArrayFields = new ArrayList<>();
+
+				int stride = -1, off = Integer.MAX_VALUE;
 				for(int i = 0; i < activeVars; i++) {
 					int varResource = buffer.get(i);
 					query
@@ -126,15 +145,50 @@ public class UniformData extends GlData {
 						.put(3, GL_TYPE)
 						.put(4, GL_TOP_LEVEL_ARRAY_STRIDE)
 						.put(5, GL_TOP_LEVEL_ARRAY_SIZE);
-
 					glGetProgramResourceiv(program, GL_BUFFER_VARIABLE, varResource, query, null, answer);
 					int offset = answer.get(0), arrayStride = answer.get(1), arraySize = answer.get(2);
 					int type = answer.get(3), arrayStride2 = answer.get(4), arraySize2 = answer.get(5);
 					String varName = glGetProgramResourceName(program, GL_BUFFER_VARIABLE, varResource, maxVarLen);
-					System.out.println(varName + " " + offset + " " + arrayStride + " " + arraySize + " " + type + " " + arrayStride2 + " " + arraySize2); // todo
+					if(arraySize2 != 0) {
+						if(arraySize == 0) {
+							uniformMap.put(varName, new ActiveUniform(varName, -1, ssbo, offset, type, -2));
+							fixed.add(offset);
+						} else {
+							String baseName = arrayIndexTemplate(varName);
+							for(int index = 0; index < arraySize; index++) {
+								String indexName = String.format("%s[%d]", baseName, index);
+								int byteOffset = arrayStride * index + offset;
+								uniformMap.put(indexName, new ActiveUniform(indexName, -1, ssbo, byteOffset, type, -2));
+								fixed.add(byteOffset);
+							}
+						}
+					} else {
+						if(stride != -1 && stride != arrayStride2) {
+							throw new UnsupportedOperationException("Impossible/Unsupported SSBO layout");
+						}
+						stride = arrayStride2;
+						off = Math.min(offset, off);
+						structArrayFields.add(new StructArrayField(varName, offset, type));
+					}
 				}
+
+				structArrayFields.sort(Comparator.comparingInt(s -> s.rootOffset));
+				int[] structOffsets = new int[structArrayFields.size()];
+				for(int i = 0; i < structArrayFields.size(); i++) {
+					StructArrayField field = structArrayFields.get(i);
+					structOffsets[i] = field.rootOffset - off;
+					uniformMap.put(field.name, new ActiveUniform(field.name, -1, ssbo, i, field.type, 1));
+				}
+				fixed.sort(IntComparators.NATURAL_COMPARATOR);
+				int[] fixedOffsets = fixed.toIntArray();
+				SSBOBuilder builder = new SSBOBuilder(off, fixedOffsets, stride, structOffsets, off);
+				ShaderBufferBlock block = new ShaderBufferBlock(builder, binding);
+				ssbos.add(block);
 			}
+		} else {
+			ssbos = List.of();
 		}
+		this.ssbos = ssbos;
 
 		List<String> unoptionalNames = fields
 			.values()
@@ -237,7 +291,7 @@ public class UniformData extends GlData {
 				} else {
 					uniforms.add(Uniform.create(type, uniform.location));
 				}
-			} else if(uniform.index != -1) {
+			} else if(uniform.ssboType == -1) {
 				if(type.isOpaque()) {
 					throw new UnsupportedOperationException("Opaque types like " + type + " cannot exist in uniform " + "buffer blocks!");
 				}
@@ -258,10 +312,18 @@ public class UniformData extends GlData {
 				if(offsetIndex == -1) {
 					throw new IllegalStateException();
 				}
-				element = new ElementImpl(group.groupIndex, name, type, offsetIndex, uniform.byteOffset);
+				element = new ElementImpl(group.groupIndex, name, type, offsetIndex, uniform.byteOffset, -1);
 			} else {
-				// TODO SSBOs
-				element = null;
+				ShaderBufferBlock block = ssbos.get(uniform.index);
+				if(uniform.ssboType == -2) {
+					int offsetIndex = Arrays.binarySearch(block.builder.fixedIntervals, uniform.byteOffset);
+					if(offsetIndex == -1) {
+						throw new IllegalStateException();
+					}
+					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, -2);
+				} else {
+					element = new ElementImpl(uniform.index, name, type, uniform.byteOffset, uniform.byteOffset, 0);
+				}
 			}
 
 			elements.put(uniform.name, element);
@@ -293,6 +355,7 @@ public class UniformData extends GlData {
 			.stream()
 			.map(u -> preserveUniforms ? Uniform.copy(u) : Uniform.createNew(u))
 			.toList();
+		this.ssbos = data.ssbos.stream().map(ShaderBufferBlock::new).toList();
 	}
 
 	@Override
@@ -393,7 +456,7 @@ public class UniformData extends GlData {
 
 	record ActiveUniform(String name, int location, // normal uniforms
 	                     int index, int byteOffset, // UBO uniforms
-	                     int glslType) {}
+	                     int glslType, int ssboType) {}
 
 	static class UniformBufferBlockManager {
 		private static final int INITIAL_BUFFER_LEN = 4;
@@ -427,7 +490,7 @@ public class UniformData extends GlData {
 				this.byteLength = glGetActiveAtomicCounterBufferi(program, index, GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
 				this.paddedByteLength = JMath.ceil(this.byteLength, UBOBuilder.ATOMIC_PADDING);
 				this.bind = GLContextState.ATOMIC_COUNTERS;
-				this.buffer = new UBOBuilder.Atomic(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
+				this.buffer = new ABOBuilder(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
 			}
 
 			this.postInit();
@@ -505,6 +568,24 @@ public class UniformData extends GlData {
 			}
 			this.nextNewId = INITIAL_BUFFER_LEN;
 			this.bindRange(0);
+		}
+	}
+
+	static class ShaderBufferBlock {
+		final SSBOBuilder builder;
+		final int binding;
+
+		ShaderBufferBlock(SSBOBuilder builder, int binding) {
+			this.builder = builder;
+			this.binding = binding;
+		}
+
+		ShaderBufferBlock(ShaderBufferBlock builder) {
+			this(new SSBOBuilder(builder.builder), builder.binding);
+		}
+
+		public void bind() {
+			this.builder.bind(this.binding);
 		}
 	}
 

@@ -131,34 +131,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 		this.uploadStruct();
 	}
 
-	public static class Atomic extends UBOBuilder {
-		public Atomic(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
-			super(unpaddedLen, paddedLen, structVariableOffsets, structsStart);
-		}
-
-		public Atomic(UBOBuilder buffer) {
-			super(buffer);
-		}
-
-		@Override
-		protected GLContextState.IndexedBufferTargetState targetState() {
-			return GLContextState.ATOMIC_COUNTERS;
-		}
-
-		@Override
-		protected int padding() {
-			return 4;
-		}
-
-		public long readAtomicCounter() {
-			GLContextState.ATOMIC_COUNTERS.bindBuffer(this.glId);
-			int[] buf = new int[1];
-			glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, (long)this.structIndex * this.structLen + this.structsStart, buf);
-			return buf[0] & 0xFFFFFFFFL;
-		}
-	}
-
-	public static void uploadIntervals(
+	public void uploadIntervals(
 		int target, BitSet initialized, ByteBuffer contents, int[] intervals, int offset) {
 		int start = -1;
 		for(int i = 0; i < intervals.length; i++) {
@@ -236,7 +209,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 			this.evaluateDeferredCopies();
 			this.ensureBufferObjectCapacity(this.structsStart + (this.structIndex + 1) * this.structLen);
 			this.targetState().bindBuffer(this.glId);
-			uploadIntervals(this.targetState().type,
+			this.uploadIntervals(this.targetState().type,
 				this.initializedVariables,
 				this.variableStruct,
 				this.structIntervals,
