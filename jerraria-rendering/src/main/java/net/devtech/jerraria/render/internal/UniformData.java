@@ -26,7 +26,7 @@ import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
-import net.devtech.jerraria.render.internal.buffers.UniformBufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.UBOBuilder;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import net.devtech.jerraria.util.Id;
@@ -34,7 +34,6 @@ import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
 
 public class UniformData extends GlData {
-	public static final int UBO_PADDING = glGetInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
 	final Map<String, Element> elements;
 	final UniformBufferBlock[] groups;
 	final List<Uniform> uniforms;
@@ -62,7 +61,7 @@ public class UniformData extends GlData {
 				int binding = glGetActiveAtomicCounterBufferi(program, atomicIndex, GL_ATOMIC_COUNTER_BUFFER_BINDING);
 				if(!atomics.containsKey(binding)) {
 					block = new UniformBufferBlock(name + "Family",
-						null,
+						new int[] {0},
 						program,
 						binding,
 						atomicIndex,
@@ -255,7 +254,11 @@ public class UniformData extends GlData {
 					throw new IllegalArgumentException("Specified group name " + groupName + " does not match real " + "group name " + group.name + ", omit the group name to " + "autodetect!");
 				}
 
-				element = new ElementImpl(group.groupIndex, name, type, uniform.index, uniform.byteOffset);
+				int offsetIndex = Arrays.binarySearch(group.manager.buffer.structIntervals, uniform.byteOffset);
+				if(offsetIndex == -1) {
+					throw new IllegalStateException();
+				}
+				element = new ElementImpl(group.groupIndex, name, type, offsetIndex, uniform.byteOffset);
 			} else {
 				// TODO SSBOs
 				element = null;
@@ -303,8 +306,8 @@ public class UniformData extends GlData {
 		} else {
 			ElementImpl e = (ElementImpl) element;
 			UniformBufferBlock group = this.groups[e.groupIndex()];
-			UniformBufferBuilder buffer = group.buffer();
-			buffer.offset(e.byteOffset());
+			UBOBuilder buffer = group.buffer();
+			buffer.structElement(e.location());
 			return buffer;
 		}
 	}
@@ -354,9 +357,9 @@ public class UniformData extends GlData {
 			}
 			UniformBufferBlock fromGroup = this.groups[fromE.groupIndex()];
 			UniformBufferBlock toGroup = toData.groups[toE.groupIndex()];
-			UniformBufferBuilder fromBuffer = fromGroup.buffer();
-			UniformBufferBuilder toBuffer = toGroup.buffer();
-			toBuffer.copyFrom(toGroup.alloc, fromBuffer, fromGroup.alloc, fromE.byteOffset(), fromE.type().byteCount);
+			UBOBuilder fromBuffer = fromGroup.buffer();
+			UBOBuilder toBuffer = toGroup.buffer();
+			toBuffer.copyStruct(fromBuffer, fromGroup.alloc, toGroup.alloc, fromE.byteOffset(), fromE.type().byteCount);
 		}
 	}
 
@@ -402,7 +405,7 @@ public class UniformData extends GlData {
 		final IntArrayList available = new IntArrayList(INITIAL_BUFFER_LEN);
 		final String name;
 		final GLContextState.IndexedBufferTargetState bind;
-		final UniformBufferBuilder buffer;
+		final UBOBuilder buffer;
 		/**
 		 * to -> from
 		 */
@@ -417,43 +420,38 @@ public class UniformData extends GlData {
 			if(type == GL_UNIFORM_BUFFER) {
 				glUniformBlockBinding(program, index, binding);
 				this.byteLength = glGetActiveUniformBlocki(program, index, GL_UNIFORM_BLOCK_DATA_SIZE);
-				this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
+				this.paddedByteLength = JMath.ceil(this.byteLength, UBOBuilder.UBO_PADDING);
 				this.bind = GLContextState.UNIFORM_BUFFER;
-				this.buffer = UniformBufferBuilder.uniform(
-					uniformOffsets,
-					this.binding,
-					this.byteLength,
-					this.paddedByteLength
-				);
+				this.buffer = new UBOBuilder(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
 			} else {
 				this.byteLength = glGetActiveAtomicCounterBufferi(program, index, GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
-				this.paddedByteLength = JMath.ceil(this.byteLength, UBO_PADDING);
+				this.paddedByteLength = JMath.ceil(this.byteLength, UBOBuilder.ATOMIC_PADDING);
 				this.bind = GLContextState.ATOMIC_COUNTERS;
-				this.buffer = UniformBufferBuilder.atomic_uint(this.binding, this.byteLength, this.paddedByteLength);
+				this.buffer = new UBOBuilder.Atomic(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
 			}
 
 			this.postInit();
 			this.deferredCopies.defaultReturnValue(-1);
 		}
 
-		public UniformBufferBuilder forIndex(int alloc) {
+		public UBOBuilder forIndex(int alloc) {
 			synchronized(this.deferredCopies) {
 				int from = this.deferredCopies.remove(alloc);
 				if(from != -1) {
-					this.buffer.copyFrom(alloc, this.buffer, from, 1);
+					this.buffer.copyStruct(this.buffer, from, alloc);
 				}
 				var iterator = this.deferredCopies.int2IntEntrySet().iterator();
 				while(iterator.hasNext()) {
 					Int2IntMap.Entry entry = iterator.next();
 					if(entry.getIntValue() == alloc) { // from == this
 						int key = entry.getIntKey();
-						this.buffer.copyFrom(key, this.buffer, alloc, 1);
+						this.buffer.copyStruct(this.buffer, alloc, key);
 						iterator.remove();
 					}
 				}
 			}
 
-			this.buffer.switchTo(alloc);
+			this.buffer.struct(alloc);
 			return this.buffer;
 		}
 
@@ -469,8 +467,8 @@ public class UniformData extends GlData {
 			synchronized(this.deferredCopies) {
 				real = this.deferredCopies.getOrDefault(alloc, alloc);
 			}
-			this.buffer.switchTo(real);
-			this.buffer.upload(true); // flush contents
+			this.buffer.struct(alloc);
+			this.buffer.bind(this.binding, alloc);
 		}
 
 		public int allocate() {
@@ -485,7 +483,7 @@ public class UniformData extends GlData {
 						this.deferredCopies.remove(allocated);
 						for(Int2IntMap.Entry entry : this.deferredCopies.int2IntEntrySet()) {
 							if(entry.getIntValue() == allocated) {
-								this.buffer.copyFrom(entry.getIntKey(), this.buffer, allocated, 1);
+								this.buffer.copyStruct(this.buffer, allocated, entry.getIntKey());
 							}
 						}
 					}
@@ -543,7 +541,7 @@ public class UniformData extends GlData {
 			}
 		}
 
-		public UniformBufferBuilder buffer() { // todo upload partial or something
+		public UBOBuilder buffer() { // todo upload partial or something
 			return this.manager.forIndex(this.alloc);
 		}
 

@@ -1,9 +1,9 @@
 package net.devtech.jerraria.render.api;
 
-import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
+import net.devtech.jerraria.render.api.impl.PlatformProvider;
 
 public interface BuiltGlState {
-	BuiltGlState DEFAULT = GLStateBuilder.builder().depthTest(true).depthFunc(GL_ALWAYS).depthMask(true).build();
+	BuiltGlState DEFAULT = PlatformProvider.DEFAULT.defaultGlState();
 
 	void apply();
 

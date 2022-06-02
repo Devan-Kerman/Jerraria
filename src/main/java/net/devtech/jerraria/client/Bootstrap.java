@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.beust.jcommander.JCommander;
+import net.devtech.jerraria.render.api.impl.PlatformInternal;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -25,12 +26,14 @@ import org.lwjgl.glfw.GLFW;
 
 public class Bootstrap {
 	public static OverlayDirectory clientResources;
+	public static Thread renderThread;
 	public static void startClient(String[] argv, Callable<?> run) {
 		ClientArgs args = new ClientArgs();
 		JCommander.newBuilder()
 		          .addObject(args)
 		          .build()
 		          .parse(argv);
+		PlatformInternal.renderThread_ = Thread.currentThread();
 		startClient(args, run);
 	}
 

@@ -71,16 +71,27 @@ public class FragOutput extends GlData {
 
 	public void bind() {
 		this.validate();
-		GLContextState.bindFrameBuffer(this.frameBuffer);
+		boolean fallback = true;
 		for(OutputBind bind : this.binds) {
-			if(bind.rebind) {
-				bind.attach();
+			if(bind.texture != 0) {
+				fallback = false;
+				break;
 			}
 		}
-		GLContextState.drawBuffers(this.binds.size());
-		int i = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (i != GL_FRAMEBUFFER_COMPLETE) {
-			throw new IllegalStateException("Framebuffer is incomplete! Err: " + i);
+		if(fallback) {
+			GLContextState.bindDefaultFrameBuffer();
+		} else {
+			GLContextState.bindFrameBuffer(this.frameBuffer);
+			for(OutputBind bind : this.binds) {
+				if(bind.rebind) {
+					bind.attach();
+				}
+			}
+			GLContextState.drawBuffers(this.binds.size());
+			int i = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if(i != GL_FRAMEBUFFER_COMPLETE) {
+				throw new IllegalStateException("Framebuffer is incomplete! Err: " + i);
+			}
 		}
 	}
 
@@ -100,17 +111,17 @@ public class FragOutput extends GlData {
 
 	public static class OutputBind implements BufAdapter {
 		final DataType imageType;
-		final int attachment;
+		final int target;
 		boolean rebind;
 		int texture;
 
 		public OutputBind(DataType type, int attachment) {
 			this.imageType = type;
-			this.attachment = attachment;
+			this.target = attachment;
 		}
 
 		public OutputBind(OutputBind outputBind) {
-			this(outputBind.imageType, outputBind.attachment);
+			this(outputBind.imageType, outputBind.target);
 			this.texture = outputBind.texture;
 			this.rebind = true;
 		}
@@ -122,7 +133,7 @@ public class FragOutput extends GlData {
 		}
 
 		public void attach() {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, this.attachment, this.imageType.elementType, this.texture, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, this.target, this.imageType.elementType, this.texture, 0);
 			this.rebind = false;
 		}
 	}

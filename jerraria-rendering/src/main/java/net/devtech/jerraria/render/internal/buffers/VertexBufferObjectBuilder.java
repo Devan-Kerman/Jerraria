@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
-import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.math.JMath;
 
 public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {

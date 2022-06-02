@@ -17,9 +17,9 @@ public class EntityRendering {
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
 			SynchronousWorld world = ChunkTests.setupServer(true);
-			for(int i = 0; i < 256; i++) {
-				for(int i1 = 0; i1 < 256; i1++) {
-					world.blockLayer().putBlock(Tiles.DIRT.getDefaultVariant(), i, i1, 0);
+			for(int x = 0; x < 256; x++) {
+				for(int y = 0; y < 256; y++) {
+					world.blockLayer().putBlock(Tiles.DIRT.getDefaultVariant(), x, y, 0);
 				}
 			}
 
