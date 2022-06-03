@@ -1,7 +1,12 @@
 package net.devtech.jerraria.render.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
@@ -13,177 +18,222 @@ import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.FragOutput;
 import net.devtech.jerraria.render.internal.LazyGlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
+import net.devtech.jerraria.render.internal.StructTypeImpl;
 import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
+import net.devtech.jerraria.render.internal.arr.ShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 
 /**
  * Implementation of the shader class moved into out to make the main class easier to read
  */
-public class ShaderImpl {
+public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
+	final Id id;
+	final Map<String, Object> compilationConfig = new HashMap<>();
+	final RenderHandler handler;
+	final List<GlValue.Type<?>> uniforms, outputs;
+	final GlData uniformData, outData;
+	final VFBuilderImpl<T> builder;
+	final Shader.Copier<Shader<?>> copyFunction;
+	final boolean isCopy;
+	boolean endedVertex;
+	int verticesSinceStrategy;
+	T compiled;
+	BareShader shader;
+	End end;
+
+	public ShaderImpl(ShaderImpl<T> copy, SCopy method) {
+		copy.validateAndFlushVertex(copy.shader.strategy,
+			copy.shader.strategy.vertexCount(),
+			copy.shader.strategy.minimumVertices()
+		);
+
+		BareShader bare = new BareShader(copy.shader, method);
+		this.verticesSinceStrategy = copy.verticesSinceStrategy;
+		this.copyFunction = copy.copyFunction;
+		this.builder = copy.builder;
+		this.outputs = copy.outputs;
+		this.uniformData = bare.uniforms;
+		this.outData = bare.outputs;
+		this.uniforms = copy.uniforms;
+		Pair<T, End> build = copy.builder.build(bare);
+		this.compiled = build.first();
+		this.end = build.second();
+		this.shader = bare;
+		this.isCopy = true;
+		this.compilationConfig.putAll(copy.compilationConfig);
+		this.handler = copy.handler;
+		this.id = copy.id;
+		BareShader.GL_CLEANUP.register(this, bare.manager);
+	}
+
+	public ShaderImpl(VFBuilder<T> builder, ShaderInitContext ctx) {
+		this.builder = (VFBuilderImpl<T>) builder;
+		this.copyFunction = ctx.copier;
+		this.handler = ctx.handler;
+		this.uniforms = new ArrayList<>();
+		this.outputs = new ArrayList<>();
+		this.uniformData = new LazyGlData(this, b -> b.uniforms);
+		this.outData = new LazyGlData(this, b -> b.outputs);
+		this.isCopy = false;
+		this.id = ctx.id;
+	}
+
 	public static <T extends Shader<?>> T createShader(
 		Id id, Shader.Copier<T> copyFunction, Shader.Initializer<T> initializer, RenderHandler handler) {
 		VFBuilderImpl<End> builder = new VFBuilderImpl<>();
-		@SuppressWarnings("unchecked")
-		T shader = initializer.create(id, builder, new ShaderInitContext<>(copyFunction, handler));
-		compile((Shader<?>) shader);
+		T shader = initializer.create(builder, new ShaderInitContext<>(id, copyFunction, handler));
+		shader.delegate.compile();
 		if(shader instanceof TranslucentShader && handler == RenderHandler.INSTANCE) {
 			throw new UnsupportedOperationException("Use TranslucencyRenderer#create to create TranslucentShaders!");
 		}
 		return shader;
 	}
 
-	public static void emptyFrameBuffer(Shader<?> shader) {
-		FragOutput outputs = shader.shader.outputs;
+	public BareShader getShader() {
+		return this.shader;
+	}
+
+	static void copyUniform_(GlValue<?> from, GlValue<?> to) {
+		((GlValue.Copiable)from).copyTo(to);
+	}
+
+	void emptyFrameBuffer() {
+		FragOutput outputs = this.shader.outputs;
 		if(outputs != null) {
 			outputs.flushBuffer();
 		}
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> T vert(Shader<T> shader) {
-		if(shader.verticesSinceStrategy != 0 && !shader.endedVertex) {
-			shader.shader.vao.next();
-		}
-		shader.endedVertex = false;
-		shader.verticesSinceStrategy++;
-		return shader.compiled;
+	void reload() {
+		ShaderManager.reloadShader(this.shader, this.id, this.compilationConfig);
 	}
 
+	AutoStrat getStrategy() {
+		return this.getShader().strategy;
+	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> Shader<T> strategy(Shader<T> shader, AutoStrat strategy) {
-		if(shader.verticesSinceStrategy != 0) {
-			validateAndFlushVertex(shader,
-				shader.shader.strategy,
-				shader.shader.strategy.vertexCount(),
-				shader.shader.strategy.minimumVertices()
+	BuiltGlState defaultGlState() {
+		return this.handler.defaultGlState();
+	}
+
+	T vert() {
+		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
+			this.shader.vao.next();
+		}
+		this.endedVertex = false;
+		this.verticesSinceStrategy++;
+		return this.compiled;
+	}
+
+	void strategy(AutoStrat strategy) {
+		if(this.verticesSinceStrategy != 0) {
+			this.validateAndFlushVertex(this.shader.strategy,
+				this.shader.strategy.vertexCount(),
+				this.shader.strategy.minimumVertices()
 			);
-			shader.verticesSinceStrategy = 0;
+			this.verticesSinceStrategy = 0;
 		}
 
-		shader.shader.hotswapStrategy(strategy, false);
-		return shader;
+		this.shader.hotswapStrategy(strategy, false);
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void drawKeep(Shader<T> shader, BuiltGlState state) {
-		if(shader.verticesSinceStrategy == 0) {
-			return;
-		}
+	void deleteVertexData() {
+		this.shader.deleteVertexData();
+		this.verticesSinceStrategy = 0;
+	}
+
+	void drawKeep(Shader<?> shader, BuiltGlState state) {
 		AutoStrat strategy = shader.getStrategy();
-		validateAndFlushVertex(shader, strategy, strategy.vertexCount(), strategy.minimumVertices());
-		shader.handler.drawKeep(shader, state);
+		this.validateAndFlushVertex(strategy, strategy.vertexCount(), strategy.minimumVertices());
+		this.handler.drawKeep(shader, state);
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void drawInstancedKeep(
-		Shader<T> shader,
-		BuiltGlState state,
-		int count) {
-		if(shader.verticesSinceStrategy == 0) {
-			return;
-		}
+	void drawInstancedKeep(
+		Shader<T> shader, BuiltGlState state, int count) {
 		AutoStrat strategy = shader.getStrategy();
-		validateAndFlushVertex(shader, strategy, strategy.vertexCount(), strategy.minimumVertices());
-		shader.handler.drawInstancedKeep(shader, state, count);
+		this.validateAndFlushVertex(strategy, strategy.vertexCount(), strategy.minimumVertices());
+		this.handler.drawInstancedKeep(shader, state, count);
 	}
 
-	static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform_(U from, U to) {
-		GlData fromData = to.data, toData = from.data;
-		if(fromData instanceof LazyGlData u) {
-			fromData = u.getUniforms();
-		}
-		if(toData instanceof LazyGlData u) {
-			toData = u.getUniforms();
-		}
-		if(toData instanceof UniformData fromU && fromData instanceof UniformData toU) {
-			fromU.copyTo(from.element, toU, to.element);
-		} else {
-			throw new UnsupportedOperationException("unrecognized copy " + fromData.getClass() + " to " + toData.getClass());
-		}
-	}
-
-	static <T extends GlValue<?> & GlValue.Attribute, U extends GlValue<End> & GlValue.Uniform> U addUniform(
-		Shader<T> shader, GlValue.Type<U> type) {
-		if(!shader.isCopy) {
+	<U extends GlValue<End> & GlValue.Uniform> U addUniform(GlValue.Type<U> type) {
+		if(!this.isCopy) {
 			type.validateUniform();
-			if(shader.shader == null) {
-				shader.uniforms.add(type);
+			if(this.shader == null) {
+				this.uniforms.add(type);
 			} else {
 				throw new IllegalStateException("Uniforms must be defined before vertex attributes!");
 			}
 		}
-		return type.create(shader.uniformData, null);
+		return type.create(this.uniformData, null);
 	}
 
-	static FrameOut addOutput(Shader<?> shader, String name, DataType imageType) {
+	<U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(
+		String name, Shader.BufferFunction<GlValue.Type<U>> type) {
+		ShaderBufferImpl<U> array = new ShaderBufferImpl<>(this.uniformData, name, type, Integer.MAX_VALUE);
+		if(!this.isCopy) {
+			this.uniforms.add(array.new ArrayGlValue());
+		}
+		return array;
+	}
+
+	<U extends GlValue<End> & GlValue.Uniform> List<U> array(
+		String name, Function<String, GlValue.Type<U>> initializer, int len) {
+		List<U> list = new ArrayList<>();
+		for(int i = 0; i < len; i++) {
+			list.add(this.addUniform(initializer.apply(name + "[" + i + "]")));
+		}
+		return Collections.unmodifiableList(list);
+	}
+
+	FrameOut addOutput(String name, DataType imageType) {
 		GlValue.Type<FrameOut> out = FrameOut.out(name, imageType);
-		if(!shader.isCopy) {
+		if(!this.isCopy) {
 			out.validateOutput();
-			if(shader.shader == null) {
-				shader.outputs.add(out);
+			if(this.shader == null) {
+				this.outputs.add(out);
 			} else {
 				throw new IllegalStateException("Uniforms must be defined before vertex attributes!");
 			}
 		}
-		return out.create(shader.outData, null);
+		return out.create(this.outData, null);
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void compile(Shader<T> shader) {
-		BareShader bare = ShaderManager.getShader(shader.id,
-			shader.builder.attributes,
-			shader.uniforms,
-			shader.outputs,
-			shader.compilationConfig
+	void compile() {
+		BareShader bare = ShaderManager.getShader(this.id,
+			this.builder.attributes,
+			this.uniforms,
+			this.outputs,
+			this.compilationConfig
 		);
-		shader.shader = bare;
-		Pair<T, End> build = shader.builder.build(bare);
-		shader.compiled = build.first();
-		shader.end = build.second();
+		this.shader = bare;
+		Pair<T, End> build = this.builder.build(bare);
+		this.compiled = build.first();
+		this.end = build.second();
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void validateAndFlushVertex(
-		Shader<T> shader, Object string, int vertexCount, int minimumVertices) {
-		if(shader.verticesSinceStrategy % vertexCount != 0) {
-			throw new IllegalArgumentException("Expected multiple of " + vertexCount + " vertexes for " + "rendering " + string + " but found " + shader.verticesSinceStrategy);
+	void validateAndFlushVertex(
+		Object string, int vertexCount, int minimumVertices) {
+		if(this.verticesSinceStrategy % vertexCount != 0) {
+			throw new IllegalArgumentException("Expected multiple of " + vertexCount + " vertexes for " + "rendering " + string + " but found " + this.verticesSinceStrategy);
 		}
-		if(shader.verticesSinceStrategy < minimumVertices) {
-			throw new IllegalArgumentException("Expected atleast " + minimumVertices + " vertexes for " + "rendering " + string + " but found " + shader.verticesSinceStrategy);
+		if(this.verticesSinceStrategy < minimumVertices) {
+			throw new IllegalArgumentException("Expected atleast " + minimumVertices + " vertexes for " + "rendering " + string + " but found " + this.verticesSinceStrategy);
 		}
-		if(!shader.endedVertex) {
-			shader.shader.vao.next();
-			shader.endedVertex = true;
+		if(!this.endedVertex) {
+			this.shader.vao.next();
+			this.endedVertex = true;
 		}
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void copyPostInit(
-		Shader<T> shader, Shader<T> copy, SCopy method) {
-		BareShader bare = new BareShader(copy.shader, method);
-		shader.copyFunction = copy.copyFunction;
-		shader.builder = copy.builder;
-		shader.outputs = copy.outputs;
-		shader.uniformData = bare.uniforms;
-		shader.outData = bare.outputs;
-		shader.uniforms = copy.uniforms;
-		Pair<T, End> build = copy.builder.build(bare);
-		shader.compiled = build.first();
-		shader.end = build.second();
-		shader.shader = bare;
-		shader.isCopy = true;
-		shader.compilationConfig.putAll(copy.compilationConfig);
-		shader.handler = copy.handler;
-		BareShader.GL_CLEANUP.register(shader, bare.manager);
+	record ShaderInitContext<T extends Shader<?>>(Id id, Shader.Copier<T> copier, RenderHandler handler) {}
+
+	public static List<GlValue.Type<?>> fields(Struct struct) {
+		return struct.fields;
 	}
 
-	static <T extends GlValue<?> & GlValue.Attribute> void postInit(
-		Shader<T> shader, VFBuilderImpl<T> builder, ShaderInitContext copy) {
-		shader.builder = builder;
-		shader.copyFunction = copy.copier;
-		shader.handler = copy.handler;
-		shader.uniforms = new ArrayList<>();
-		shader.outputs = new ArrayList<>();
-		shader.uniformData = new LazyGlData(shader, b -> b.uniforms);
-		shader.outData = new LazyGlData(shader, b -> b.outputs);
-		shader.isCopy = false;
+	public static void set(Struct struct, StructTypeImpl<?> names) {
+		struct.type = names;
 	}
-
-	record ShaderInitContext<T extends Shader<?>>(Shader.Copier<T> copier, RenderHandler handler) {}
 }

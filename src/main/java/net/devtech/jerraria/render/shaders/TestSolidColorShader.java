@@ -16,8 +16,8 @@ public class TestSolidColorShader extends Shader<Vec3.F<End>> {
 
 	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 
-	protected TestSolidColorShader(Id id, VFBuilder<End> builder, Object function) {
-		super(id, builder.add(Vec3.f("pos")), function);
+	protected TestSolidColorShader(VFBuilder<End> builder, Object function) {
+		super(builder.add(Vec3.f("pos")), function);
 	}
 
 	protected TestSolidColorShader(TestSolidColorShader shader, SCopy copy) {

@@ -4,16 +4,17 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.basic.GlData;
 
 public final class LazyElement implements GlData.Element {
-	Shader<?> shader;
+	ShaderImpl shader;
 	String name;
 	GlData.Element value;
 	Function<BareShader, GlData> extract;
 
 	public LazyElement(
-		Shader<?> shader, String name, Function<BareShader, GlData> extract) {
+		ShaderImpl shader, String name, Function<BareShader, GlData> extract) {
 		this.shader = shader;
 		this.name = name;
 		this.extract = extract;

@@ -3,13 +3,10 @@ package net.devtech.jerraria.render.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import it.unimi.dsi.fastutil.Function;
 import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.FrameOut;
@@ -31,39 +28,21 @@ import org.jetbrains.annotations.Contract;
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implements AutoCloseable {
-	// todo ticking for Instancer
-	// todo custom invalidation for Instancer
-	// todo more flexible "allocation" of instances
 	// todo effecient copy commands (lazily evaluated, and can operate on whole ranges)
-
-	public final Id id;
-	final Map<String, Object> compilationConfig = new HashMap<>();
-	RenderHandler handler;
-	List<GlValue.Type<?>> uniforms, outputs;
-	GlData uniformData, outData;
-	VFBuilderImpl<T> builder;
-	Copier<Shader<?>> copyFunction;
-	boolean endedVertex;
-	int verticesSinceStrategy;
-	T compiled;
-	boolean isCopy;
-	BareShader shader;
-	End end;
+	final ShaderImpl<T> delegate;
 
 	/**
 	 * @param builder the builder that has been configured for the generics of this class
 	 */
-	protected Shader(Id id, VFBuilder<T> builder, Object context) {
-		this.id = id;
-		ShaderImpl.postInit(this, (VFBuilderImpl<T>) builder, (ShaderImpl.ShaderInitContext) context);
+	protected Shader(VFBuilder<T> builder, Object context) {
+		this.delegate = new ShaderImpl<>(builder, (ShaderImpl.ShaderInitContext) context);
 	}
 
 	/**
 	 * Copy constructor
 	 */
 	protected Shader(Shader<T> shader, SCopy method) {
-		this.id = shader.id;
-		ShaderImpl.copyPostInit(this, shader, method);
+		this.delegate = new ShaderImpl<>(shader.delegate, method);
 	}
 
 	public static <T extends Shader<?>> T create(Id id, Copier<T> copyFunction, Initializer<T> initializer) {
@@ -78,7 +57,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 * @see Vec3.F#vec3f(Matrix3f, float, float, float)
 	 */
 	public final T vert() {
-		return ShaderImpl.vert(this);
+		return this.delegate.vert();
 	}
 
 	/**
@@ -88,7 +67,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 */
 	@Contract("_->this")
 	public Shader<T> strategy(AutoStrat strategy) {
-		return ShaderImpl.strategy(this, strategy);
+		this.delegate.strategy(strategy);
+		return this;
 	}
 
 	/**
@@ -99,25 +79,26 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 */
 	public final void drawKeep(BuiltGlState state) {
 		this.preRender(RenderCall.DRAW);
-		ShaderImpl.drawKeep(this, state);
+		this.delegate.drawKeep(this, state);
 		this.postRender(RenderCall.DRAW);
 	}
 
 	public final void drawKeep() {
-		this.drawKeep(this.handler.defaultGlState());
+		this.delegate.drawKeep(this, this.delegate.defaultGlState());
 	}
 
 	/**
-	 * Bind the shader and render its contents X times using opengl's instanced rendering and retain its contents to be redrawn another time.
+	 * Bind the shader and render its contents X times using opengl's instanced rendering and retain its contents to be
+	 * redrawn another time.
 	 */
 	public final void drawInstancedKeep(BuiltGlState state, int count) {
 		this.preRender(RenderCall.DRAW_INSTANCED);
-		ShaderImpl.drawInstancedKeep(this, state, count);
+		this.delegate.drawInstancedKeep(this, state, count);
 		this.postRender(RenderCall.DRAW_INSTANCED);
 	}
 
 	public final void drawInstancedKeep(int instances) {
-		this.drawInstancedKeep(this.handler.defaultGlState(), instances);
+		this.drawInstancedKeep(this.delegate.defaultGlState(), instances);
 	}
 
 	/**
@@ -134,24 +115,23 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	}
 
 	public final void drawInstanced(int instances) {
-		this.drawInstanced(this.handler.defaultGlState(), instances);
+		this.drawInstanced(this.delegate.defaultGlState(), instances);
 	}
 
 	public final void draw() {
-		this.draw(this.handler.defaultGlState());
+		this.draw(this.delegate.defaultGlState());
 	}
 
 	public BuiltGlState defaultState() {
-		return this.handler.defaultGlState();
+		return this.delegate.defaultGlState();
 	}
 
-	public static <U extends AbstractGlValue<?> & GlValue.Uniform> void copyUniform(U from, U to) {
+	public static <U extends GlValue<?> & GlValue.Uniform & GlValue.Copiable> void copyUniform(U from, U to) { // todo allow copying structs
 		ShaderImpl.copyUniform_(from, to);
 	}
 
 	public final void deleteVertexData() {
-		this.shader.deleteVertexData();
-		this.verticesSinceStrategy = 0;
+		this.delegate.deleteVertexData();
 	}
 
 	/**
@@ -161,24 +141,37 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 */
 	public static <T extends Shader<?>> T copy(T shader, SCopy method) {
 		//noinspection unchecked
-		return (T) shader.copyFunction.copy(shader, method);
+		return (T) shader.delegate.copyFunction.copy(shader, method);
 	}
 
 	public AutoStrat getStrategy() {
-		return this.shader.strategy;
+		return this.delegate.getStrategy();
 	}
 
 	public void reload() {
-		ShaderManager.reloadShader(this.shader, this.id, this.compilationConfig);
+		this.delegate.reload();
 	}
 
 	@ApiStatus.Internal
 	public BareShader getShader() {
-		return this.shader;
+		return this.delegate.shader;
 	}
 
-	public void flushFrameBuffer() { // todo SETTINGS
-		ShaderImpl.emptyFrameBuffer(this);
+	public void flushFrameBuffer() {
+		this.delegate.emptyFrameBuffer();
+	}
+
+	@Override
+	public void close() {
+		try {
+			this.delegate.shader.close();
+		} catch(Exception e) {
+			throw Validate.rethrow(e);
+		}
+	}
+
+	public Id getId() {
+		return this.delegate.id;
 	}
 
 	protected void preRender(RenderCall call) {
@@ -191,32 +184,27 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 * @return the uniform configurator for the given variable
 	 */
 	protected final <U extends GlValue<End> & GlValue.Uniform> U uni(GlValue.Type<U> type) {
-		return ShaderImpl.addUniform(this, type);
-	}
-
-	public interface BufferFunction<U> {
-		U apply(String name);
+		return this.delegate.addUniform(type);
 	}
 
 	/**
 	 * @return the uniform configurator for the given variable
 	 */
-	protected final <U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, BufferFunction<GlValue.Type<U>> type) {
-		ShaderBufferImpl<U> array = new ShaderBufferImpl<>(this.uniformData, name, type, Integer.MAX_VALUE);
-		this.uniforms.add(array.new ArrayGlValue());
-		return array;
+	protected final <U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(
+		String name,
+		BufferFunction<GlValue.Type<U>> type) {
+		return this.delegate.buffer(name, type);
 	}
 
-	protected final <U extends GlValue<End> & GlValue.Uniform> List<U> array(String name, Function<String, GlValue.Type<U>> initializer, int len) {
-		List<U> list = new ArrayList<>();
-		for(int i = 0; i < len; i++) {
-			list.add(this.uni(initializer.apply(name + "[" + i + "]")));
-		}
-		return Collections.unmodifiableList(list);
+	protected final <U extends GlValue<End> & GlValue.Uniform> List<U> array(
+		String name,
+		Function<String, GlValue.Type<U>> initializer,
+		int len) {
+		return this.delegate.array(name, initializer, len);
 	}
 
 	protected final FrameOut addOutput(String name, DataType imageType) {
-		return ShaderImpl.addOutput(this, name, imageType);
+		return this.delegate.addOutput(name, imageType);
 	}
 
 	protected final FrameOut imageOutput(String name) {
@@ -231,7 +219,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 * <p>Existing supported parameters: (none)</p>
 	 */
 	protected final void putParameter(String name, Object value) {
-		this.compilationConfig.put(name, value);
+		this.delegate.compilationConfig.put(name, value);
 	}
 
 	/**
@@ -244,20 +232,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 * </p>
 	 */
 	protected final void addParameter(String name, Object value) {
-		Object o = this.compilationConfig.computeIfAbsent(name, a -> new ArrayList<>());
+		Object o = this.delegate.compilationConfig.computeIfAbsent(name, a -> new ArrayList<>());
 		if(o instanceof Collection c) {
 			c.add(value);
 		} else {
 			throw new IllegalStateException(name + " is not a list!");
-		}
-	}
-
-	@Override
-	public void close() {
-		try {
-			this.shader.close();
-		} catch(Exception e) {
-			throw Validate.rethrow(e);
 		}
 	}
 
@@ -271,11 +250,15 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		}
 	}
 
+	public interface BufferFunction<U> {
+		U apply(String name);
+	}
+
 	public interface Copier<T extends Shader<?>> {
 		T copy(T old, SCopy method);
 	}
 
 	public interface Initializer<T extends Shader<?>> {
-		T create(Id id, VFBuilder<End> builder, Object context);
+		T create(VFBuilder<End> builder, Object context);
 	}
 }

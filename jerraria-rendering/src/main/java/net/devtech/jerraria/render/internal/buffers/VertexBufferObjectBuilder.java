@@ -25,7 +25,7 @@ public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public VertexBufferObjectBuilder(VertexBufferObjectBuilder builder, int copyCount) {
-		this(builder.binder, builder.target, builder.componentLength, JMath.nearestPowerOf2(copyCount));
+		this(builder.binder, builder.target, builder.componentLength, JMath.nearestPowerOf2(copyCount+1024));
 		if(builder.totalCount() < copyCount) {
 			throw new IllegalArgumentException("totalCount is " + builder.totalCount() + " but requested to copy " + copyCount + " elements!");
 		}

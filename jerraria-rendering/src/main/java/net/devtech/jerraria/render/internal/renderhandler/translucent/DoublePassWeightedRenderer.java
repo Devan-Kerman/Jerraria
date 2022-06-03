@@ -23,13 +23,13 @@ public class DoublePassWeightedRenderer extends WeightedTranslucentRenderer {
 		S shader = ShaderImpl.createShader(
 			id,
 			(o, s) -> copier.copy(o, s, TranslucentShaderType.DOUBLE_PASS_A),
-			(i, u, c) -> initializer.create(i, u, c, TranslucentShaderType.DOUBLE_PASS_A),
+			(u, c) -> initializer.create(u, c, TranslucentShaderType.DOUBLE_PASS_A),
 			this
 		);
 		TranslucentInternal.setSecondPass(shader, ShaderImpl.createShader(
 			id,
 			(o, s) -> copier.copy(o, s, TranslucentShaderType.DOUBLE_PASS_B),
-			(i, u, c) -> initializer.create(i, u, c, TranslucentShaderType.DOUBLE_PASS_B),
+			(u, c) -> initializer.create(u, c, TranslucentShaderType.DOUBLE_PASS_B),
 			this
 		));
 		return shader;

@@ -3,20 +3,12 @@ package net.devtech.jerraria.render.internal.renderhandler;
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.Shader;
 
-public class RenderHandler {
-	public static final RenderHandler INSTANCE = new RenderHandler();
+public interface RenderHandler {
+	RenderHandler INSTANCE = new OpaqueRenderHandler();
 
-	public void drawKeep(Shader<?> shader, BuiltGlState state) {
-		shader.getShader().bindProgram();
-		shader.getShader().drawKeep(state);
-	}
+	void drawKeep(Shader<?> shader, BuiltGlState state);
 
-	public void drawInstancedKeep(Shader<?> shader, BuiltGlState state, int count) {
-		shader.getShader().bindProgram();
-		shader.getShader().drawInstancedKeep(state, count);
-	}
+	void drawInstancedKeep(Shader<?> shader, BuiltGlState state, int count);
 
-	public BuiltGlState defaultGlState() {
-		return BuiltGlState.DEFAULT;
-	}
+	BuiltGlState defaultGlState();
 }

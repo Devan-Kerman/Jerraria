@@ -18,9 +18,8 @@ public class WBTransResolveShader extends Shader<Vec3.F<End>> {
 	public final Tex accum = this.uni(Tex.tex2d("accum"));
 	public final Tex reveal = this.uni(Tex.tex2d("reveal"));
 
-	protected WBTransResolveShader(
-		Id id, VFBuilder<End> builder, Object context) {
-		super(id, builder.add(Vec3.f("pos")), context);
+	protected WBTransResolveShader(VFBuilder<End> builder, Object context) {
+		super(builder.add(Vec3.f("pos")), context);
 	}
 
 	protected WBTransResolveShader(Shader<Vec3.F<End>> shader, SCopy method) {

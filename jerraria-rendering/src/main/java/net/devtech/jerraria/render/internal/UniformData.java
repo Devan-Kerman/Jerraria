@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.devtech.jerraria.render.api.OpenGLSupport;
-import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
@@ -40,22 +39,11 @@ import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
 
 public class UniformData extends GlData {
-	final Map<String, Element> elements;
+	public final Map<String, Element> elements;
 	final UniformBufferBlock[] groups;
 	final List<ShaderBufferBlock> ssbos;
 	final List<Uniform> uniforms;
 
-	private static String arrayIndexTemplate(String name) {
-		String baseName;
-		if(name.charAt(name.length() - 1) == ']') {
-			baseName = name.substring(0,
-				Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name)
-			);
-		} else {
-			baseName = name;
-		}
-		return baseName;
-	}
 	public UniformData(Map<String, BareShader.Field> fields, int program, Id id) {
 		IntBuffer aBuf = buffer(1);
 		IntBuffer bBuf = buffer(1);
@@ -158,7 +146,8 @@ public class UniformData extends GlData {
 							for(int index = 0; index < arraySize; index++) {
 								String indexName = String.format("%s[%d]", baseName, index);
 								int byteOffset = arrayStride * index + offset;
-								uniformMap.put(indexName, new ActiveUniform(indexName, -1, ssbo, byteOffset, type, -2));
+								uniformMap.put(indexName, new ActiveUniform(indexName, -1, ssbo, byteOffset, type,
+									-2));
 								fixed.add(byteOffset);
 							}
 						}
@@ -177,7 +166,7 @@ public class UniformData extends GlData {
 				for(int i = 0; i < structArrayFields.size(); i++) {
 					StructArrayField field = structArrayFields.get(i);
 					structOffsets[i] = field.rootOffset - off;
-					uniformMap.put(field.name, new ActiveUniform(field.name, -1, ssbo, i, field.type, 1));
+					uniformMap.put(field.name, new ActiveUniform(field.name, -1, ssbo, structOffsets[i], field.type, 1));
 				}
 				fixed.sort(IntComparators.NATURAL_COMPARATOR);
 				int[] fixedOffsets = fixed.toIntArray();
@@ -244,8 +233,7 @@ public class UniformData extends GlData {
 			}
 			Arrays.sort(offsets);
 
-			UniformBufferBlock block = new UniformBufferBlock(
-				name,
+			UniformBufferBlock block = new UniformBufferBlock(name,
 				offsets,
 				program,
 				bindingPoint,
@@ -299,8 +287,8 @@ public class UniformData extends GlData {
 				// for nested arrays or arrays of a vanilla type, we must start at the [0] index and calculate forward!
 				UniformBufferBlock group = blocksByIndex.get(uniform.index);
 				if(group == null) {
-					throw new UnsupportedOperationException("Uniform with name " + name + " is not in an " + "uniform " +
-					                                        "block!");
+					throw new UnsupportedOperationException("Uniform with name " + name + " is not in an " + "uniform "
+					                                        + "block!");
 				}
 
 				String groupName = field.groupName(true);
@@ -322,7 +310,11 @@ public class UniformData extends GlData {
 					}
 					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, -2);
 				} else {
-					element = new ElementImpl(uniform.index, name, type, uniform.byteOffset, uniform.byteOffset, 0);
+					int offsetIndex = Arrays.binarySearch(block.builder.structIntervals, uniform.byteOffset);
+					if(offsetIndex == -1) {
+						throw new IllegalStateException();
+					}
+					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, 0);
 				}
 			}
 
@@ -376,11 +368,11 @@ public class UniformData extends GlData {
 				return buffer;
 			} else if(index == -2) {
 				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
-				block.builder.offset(e.byteOffset());
+				block.builder.offset(e.location());
 				return block.builder;
 			} else {
 				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
-				block.builder.structVariable(e.arrayIndex(), e.byteOffset());
+				block.builder.structVariable(e.arrayIndex(), e.location());
 				return block.builder;
 			}
 		}
@@ -390,6 +382,18 @@ public class UniformData extends GlData {
 	public Element getElement(String name) {
 		this.validate();
 		return this.elements.get(name);
+	}
+
+	@Override
+	public void invalidate() {
+		for(UniformBufferBlock group : this.groups) {
+			if(group != null) {
+				group.close();
+			}
+		}
+		for(ShaderBufferBlock ssbo : this.ssbos) {
+			ssbo.builder.close();
+		}
 	}
 
 	public Element getElement(Element name, int index) {
@@ -405,15 +409,34 @@ public class UniformData extends GlData {
 	}
 	// todo when we add SSBOs, we need a deleteAll or something since the range in which it binds is variable
 
-	@Override
-	public void invalidate() {
-		for(UniformBufferBlock group : this.groups) {
-			if(group != null) {
-				group.close();
-			}
-		}
-		for(ShaderBufferBlock ssbo : this.ssbos) {
-			ssbo.builder.close();
+	public void copyTo(
+		UniformData toData,
+		int fromGroupIndex,
+		int fromByteOffset,
+		int fromArrayIndex,
+		int toGroupIndex,
+		int toByteOffset,
+		int toArrayIndex,
+		int len) {
+		if(fromArrayIndex == -1 && toArrayIndex == -1) {
+			UniformBufferBlock fromGroup = this.groups[fromGroupIndex];
+			UniformBufferBlock toGroup = toData.groups[toGroupIndex];
+			UBOBuilder fromBuffer = fromGroup.buffer();
+			UBOBuilder toBuffer = toGroup.buffer();
+			toBuffer.copyFrom(fromBuffer, fromGroup.alloc, toGroup.alloc, fromByteOffset, toByteOffset, len);
+		} else if(fromArrayIndex != -1 && toArrayIndex != -1) {
+			ShaderBufferBlock fromBlock = this.ssbos.get(fromGroupIndex);
+			ShaderBufferBlock toBlock = toData.ssbos.get(toGroupIndex);
+			toBlock.builder.copyFrom(fromBlock.builder,
+				fromArrayIndex,
+				toArrayIndex,
+				fromByteOffset,
+				toByteOffset,
+				len
+			);
+		} else {
+			throw new UnsupportedOperationException(
+				"Cannot copy between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
 		}
 	}
 
@@ -432,24 +455,30 @@ public class UniformData extends GlData {
 
 		// todo better copying
 		if(from instanceof StandardUniform standard) {
+			if(!(to instanceof StandardUniform to_)) {
+				throw new UnsupportedOperationException(
+					"Cannot copy between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
+			}
 			Uniform fromUniform = this.uniforms.get(standard.uniformIndex);
-			Uniform toUniform = this.uniforms.get(((StandardUniform) to).uniformIndex);
+			Uniform toUniform = this.uniforms.get(to_.uniformIndex);
 			fromUniform.copyTo(toUniform);
 			toUniform.reupload = true;
 		} else {
 			ElementImpl fromE = (ElementImpl) from;
 			ElementImpl toE = (ElementImpl) to;
 			if(fromE.type() != toE.type()) {
-				throw new IllegalArgumentException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
+				throw new UnsupportedOperationException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
 			}
-
-			// todo fix
-			UBOBuilder fromBuffer, toBuffer;
-			UniformBufferBlock fromGroup = this.groups[fromE.groupIndex()];
-			UniformBufferBlock toGroup = toData.groups[toE.groupIndex()];
-			fromBuffer = fromGroup.buffer();
-			toBuffer = toGroup.buffer();
-			toBuffer.copyStruct(fromBuffer, fromGroup.alloc, toGroup.alloc, fromE.byteOffset(), fromE.type().byteCount);
+			this.copyTo(
+				toData,
+				fromE.groupIndex(),
+				fromE.byteOffset(),
+				fromE.arrayIndex(),
+				toE.groupIndex(),
+				toE.byteOffset(),
+				toE.arrayIndex(),
+				toE.type().byteCount
+			);
 		}
 	}
 
@@ -478,6 +507,18 @@ public class UniformData extends GlData {
 		for(Uniform uniform : this.uniforms) {
 			uniform.reupload = true;
 		}
+	}
+
+	private static String arrayIndexTemplate(String name) {
+		String baseName;
+		if(name.charAt(name.length() - 1) == ']') {
+			baseName = name.substring(0,
+				Validate.greaterThanEqualTo(name.indexOf('['), 0, "Weird array uniform name: " + name)
+			);
+		} else {
+			baseName = name;
+		}
+		return baseName;
 	}
 
 	static IntBuffer buffer(int ints) {
@@ -531,14 +572,14 @@ public class UniformData extends GlData {
 			synchronized(this.deferredCopies) {
 				int from = this.deferredCopies.remove(alloc);
 				if(from != -1) {
-					this.buffer.copyStruct(this.buffer, from, alloc);
+					this.buffer.copyFrom(this.buffer, from, alloc);
 				}
 				var iterator = this.deferredCopies.int2IntEntrySet().iterator();
 				while(iterator.hasNext()) {
 					Int2IntMap.Entry entry = iterator.next();
 					if(entry.getIntValue() == alloc) { // from == this
 						int key = entry.getIntKey();
-						this.buffer.copyStruct(this.buffer, alloc, key);
+						this.buffer.copyFrom(this.buffer, alloc, key);
 						iterator.remove();
 					}
 				}
@@ -560,8 +601,8 @@ public class UniformData extends GlData {
 			synchronized(this.deferredCopies) {
 				real = this.deferredCopies.getOrDefault(alloc, alloc);
 			}
-			this.buffer.struct(alloc);
-			this.buffer.bind(this.binding, alloc);
+			this.buffer.struct(real);
+			this.buffer.bind(this.binding, real);
 		}
 
 		public int allocate() {
@@ -576,7 +617,7 @@ public class UniformData extends GlData {
 						this.deferredCopies.remove(allocated);
 						for(Int2IntMap.Entry entry : this.deferredCopies.int2IntEntrySet()) {
 							if(entry.getIntValue() == allocated) {
-								this.buffer.copyStruct(this.buffer, allocated, entry.getIntKey());
+								this.buffer.copyFrom(this.buffer, allocated, entry.getIntKey());
 							}
 						}
 					}

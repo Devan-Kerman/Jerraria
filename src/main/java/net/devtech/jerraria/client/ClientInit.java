@@ -1,5 +1,7 @@
 package net.devtech.jerraria.client;
 
+import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +13,8 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.render.api.GLStateBuilder;
+import net.devtech.jerraria.render.api.impl.RenderingEnvironmentInternal;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.util.Id;
@@ -72,6 +76,8 @@ class ClientInit {
 		GLFW.glfwShowWindow(window);
 		GL.createCapabilities();
 
+		RenderingEnvironmentInternal.defaultState_ = GLStateBuilder
+			.builder().depthTest(true).depthFunc(GL_ALWAYS).depthMask(true).build();
 		maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
 
 		// todo save viewport size

@@ -70,8 +70,9 @@ public class BareShader implements AutoCloseable {
 		this.uniforms = new UniformData(shader.uniforms, method.preserveUniforms);
 		if(shader.ebo != null) {
 			this.ebo = new EBO(shader.ebo);
-			this.strategy = shader.strategy;
 		}
+		this.strategy = shader.strategy;
+		this.lastCopiedVertex = shader.lastCopiedVertex;
 		if(shader.outputs != null) {
 			this.outputs = new FragOutput(shader.outputs);
 		} else {

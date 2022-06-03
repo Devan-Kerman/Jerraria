@@ -21,8 +21,8 @@ public class WBTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> {
 	public final FrameOut accum = this.imageOutput("accum");
 	public final FrameOut reveal = this.imageOutput("reveal");
 
-	protected WBTransRecordShader(Id id, VFBuilder<End> builder, Object context) {
-		super(id, builder.add(Color.argb("color")).add(Vec3.f("pos")), context);
+	protected WBTransRecordShader(VFBuilder<End> builder, Object context) {
+		super(builder.add(Color.argb("color")).add(Vec3.f("pos")), context);
 	}
 
 	protected WBTransRecordShader(Shader<Vec3.F<Color.ARGB<End>>> shader, SCopy method) {

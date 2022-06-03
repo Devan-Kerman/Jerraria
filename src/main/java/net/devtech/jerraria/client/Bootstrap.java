@@ -1,6 +1,7 @@
 package net.devtech.jerraria.client;
 
 import static java.util.Objects.requireNonNull;
+import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -15,7 +16,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.beust.jcommander.JCommander;
-import net.devtech.jerraria.render.api.impl.PlatformInternal;
+import net.devtech.jerraria.render.api.GLStateBuilder;
+import net.devtech.jerraria.render.api.impl.RenderingEnvironmentInternal;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
 import net.devtech.jerraria.resource.PathVirtualFile;
@@ -33,7 +35,7 @@ public class Bootstrap {
 		          .addObject(args)
 		          .build()
 		          .parse(argv);
-		PlatformInternal.renderThread_ = Thread.currentThread();
+		RenderingEnvironmentInternal.renderThread_ = Thread.currentThread();
 		startClient(args, run);
 	}
 

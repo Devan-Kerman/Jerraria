@@ -53,8 +53,8 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 		public final FrameOut reveal = imageOutput("reveal");
 	}
 
-	protected TranslucentShader(Id id, VFBuilder<T> builder, Object context, TranslucentShaderType strat) {
-		super(id, builder, context);
+	protected TranslucentShader(VFBuilder<T> builder, Object context, TranslucentShaderType strat) {
+		super(builder, context);
 		this.type = strat;
 		this.linkedListUniforms = strat.calcIf(TranslucentShaderType.LINKED_LIST, LinkedList::new);
 		this.singlePassWeighted = strat.calcIf(TranslucentShaderType.SINGLE_PASS, SinglePassWeighted::new);

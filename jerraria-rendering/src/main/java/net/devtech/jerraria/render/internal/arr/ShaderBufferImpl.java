@@ -16,6 +16,7 @@ public class ShaderBufferImpl<T extends GlValue<?> & GlValue.Uniform> implements
 	final Int2ObjectMap<T> cache = new Int2ObjectOpenHashMap<>();
 	final Shader.BufferFunction<GlValue.Type<T>> operator;
 	final int maxSize;
+	int current;
 
 	public ShaderBufferImpl(GlData uniforms, String elementName, Shader.BufferFunction<GlValue.Type<T>> operator, int size) {
 		this.name = elementName;
@@ -37,11 +38,17 @@ public class ShaderBufferImpl<T extends GlValue<?> & GlValue.Uniform> implements
 	}
 
 	@Override
-	public T getAt(int index) {
+	public T getOrCreate(int index) {
 		if(index >= this.maxSize) {
 			throw new IndexOutOfBoundsException(index + " >= " + this.maxSize);
 		}
+		this.current = Math.max(index, this.current);
 		return this.cache.computeIfAbsent(index, this);
+	}
+
+	@Override
+	public int getCurrentSize() {
+		return this.current;
 	}
 
 	@Override
@@ -57,11 +64,19 @@ public class ShaderBufferImpl<T extends GlValue<?> & GlValue.Uniform> implements
 
 			@Override
 			public Element getElement(String name) {
-				return uniforms.getElement(uniforms.getElement(name), key);
+				String end = "[" + key + "]";
+				int last = name.lastIndexOf(end);
+				String origin = name.substring(0, last) + "[0]" + name.substring(last+end.length());
+				return uniforms.getElement(uniforms.getElement(origin), key);
 			}
 
 			@Override
 			protected void invalidate() {}
+
+			@Override
+			public GlData getSelf() {
+				return uniforms;
+			}
 		};
 		return apply.create(custom, null);
 	}

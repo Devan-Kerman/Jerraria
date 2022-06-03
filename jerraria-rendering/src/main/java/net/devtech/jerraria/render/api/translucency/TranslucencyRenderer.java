@@ -14,6 +14,6 @@ public interface TranslucencyRenderer {
 	}
 
 	interface Initializer<T extends Shader<?>> {
-		T create(Id id, VFBuilder<End> builder, Object context, TranslucentShaderType type);
+		T create(VFBuilder<End> builder, Object context, TranslucentShaderType type);
 	}
 }

@@ -103,6 +103,10 @@ public abstract class GlValue<N extends GlValue<?>> {
 
 	public interface Uniform {}
 
+	public interface Copiable {
+		void copyTo(GlValue value);
+	}
+
 	/**
 	 * a valid `out` parameter in a shader
 	 */

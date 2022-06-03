@@ -52,6 +52,8 @@ public enum TranslucentShaderType {
 			.build()
 	);
 
+	// todo immediate renderer
+
 	public final BuiltGlState defaultState;
 	final String glslVers;
 	final TranslucencyStrategy strategy;

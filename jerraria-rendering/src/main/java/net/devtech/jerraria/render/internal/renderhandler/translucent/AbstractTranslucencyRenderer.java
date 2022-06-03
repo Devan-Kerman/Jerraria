@@ -14,10 +14,11 @@ import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.translucency.TranslucencyRenderer;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
+import net.devtech.jerraria.render.internal.renderhandler.OpaqueRenderHandler;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 
-public abstract class AbstractTranslucencyRenderer extends RenderHandler implements TranslucencyRenderer {
+public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler implements RenderHandler, TranslucencyRenderer {
 	public List<RenderCall> renderQueue = new ArrayList<>();
 	public record RenderCall(Shader<?> shader, Consumer<Shader<?>> exec) {}
 
@@ -40,7 +41,7 @@ public abstract class AbstractTranslucencyRenderer extends RenderHandler impleme
 		Id id, Copier<S> copier, Initializer<S> initializer) {
 		return ShaderImpl.createShader(id,
 			(o, s) -> copier.copy(o, s, this.type()),
-			(i, u, c) -> initializer.create(i, u, c, this.type()),
+			(u, c) -> initializer.create(u, c, this.type()),
 			this
 		);
 	}

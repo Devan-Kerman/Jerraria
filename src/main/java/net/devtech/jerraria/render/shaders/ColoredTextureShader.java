@@ -35,8 +35,8 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	public final Tex texture = this.uni(Tex.tex2d("texture_")); // uniforms
 	public final Mat3.x3<?> mat = this.uni(Mat3.mat3("mat_"));
 
-	protected ColoredTextureShader(Id id, VFBuilder<End> builder, Object function) {
-		super(id, builder.add(Color.argb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex
+	protected ColoredTextureShader(VFBuilder<End> builder, Object function) {
+		super(builder.add(Color.argb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex
 		// attributes
 	}
 

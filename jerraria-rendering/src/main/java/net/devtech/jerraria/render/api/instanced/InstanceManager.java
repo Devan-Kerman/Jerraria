@@ -50,6 +50,10 @@ public class InstanceManager {
 		return from;
 	}
 
+	public boolean hasVacancy() {
+		return !this.unused.isEmpty();
+	}
+
 	public void copyAction(CopyHandler handler) {
 		int size = this.active.size();
 		int usedId = 0, counter = size - 1;
@@ -119,8 +123,15 @@ public class InstanceManager {
 	 * SSBO instanced rendering has an "unlimited" size
 	 */
 	public static class Resizable extends InstanceManager {
-		public Resizable(int expectedInstances) {
+		final int realMaxSize;
+		public Resizable(int expectedInstances, int size) {
 			super(expectedInstances);
+			this.realMaxSize = size;
+		}
+
+		@Override
+		public boolean hasVacancy() {
+			return this.active.size() >= this.realMaxSize;
 		}
 
 		@Override

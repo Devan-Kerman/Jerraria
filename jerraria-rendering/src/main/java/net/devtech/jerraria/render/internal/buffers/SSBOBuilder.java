@@ -51,6 +51,14 @@ public class SSBOBuilder extends UBOBuilder {
 	}
 
 	@Override
+	protected int getOffset(int structIndex) {
+		if(structIndex == -2) {
+			return 0;
+		}
+		return super.getOffset(structIndex);
+	}
+
+	@Override
 	protected void flush() {
 		super.flush();
 		this.uploadFixed();

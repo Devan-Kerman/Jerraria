@@ -21,7 +21,7 @@ public enum SCopy {
 	 */
 	PRESERVE_NEITHER(false, false);
 
-	// todo view-only stuff, so u can "share vertex data" for example
+	// todo more granular copying, view-only is useless with deferred copying which we already did
 
 	public final boolean preserveUniforms, preserveVertexData;
 

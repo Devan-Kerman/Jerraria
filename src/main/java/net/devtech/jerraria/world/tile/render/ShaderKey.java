@@ -4,6 +4,7 @@ import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.render.internal.renderhandler.OpaqueRenderHandler;
 import net.devtech.jerraria.world.tile.render.ShaderSource.ShaderConfigurator;
 
 public record ShaderKey<T extends Shader<?>>(
@@ -21,7 +22,7 @@ public record ShaderKey<T extends Shader<?>>(
 			SCopy.PRESERVE_NEITHER,
 			AutoBlockLayerInvalidation.ON_BLOCK_UPDATE,
 			DrawMethod.TRIANGLE,
-			BuiltGlState.DEFAULT
+			OpaqueRenderHandler.OPAQUE
 		);
 	}
 

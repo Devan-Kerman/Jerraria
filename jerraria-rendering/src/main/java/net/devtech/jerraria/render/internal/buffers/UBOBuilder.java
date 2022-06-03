@@ -78,6 +78,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 			this.uploadStruct();
 		}
 		this.primary = this.variableStruct;
+		this.structIndex = structIndex;
 	}
 
 	public void structElement(int variableIndex) {
@@ -85,6 +86,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 		this.primary = this.variableStruct;
 	}
 
+	// for SSBOs
 	public void structVariable(int structIndex, int variableIndex) {
 		if(this.structIndex != structIndex) {
 			// upload original data
@@ -92,6 +94,7 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 		}
 		this.initializedVariables.set(variableIndex);
 		this.primary = this.variableStruct.position(this.structIntervals[variableIndex]);
+		this.structIndex = structIndex;
 	}
 
 	public void bind(int index, int structIndex) {
@@ -104,12 +107,16 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 		}
 	}
 
-	public void copyStruct(UBOBuilder src, int from, int to) {
-		this.copyStruct(src, from, to, 0, this.structLen);
+	public void copyFrom(UBOBuilder src, int from, int to) {
+		this.copyFrom(src, from, to, 0, 0, this.structLen);
 	}
 
-	public void copyStruct(UBOBuilder src, int from, int to, int offset, int len) {
-		int bufferId, readOff;
+	protected int getOffset(int structIndex) {
+		return this.structsStart + structIndex * this.structLen;
+	}
+
+	public void copyFrom(UBOBuilder src, int from, int to, int fromOffset, int toOffset, int len) {
+		int srcId, readOff;
 		if(this.structIndex == to) {
 			this.flush();
 		}
@@ -118,22 +125,22 @@ public class UBOBuilder extends ByteBufferGlDataBuf {
 				src.flush();
 			}
 
-			bufferId = src.glId;
-			readOff = src.structsStart + from * src.structLen;
+			srcId = src.glId;
+			readOff = src.getOffset(from);
 		} else {
-			bufferId = StaticBuffers.emptyBuffer(this.structLen);
+			srcId = StaticBuffers.emptyBuffer(this.structLen);
 			readOff = 0;
 		}
 
-		int writeOff = this.structsStart + to * this.structLen;
+		int writeOff = this.getOffset(to);
 		this.ensureBufferObjectCapacity(writeOff + this.structLen);
 		this.targetState().bindBuffer(this.glId);
-		glBindBuffer(GL_COPY_READ_BUFFER, bufferId);
-		glCopyBufferSubData(GL_COPY_READ_BUFFER, this.targetState().type, readOff+offset, writeOff+offset, len);
+		glBindBuffer(GL_COPY_READ_BUFFER, srcId);
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, this.targetState().type, readOff+fromOffset, writeOff+toOffset, len);
 	}
 
 	public boolean hasStruct(int index) {
-		return this.structsStart+(index+1)*this.structLen <= this.bufferObjectLen;
+		return (this.structsStart+(index+1)*this.structLen <= this.bufferObjectLen) || this.structIndex == index;
 	}
 
 	protected void flush() {

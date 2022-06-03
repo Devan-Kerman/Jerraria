@@ -21,8 +21,8 @@ public class TestTranslucentShader extends TranslucentShader<Vec3.F<Color.ARGB<E
 		TestTranslucentShader::new
 	);
 
-	protected TestTranslucentShader(Id id, VFBuilder<End> builder, Object context, TranslucentShaderType type) {
-		super(id, builder.add(Color.argb("color")).add(Vec3.f("pos")), context, type);
+	protected TestTranslucentShader(VFBuilder<End> builder, Object context, TranslucentShaderType type) {
+		super(builder.add(Color.argb("color")).add(Vec3.f("pos")), context, type);
 	}
 
 	protected TestTranslucentShader(Shader<Vec3.F<Color.ARGB<End>>> shader, SCopy method, TranslucentShaderType type) {

@@ -14,8 +14,8 @@ public class InstancedSolidColorShader extends Shader<Vec3.F<End>> {
 	public final Vec3.F<?>[] offsets = new Vec3.F[32];
 	public final Vec3.F<?>[] colors = new Vec3.F[32];
 
-	protected InstancedSolidColorShader(Id id, VFBuilder<End> builder, Object function) {
-		super(id, builder.add(Vec3.f("pos")), function);
+	protected InstancedSolidColorShader(VFBuilder<End> builder, Object function) {
+		super(builder.add(Vec3.f("pos")), function);
 		this.init();
 	}
 

@@ -3,14 +3,15 @@ package net.devtech.jerraria.render.internal;
 import java.util.function.Function;
 
 import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.basic.GlData;
 
 public final class LazyGlData extends GlData {
-	private final Shader shader;
+	private final ShaderImpl shader;
 	private final Function<BareShader, GlData> extract;
 
 	public LazyGlData(
-		Shader shader, Function<BareShader, GlData> extract) {
+		ShaderImpl shader, Function<BareShader, GlData> extract) {
 		this.shader = shader;
 		this.extract = extract;
 	}

@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
+import it.unimi.dsi.fastutil.objects.ObjectIterables;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
