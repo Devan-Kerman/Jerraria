@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.internal.buffers.VertexBufferObjectBuilder;
-import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.render.internal.buffers.VBOBuilder;
 import net.devtech.jerraria.util.Validate;
 
 public class VAO extends GlData {
@@ -28,7 +28,7 @@ public class VAO extends GlData {
 	final List<VertexBufferObject> groups;
 	final VertexBufferObject last;
 
-	public VAO(Map<String, BareShader.Field> fields, int program, Id id) {
+	public VAO(Map<String, BareShader.Field> fields, int program) {
 		IntBuffer aBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 		IntBuffer bBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 		record ActiveField(String name, int location, int type) {}
@@ -71,8 +71,13 @@ public class VAO extends GlData {
 		}
 
 		Map<String, ElementImpl> elements = new HashMap<>();
-		Map<String, VertexBufferObject> vbos = new LinkedHashMap<>();
-		VertexBufferObject last = null;
+		record ProtoVertexBufferObject(String name, IntList offsets, int[] len, List<Element> elements) {
+			public ProtoVertexBufferObject(String name) {
+				this(name, new IntArrayList(), new int[] {0}, new ArrayList<>());
+			}
+		}
+
+		Map<String, ProtoVertexBufferObject> vbos = new LinkedHashMap<>();
 		for(ActiveField value : fieldsByName.values()) {
 			String name = value.name;
 			BareShader.Field field = fields.get(name);
@@ -82,16 +87,18 @@ public class VAO extends GlData {
 				throw new UnsupportedOperationException(field.type() + " is not valid for type for \"" + glslNames + " " + name + "\" " +
 				                                        "suggested types: " + types);
 			}
-			last = vbos.computeIfAbsent(field.groupName(false), VertexBufferObject::new);
+
+			ProtoVertexBufferObject last = vbos.computeIfAbsent(field.groupName(false), ProtoVertexBufferObject::new);
 			int groupIndex = new ArrayList<>(vbos.values()).indexOf(last);
-			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.byteLength, -1);
+			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.offsets.size(), -1);
+			last.offsets.add(last.len[0]);
+			last.len[0] += element.type().byteCount;
 			elements.put(name, element);
 			last.elements.add(element);
-			last.byteLength += element.type().byteCount;
 		}
 
-		this.groups = List.copyOf(vbos.values());
-		this.last = last;
+		this.groups = vbos.values().stream().map(p -> new VertexBufferObject(p.name, p.offsets, p.len[0], p.elements)).toList();
+		this.last = this.groups.get(0);
 		this.elements = elements;
 		this.reference = new LazyVAOReference();
 		this.reference.bind(this.groups);
@@ -120,8 +127,8 @@ public class VAO extends GlData {
 	public Buf element(GlData.Element elem) {
 		this.validate();
 		ElementImpl element = (ElementImpl) elem;
-		VertexBufferObjectBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
-		buffer.offset(element.byteOffset());
+		VBOBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
+		buffer.offset(element.offsetIndex());
 		return buffer;
 	}
 
@@ -131,10 +138,10 @@ public class VAO extends GlData {
 		return this.elements.get(name);
 	}
 
-	public VAO next() {
+	public VAO vert() {
 		this.validate();
 		for(VertexBufferObject group : this.groups) {
-			group.getBuilder().next();
+			group.getBuilder().vert();
 		}
 		return this;
 	}
@@ -147,12 +154,12 @@ public class VAO extends GlData {
 
 	public void drawArrays(int mode) {
 		this.validate();
-		glDrawArrays(mode, 0, this.last.getBuilder().totalCount());
+		glDrawArrays(mode, 0, this.last.getBuilder().getVertexCount());
 	}
 
 	public void drawArraysInstanced(int mode, int count) {
 		this.validate();
-		glDrawArraysInstanced(mode, 0, this.last.getBuilder().totalCount(), count);
+		glDrawArraysInstanced(mode, 0, this.last.getBuilder().getVertexCount(), count);
 	}
 
 	public void drawElements(int mode, int elements, int type) {

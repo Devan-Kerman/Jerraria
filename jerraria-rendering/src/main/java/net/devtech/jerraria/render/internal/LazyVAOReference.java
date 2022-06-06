@@ -40,7 +40,7 @@ class LazyVAOReference {
 						type.elementType,
 						type.normalized,
 						group.byteLength,
-						value.byteOffset()
+						group.getOffset(value.offsetIndex())
 					);
 				}
 			}

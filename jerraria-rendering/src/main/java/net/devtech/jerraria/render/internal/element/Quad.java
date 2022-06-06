@@ -4,10 +4,8 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 
-import java.nio.ByteBuffer;
-
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.EBOBuilder;
 import net.devtech.jerraria.util.math.JMath;
 
 public final class Quad extends ShapeStrat {
@@ -18,7 +16,7 @@ public final class Quad extends ShapeStrat {
 	final long maxSize;
 
 	Quad(int unitLen, int maxSize, int glType, BufferInserter inserter) {
-		super(new ElementBufferBuilder(unitLen, Math.min(maxSize, 16384) * unitLen * 6), inserter, glType);
+		super(new EBOBuilder(unitLen), inserter, glType);
 		this.maxSize = maxSize;
 		this.ensureCapacity(Math.min(maxSize, 16384));
 	}
@@ -44,21 +42,14 @@ public final class Quad extends ShapeStrat {
 			throw new IllegalStateException("size is too big for quad type!");
 		}
 
-		int primitives = this.builder.getVertexCount() / 6;
+		int primitives = this.builder.getElementCount() / 6;
 		for(int i = primitives; i < JMath.ceilDiv(vertices, 6); i++) {
-			ByteBuffer buffer = this.builder.getBuffer();
-			this.inserter.insert(buffer, i * 4);
-			this.builder.next();
-			this.inserter.insert(buffer, i * 4 + 1);
-			this.builder.next();
-			this.inserter.insert(buffer, i * 4 + 2);
-			this.builder.next();
-			this.inserter.insert(buffer, i * 4 + 2);
-			this.builder.next();
-			this.inserter.insert(buffer, i * 4 + 3);
-			this.builder.next();
-			this.inserter.insert(buffer, i * 4);
-			this.builder.next();
+			this.inserter.insert(this.builder.vert(), i * 4);
+			this.inserter.insert(this.builder.vert(), i * 4 + 1);
+			this.inserter.insert(this.builder.vert(), i * 4 + 2);
+			this.inserter.insert(this.builder.vert(), i * 4 + 2);
+			this.inserter.insert(this.builder.vert(), i * 4 + 3);
+			this.inserter.insert(this.builder.vert(), i * 4);
 		}
 	}
 }

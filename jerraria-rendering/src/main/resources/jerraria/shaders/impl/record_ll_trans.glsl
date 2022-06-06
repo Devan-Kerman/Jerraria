@@ -10,7 +10,7 @@ void emit(vec4 color) { // todo write solid pixels immediately?
 	uint idx = atomicCounterIncrement(counter) + 1u;// position where data is stored
 	if (idx < imageSize(translucencyBuffer)) {
 		ivec2 coord = ivec2(gl_FragCoord.xy);
-		uint prev = imageAtomicExchange(imgListHead, coord, idx); // next in list
+		uint prev = imageAtomicExchange(imgListHead, coord, idx); // next in offsets
 		imageStore(translucencyBuffer, int(idx), uvec4(packUnorm4x8(color), floatBitsToUint(gl_FragCoord.z), 0, prev));
 	}
 }

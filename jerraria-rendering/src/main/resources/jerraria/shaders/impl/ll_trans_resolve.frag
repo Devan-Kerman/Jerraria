@@ -44,7 +44,7 @@ void sort(inout uvec2 fragments[MAX_SORT], int n) {
  * @returns the Kth furthest fragment, either this value or some value in the array
 */
 vec4 insert(inout uvec2 fragments[MAX_SORT], uvec2 vec) {
-	// to check if pop, just check the last element in list
+	// to check if pop, just check the last element in offsets
 	uvec2 last = fragments[MAX_SORT-1];
 	float depthLast = uintBitsToFloat(last.y);
 	float depthB = uintBitsToFloat(vec.y);

@@ -10,28 +10,24 @@ import static org.lwjgl.opengl.GL15.glGenBuffers;
 import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.EBOBuilder;
 
 public abstract class ShapeStrat {
 	public static final BufferInserter BYTE = (b, i) -> b.put((byte) i);
 	public static final BufferInserter SHORT = (b, i) -> b.putShort((short) i);
 	public static final BufferInserter INT = ByteBuffer::putInt;
-	public final ElementBufferBuilder builder;
+	public final EBOBuilder builder;
 	final BufferInserter inserter;
-	final int elementBufferObject;
 	final int type;
-	boolean isDirty;
 
-	protected ShapeStrat(ElementBufferBuilder builder, BufferInserter inserter, int type) {
+	protected ShapeStrat(EBOBuilder builder, BufferInserter inserter, int type) {
 		this.builder = builder;
 		this.inserter = inserter;
 		this.type = type;
-		this.elementBufferObject = glGenBuffers();
 	}
 
 	public void ensureCapacity(int vertices) {
 		this.ensureCapacity0(vertices);
-		this.isDirty = true;
 	}
 
 	public abstract int elementsForVertexData(int count);
@@ -43,11 +39,7 @@ public abstract class ShapeStrat {
 	abstract void ensureCapacity0(int vertices);
 
 	public void bind() {
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.elementBufferObject);
-		if(this.isDirty) {
-			this.builder.upload(GL_ELEMENT_ARRAY_BUFFER);
-			this.isDirty = false;
-		}
+		this.builder.bind();
 	}
 
 	public int getType() {

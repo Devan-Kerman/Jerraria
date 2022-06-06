@@ -1,23 +1,22 @@
 package net.devtech.jerraria.render.internal;
 
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-
-import java.util.ArrayList;
 import java.util.List;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.internal.buffers.VertexBufferObjectBuilder;
+import net.devtech.jerraria.render.internal.buffers.VBOBuilder;
 
 class VertexBufferObject {
 	final List<GlData.Element> elements;
 	final String name;
-	private VertexBufferObjectBuilder buffer;
-	int byteLength;
+	final VBOBuilder buffer;
+	final int byteLength;
 
-	public VertexBufferObject(String name) {
+	public VertexBufferObject(String name, IntList offsets, int vertexLen, List<GlData.Element> elements) {
 		this.name = name;
-		this.elements = new ArrayList<>();
+		this.buffer = new VBOBuilder(offsets.toIntArray(), vertexLen);
+		this.elements = elements;
+		this.byteLength = vertexLen;
 	}
 
 	public VertexBufferObject(VertexBufferObject group, boolean copyContents) {
@@ -25,30 +24,25 @@ class VertexBufferObject {
 		this.elements = group.elements;
 		this.byteLength = group.byteLength;
 		if(copyContents) {
-			// todo validate check on thread
-			this.buffer = new VertexBufferObjectBuilder(group.buffer);
+			this.buffer = new VBOBuilder(group.buffer);
 		} else {
-			this.buffer = VertexBufferObjectBuilder.vaoBound(GL_ARRAY_BUFFER, group.byteLength);
+			this.buffer = new VBOBuilder(group.buffer, 0);
 		}
 	}
 
-	public VertexBufferObjectBuilder getBuilder() {
-		VertexBufferObjectBuilder buffer = this.buffer;
-		if(buffer == null) {
-			return this.buffer = VertexBufferObjectBuilder.vaoBound(GL_ARRAY_BUFFER, this.byteLength);
-		} else {
-			return buffer;
-		}
+	public VBOBuilder getBuilder() {
+		return this.buffer;
 	}
 
 	public boolean bindAndUpload() {
-		if(this.buffer == null) {
-			return false;
-		}
-		return this.buffer.upload(true);
+		return this.buffer.bind();
 	}
 
 	public void close() {
 		this.buffer.close();
+	}
+
+	public int getOffset(int index) {
+		return this.buffer.structIntervals[index];
 	}
 }

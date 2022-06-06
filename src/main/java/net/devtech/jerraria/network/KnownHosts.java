@@ -106,7 +106,7 @@ public class KnownHosts {
 			}
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Could not open known hosts list", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Could not open known hosts offsets", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 
 		return true;

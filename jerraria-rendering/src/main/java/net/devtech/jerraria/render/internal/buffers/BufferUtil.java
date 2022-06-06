@@ -6,12 +6,12 @@ import java.nio.ByteOrder;
 import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL33;
 
-public class StaticBuffers {
+public class BufferUtil {
 	private static final int EMPTY_BUFFER_ID = GL33.glGenBuffers();
 	private static ByteBuffer emptyBuffer = ByteBuffer.allocate(1024);
 	private static int emptyBufferCapacity;
 
-	public static int emptyBuffer(int capacity) {
+	public static int emptyBufferObject(int capacity) {
 		if(emptyBufferCapacity < capacity) {
 			GL33.glBindBuffer(GL33.GL_COPY_WRITE_BUFFER, EMPTY_BUFFER_ID);
 			GL33.glBufferData(GL33.GL_COPY_WRITE_BUFFER, JMath.nearestPowerOf2(capacity + 64), GL33.GL_STATIC_DRAW);
@@ -21,9 +21,9 @@ public class StaticBuffers {
 	}
 
 	public static ByteBuffer emptyNioBuffer(int capacity) {
-		ByteBuffer emptyBuffer = StaticBuffers.emptyBuffer;
+		ByteBuffer emptyBuffer = BufferUtil.emptyBuffer;
 		if(emptyBuffer.capacity() < capacity) {
-			StaticBuffers.emptyBuffer = emptyBuffer = ByteBuffer.allocate(JMath.nearestPowerOf2(capacity + 64));
+			BufferUtil.emptyBuffer = emptyBuffer = ByteBuffer.allocate(JMath.nearestPowerOf2(capacity + 64));
 		}
 		return emptyBuffer;
 	}
@@ -36,7 +36,7 @@ public class StaticBuffers {
 
 	public static ByteBuffer reallocateBuffer(ByteBuffer old, int size) {
 		ByteBuffer buffer = allocateBuffer(size);
-		buffer.put(0, old, 0, old.capacity());
+		buffer.put(0, old, 0, Math.min(old.capacity(), size));
 		return buffer;
 	}
 }

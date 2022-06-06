@@ -4,7 +4,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.Shader;
 
 /**
- * Denotes the end of a vertex attribute list.
+ * Denotes the end of a vertex attribute offsets.
  */
 public class End extends GlValue<End> implements GlValue.Attribute {
 	public End() {

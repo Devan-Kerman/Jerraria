@@ -5,7 +5,10 @@ import static org.lwjgl.opengl.GL42.GL_ATOMIC_COUNTER_BUFFER;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-public class ACBOBuilder extends UBOBuilder {
+/**
+ * Atomic Counter Buffer Object Builder
+ */
+public class ACBOBuilder extends SharedUBOBuilder {
 	public static final int ACBO_PADDING = 4;
 
 	public ACBOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
@@ -17,7 +20,7 @@ public class ACBOBuilder extends UBOBuilder {
 	}
 
 	@Override
-	protected GLContextState.IndexedBufferTargetState targetState() {
+	protected GLContextState.IndexedBufferTargetState state() {
 		return GLContextState.ATOMIC_COUNTERS;
 	}
 

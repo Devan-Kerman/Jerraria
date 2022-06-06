@@ -7,12 +7,10 @@ import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 
-import java.nio.ByteBuffer;
-
 import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
-import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.EBOBuilder;
 
 public final class Seq extends ShapeStrat {
 	public static final Seq BYTE_ = new Seq(1, GL_UNSIGNED_BYTE, ShapeStrat.BYTE);
@@ -26,7 +24,7 @@ public final class Seq extends ShapeStrat {
 	}
 
 	Seq(int unitLen, int glType, BufferInserter inserter) {
-		super(new ElementBufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384)) * unitLen), inserter, glType);
+		super(new EBOBuilder(unitLen), inserter, glType);
 		this.ensureCapacity(ifloor(min(pow(256, unitLen), 16384)));
 	}
 
@@ -47,10 +45,8 @@ public final class Seq extends ShapeStrat {
 
 	@Override
 	void ensureCapacity0(int vertices) {
-		ByteBuffer buffer = this.builder.getBuffer();
-		for(int i = this.builder.getVertexCount(); i < vertices; i++) {
-			this.inserter.insert(buffer, i);
-			this.builder.next();
+		for(int i = this.builder.getElementCount(); i < vertices; i++) {
+			this.inserter.insert(this.builder.vert(), i);
 		}
 	}
 }

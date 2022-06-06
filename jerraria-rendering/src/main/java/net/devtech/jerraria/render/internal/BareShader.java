@@ -109,7 +109,7 @@ public class BareShader implements AutoCloseable {
 					GL_VERTEX_SHADER
 				);
 				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
-				VAO vertex = new VAO(uncompiled.vertexFields, program, uncompiled.id);
+				VAO vertex = new VAO(uncompiled.vertexFields, program);
 				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
 				FragOutput output;
 				if(uncompiled.outputFields.size() > 1) {
@@ -197,9 +197,9 @@ public class BareShader implements AutoCloseable {
 	public int getVertexCount() {
 		this.validateState();
 		if(this.ebo == null) {
-			return this.strategy.elementsForVertexData(this.vao.last.getBuilder().totalCount());
+			return this.strategy.elementsForVertexData(this.vao.last.getBuilder().getVertexCount());
 		} else {
-			return this.ebo.builder.getVertexCount();
+			return this.ebo.builder.getElementCount();
 		}
 	}
 
@@ -214,7 +214,7 @@ public class BareShader implements AutoCloseable {
 		this.validateState();
 		AutoStrat current = this.strategy;
 		if(current != strategy || force) {
-			if(this.vao.last.getBuilder().totalCount() == this.lastCopiedVertex) {
+			if(this.vao.last.getBuilder().getVertexCount() == this.lastCopiedVertex) {
 				this.strategy = strategy;
 				return;
 			}
@@ -226,7 +226,7 @@ public class BareShader implements AutoCloseable {
 			this.strategy = strategy;
 
 			AutoElementFamily family = (AutoElementFamily) current;
-			int count = this.vao.last.getBuilder().totalCount();
+			int count = this.vao.last.getBuilder().getVertexCount();
 			if(this.ebo == null) {
 				int elements = current.elementsForVertexData(count);
 				if(elements != 0) {
@@ -275,7 +275,7 @@ public class BareShader implements AutoCloseable {
 				// custom strategy without hotswaps
 				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last
 					.getBuilder()
-					.totalCount());
+					.getVertexCount());
 				strat.bind();
 				return strat.getType();
 			}

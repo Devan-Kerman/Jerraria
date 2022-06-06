@@ -30,7 +30,7 @@ public final class StructTypeImpl<T extends Struct> extends GlValue.Type<T> {
 				for(String name : this.names) {
 					GlData.Element self = data.getSelf().getElement(name).getSelf();
 					if(self instanceof ElementImpl e) {
-						int off = e.byteOffset();
+						int off = e.offsetIndex();
 						min = Math.min(min, off);
 						max = Math.max(max, off + e.type().byteCount);
 						if(group != -1 && e.groupIndex() != group) {
@@ -53,7 +53,7 @@ public final class StructTypeImpl<T extends Struct> extends GlValue.Type<T> {
 					UniformData self = (UniformData) data.getSelf();
 					for(GlData.Element value : self.elements.values()) {
 						if(value instanceof ElementImpl e) {
-							if(!this.names.contains(e.name()) && e.byteOffset() >= min && e.byteOffset() <= max && (e.arrayIndex() >= 0) == (array >= 0)) {
+							if(!this.names.contains(e.name()) && e.offsetIndex() >= min && e.offsetIndex() <= max && (e.arrayIndex() >= 0) == (array >= 0)) {
 								isSeq = false;
 								break;
 							}

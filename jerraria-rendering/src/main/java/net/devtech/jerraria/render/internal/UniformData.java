@@ -31,6 +31,7 @@ import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.render.internal.buffers.ACBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.SSBOBuilder;
+import net.devtech.jerraria.render.internal.buffers.SharedUBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.UBOBuilder;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
@@ -363,8 +364,8 @@ public class UniformData extends GlData {
 			int index = e.arrayIndex();
 			if(index == -1) {
 				UniformBufferBlock group = this.groups[e.groupIndex()];
-				UBOBuilder buffer = group.buffer();
-				buffer.structElement(e.location());
+				SharedUBOBuilder buffer = group.buffer();
+				buffer.variable(e.location());
 				return buffer;
 			} else {
 				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
@@ -417,8 +418,8 @@ public class UniformData extends GlData {
 		if(fromArrayIndex == -1 && toArrayIndex == -1) {
 			UniformBufferBlock fromGroup = this.groups[fromGroupIndex];
 			UniformBufferBlock toGroup = toData.groups[toGroupIndex];
-			UBOBuilder fromBuffer = fromGroup.buffer();
-			UBOBuilder toBuffer = toGroup.buffer();
+			SharedUBOBuilder fromBuffer = fromGroup.buffer();
+			SharedUBOBuilder toBuffer = toGroup.buffer();
 			toBuffer.copyFrom(fromBuffer, fromGroup.alloc, toGroup.alloc, fromByteOffset, toByteOffset, len);
 		} else if(fromArrayIndex != -1 && toArrayIndex != -1) {
 			ShaderBufferBlock fromBlock = this.ssbos.get(fromGroupIndex);
@@ -468,10 +469,10 @@ public class UniformData extends GlData {
 			this.copyTo(
 				toData,
 				fromE.groupIndex(),
-				fromE.byteOffset(),
+				fromE.offsetIndex(),
 				fromE.arrayIndex(),
 				toE.groupIndex(),
-				toE.byteOffset(),
+				toE.offsetIndex(),
 				toE.arrayIndex(),
 				toE.type().byteCount
 			);
@@ -535,7 +536,7 @@ public class UniformData extends GlData {
 		final IntArrayList available = new IntArrayList(INITIAL_BUFFER_LEN);
 		final String name;
 		final GLContextState.IndexedBufferTargetState bind;
-		final UBOBuilder buffer;
+		final SharedUBOBuilder buffer;
 		/**
 		 * to -> from
 		 */
@@ -564,7 +565,7 @@ public class UniformData extends GlData {
 			this.deferredCopies.defaultReturnValue(-1);
 		}
 
-		public UBOBuilder forIndex(int alloc) {
+		public SharedUBOBuilder forIndex(int alloc) {
 			synchronized(this.deferredCopies) {
 				int from = this.deferredCopies.remove(alloc);
 				if(from != -1) {
@@ -688,7 +689,7 @@ public class UniformData extends GlData {
 			}
 		}
 
-		public UBOBuilder buffer() { // todo upload partial or something
+		public SharedUBOBuilder buffer() { // todo upload partial or something
 			return this.manager.forIndex(this.alloc);
 		}
 

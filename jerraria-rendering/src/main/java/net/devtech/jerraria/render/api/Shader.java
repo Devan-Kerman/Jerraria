@@ -240,7 +240,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		if(o instanceof Collection c) {
 			c.add(value);
 		} else {
-			throw new IllegalStateException(name + " is not a list!");
+			throw new IllegalStateException(name + " is not a offsets!");
 		}
 	}
 

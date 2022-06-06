@@ -1,16 +1,12 @@
 package net.devtech.jerraria.render.internal.element;
 
 import static java.lang.Math.min;
-import static java.lang.Math.pow;
-import static net.devtech.jerraria.util.math.JMath.ifloor;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
 
-import java.nio.ByteBuffer;
-
 import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.internal.buffers.ElementBufferBuilder;
+import net.devtech.jerraria.render.internal.buffers.EBOBuilder;
 
 public class TriStrip extends ShapeStrat {
 	public static final TriStrip BYTE_ = new TriStrip( ShapeStrat.BYTE, 1,  GL_UNSIGNED_BYTE);
@@ -18,7 +14,7 @@ public class TriStrip extends ShapeStrat {
 	public static final TriStrip INT_ = new TriStrip(ShapeStrat.INT, 4, GL_UNSIGNED_INT);
 
 	protected TriStrip(BufferInserter inserter, int unitLen, int type) {
-		super(new ElementBufferBuilder(unitLen, ifloor(min(pow(256, unitLen), 16384)) * unitLen), inserter, type);
+		super(new EBOBuilder(unitLen), inserter, type);
 	}
 
 	@Override
@@ -38,15 +34,11 @@ public class TriStrip extends ShapeStrat {
 
 	@Override
 	void ensureCapacity0(int vertices) {
-		int primitives = this.builder.getVertexCount() / 3;
+		int primitives = this.builder.getElementCount() / 3;
 		for(int i = primitives; i < vertices - 2; i++) {
-			ByteBuffer buffer = this.builder.getBuffer();
-			this.inserter.insert(buffer, i);
-			this.builder.next();
-			this.inserter.insert(buffer, i + 1);
-			this.builder.next();
-			this.inserter.insert(buffer, i + 2);
-			this.builder.next();
+			this.inserter.insert(this.builder.vert(), i);
+			this.inserter.insert(this.builder.vert(), i + 1);
+			this.inserter.insert(this.builder.vert(), i + 2);
 		}
 	}
 }

@@ -50,7 +50,7 @@ public class UnsafeWeakList<T> extends AbstractCollection<T> {
     //noinspection unchecked
     while ((reference = (MyReference<T>)myQueue.poll()) != null) {
       int index = reference.index;
-      // list may have changed while the reference was dangling in queue
+      // offsets may have changed while the reference was dangling in queue
       if (index < myList.size() && reference == myList.get(index)) {
         nullizeAt(index);
       }

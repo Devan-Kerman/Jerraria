@@ -19,7 +19,6 @@ import net.devtech.jerraria.render.internal.FragOutput;
 import net.devtech.jerraria.render.internal.LazyGlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.StructTypeImpl;
-import net.devtech.jerraria.render.internal.UniformData;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 import net.devtech.jerraria.render.internal.arr.ShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
@@ -37,14 +36,13 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 	final VFBuilderImpl<T> builder;
 	final Shader.Copier<Shader<?>> copyFunction;
 	final boolean isCopy;
-	boolean endedVertex;
 	int verticesSinceStrategy;
 	T compiled;
 	BareShader shader;
 	End end;
 
 	public ShaderImpl(ShaderImpl<T> copy, SCopy method) {
-		copy.validateAndFlushVertex(copy.shader.strategy,
+		copy.validate(copy.shader.strategy,
 			copy.shader.strategy.vertexCount(),
 			copy.shader.strategy.minimumVertices()
 		);
@@ -119,17 +117,14 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	T vert() {
-		if(this.verticesSinceStrategy != 0 && !this.endedVertex) {
-			this.shader.vao.next();
-		}
-		this.endedVertex = false;
+		this.shader.vao.vert();
 		this.verticesSinceStrategy++;
 		return this.compiled;
 	}
 
 	void strategy(AutoStrat strategy) {
 		if(this.verticesSinceStrategy != 0) {
-			this.validateAndFlushVertex(this.shader.strategy,
+			this.validate(this.shader.strategy,
 				this.shader.strategy.vertexCount(),
 				this.shader.strategy.minimumVertices()
 			);
@@ -146,14 +141,14 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 
 	void drawKeep(Shader<?> shader, BuiltGlState state) {
 		AutoStrat strategy = shader.getStrategy();
-		this.validateAndFlushVertex(strategy, strategy.vertexCount(), strategy.minimumVertices());
+		this.validate(strategy, strategy.vertexCount(), strategy.minimumVertices());
 		this.handler.drawKeep(shader, state);
 	}
 
 	void drawInstancedKeep(
 		Shader<T> shader, BuiltGlState state, int count) {
 		AutoStrat strategy = shader.getStrategy();
-		this.validateAndFlushVertex(strategy, strategy.vertexCount(), strategy.minimumVertices());
+		this.validate(strategy, strategy.vertexCount(), strategy.minimumVertices());
 		this.handler.drawInstancedKeep(shader, state, count);
 	}
 
@@ -211,17 +206,13 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		this.end = build.second();
 	}
 
-	void validateAndFlushVertex(
+	void validate(
 		Object string, int vertexCount, int minimumVertices) {
 		if(this.verticesSinceStrategy % vertexCount != 0) {
 			throw new IllegalArgumentException("Expected multiple of " + vertexCount + " vertexes for " + "rendering " + string + " but found " + this.verticesSinceStrategy);
 		}
 		if(this.verticesSinceStrategy < minimumVertices) {
 			throw new IllegalArgumentException("Expected atleast " + minimumVertices + " vertexes for " + "rendering " + string + " but found " + this.verticesSinceStrategy);
-		}
-		if(!this.endedVertex) {
-			this.shader.vao.next();
-			this.endedVertex = true;
 		}
 	}
 

@@ -10,8 +10,7 @@ import net.devtech.jerraria.render.internal.state.GLContextState;
 
 // todo reunify the buffer builders
 //  for VBOs, ignore fixed data, and ignore fractional uploading
-//  for EBOs, idk, maybe just uncringe the BufferBuilder system for it specifically
-public class SSBOBuilder extends UBOBuilder {
+public class SSBOBuilder extends AbstractUBOBuilder {
 	public static final int SSBO_PADDING = glGetInteger(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
 	final ByteBuffer fixedData;
 	final BitSet fixedInitialized;
@@ -20,7 +19,7 @@ public class SSBOBuilder extends UBOBuilder {
 
 	public SSBOBuilder(int fixedLen, int[] fixedElementOffsets, int structLen, int[] structVariableOffsets, int structsStart) {
 		super(structLen, structLen, structVariableOffsets, structsStart);
-		this.fixedData = StaticBuffers.allocateBuffer(fixedLen);
+		this.fixedData = BufferUtil.allocateBuffer(fixedLen);
 		this.fixedInitialized = new BitSet(fixedElementOffsets.length);
 		this.fixedIntervals = UBOBuilder.add(fixedElementOffsets, fixedLen);
 		this.fixedDataLength = fixedLen;
@@ -35,7 +34,7 @@ public class SSBOBuilder extends UBOBuilder {
 		this.glId = buffer.glId;
 		this.bufferObjectLen = buffer.bufferObjectLen;
 		this.structIndex = buffer.structIndex;
-		this.fixedData = StaticBuffers.allocateBuffer(fixedLen);
+		this.fixedData = BufferUtil.allocateBuffer(fixedLen);
 	}
 
 	@Override
@@ -62,12 +61,12 @@ public class SSBOBuilder extends UBOBuilder {
 	}
 
 	@Override
-	protected GLContextState.IndexedBufferTargetState targetState() {
-		return GLContextState.SHADER_BUFFER;
+	protected int padding() {
+		return SSBO_PADDING;
 	}
 
 	@Override
-	protected int padding() {
-		return SSBO_PADDING;
+	protected GLContextState.IndexedBufferTargetState state() {
+		return GLContextState.SHADER_BUFFER;
 	}
 }

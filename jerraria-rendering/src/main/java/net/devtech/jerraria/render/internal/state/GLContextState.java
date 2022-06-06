@@ -252,7 +252,8 @@ public final class GLContextState {
 			}
 		}
 
-		public void untrackBuffer(int id) {
+		public void deleteBuffer(int id) {
+			glDeleteBuffers(id);
 			if(this.generic == id) {
 				this.generic = 0;
 			}
