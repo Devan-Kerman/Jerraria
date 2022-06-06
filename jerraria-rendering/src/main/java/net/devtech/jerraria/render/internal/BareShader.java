@@ -116,7 +116,7 @@ public class BareShader implements AutoCloseable {
 					GLSLParserValidation.validateFragShader(fragmentShader, uncompiled);
 				}
 				if(!uncompiled.outputFields.isEmpty()) {
-					output = new FragOutput(uncompiled.outputFields, program, uncompiled.id);
+					output = new FragOutput(uncompiled.outputFields, program);
 				} else {
 					output = null;
 				}

@@ -107,6 +107,10 @@ public abstract class GlValue<N extends GlValue<?>> {
 		void copyTo(GlValue value);
 	}
 
+	public interface Indexable {
+		int getIndex();
+	}
+
 	/**
 	 * a valid `out` parameter in a shader
 	 */

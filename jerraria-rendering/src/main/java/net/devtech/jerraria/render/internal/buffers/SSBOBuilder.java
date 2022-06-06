@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL11.glGetInteger;
 import static org.lwjgl.opengl.GL46.GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.BitSet;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
@@ -21,9 +20,9 @@ public class SSBOBuilder extends UBOBuilder {
 
 	public SSBOBuilder(int fixedLen, int[] fixedElementOffsets, int structLen, int[] structVariableOffsets, int structsStart) {
 		super(structLen, structLen, structVariableOffsets, structsStart);
-		this.fixedData = ElementBufferBuilder.allocateBuffer(fixedLen);
+		this.fixedData = StaticBuffers.allocateBuffer(fixedLen);
 		this.fixedInitialized = new BitSet(fixedElementOffsets.length);
-		this.fixedIntervals = add(fixedElementOffsets, fixedLen);
+		this.fixedIntervals = UBOBuilder.add(fixedElementOffsets, fixedLen);
 		this.fixedDataLength = fixedLen;
 	}
 
@@ -36,63 +35,35 @@ public class SSBOBuilder extends UBOBuilder {
 		this.glId = buffer.glId;
 		this.bufferObjectLen = buffer.bufferObjectLen;
 		this.structIndex = buffer.structIndex;
-		this.fixedData = ElementBufferBuilder.allocateBuffer(fixedLen);
-	}
-
-	public static int[] add(int[] arr, int val) {
-		int last = arr.length, copy[] = Arrays.copyOf(arr, last + 1);
-		copy[last] = val;
-		return copy;
-	}
-
-	public void offset(int fixedOffset) {
-		this.fixedInitialized.set(fixedOffset);
-		this.primary = this.fixedData.position(this.fixedIntervals[fixedOffset]);
+		this.fixedData = StaticBuffers.allocateBuffer(fixedLen);
 	}
 
 	@Override
 	protected int getOffset(int structIndex) {
 		if(structIndex == -2) {
 			return 0;
+		} else if(structIndex == -1) {
+			return this.structsStart;
 		}
 		return super.getOffset(structIndex);
 	}
 
 	@Override
-	protected void flush() {
-		super.flush();
-		this.uploadFixed();
+	protected int getOffset(int structIndex, int variableIndex) {
+		if(structIndex == -2) {
+			return this.fixedIntervals[variableIndex];
+		}
+		return super.getOffset(structIndex, variableIndex);
 	}
 
 	public void bind(int index) {
 		this.flush();
-		if(this.bufferObjectLen != 0) {
-			GLContextState.SHADER_BUFFER.bindBufferRange(index, this.glId, 0, this.bufferObjectLen);
-		}
-	}
-
-	private void uploadFixed() {
-		if(!this.fixedInitialized.isEmpty()) {
-			this.evaluateDeferredCopies();
-			this.ensureBufferObjectCapacity(this.fixedDataLength);
-			GLContextState.SHADER_BUFFER.bindBuffer(this.glId);
-			this.uploadIntervals(GLContextState.SHADER_BUFFER.type,
-				this.fixedInitialized,
-				this.fixedData,
-				this.fixedIntervals,
-				0
-			);
-		}
+		GLContextState.SHADER_BUFFER.bindBufferRange(index, this.glId, 0, this.bufferObjectLen);
 	}
 
 	@Override
 	protected GLContextState.IndexedBufferTargetState targetState() {
 		return GLContextState.SHADER_BUFFER;
-	}
-
-	@Override
-	protected ByteBuffer getBuffer() {
-		return this.primary;
 	}
 
 	@Override

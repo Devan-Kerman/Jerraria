@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import net.devtech.jerraria.render.api.BuiltGlState;
 
-public interface RenderingEnvironment { // todo undo this in favor of a static class that pulls from PlatformInternal
+public interface RenderingEnvironment {
 	Thread RENDER_THREAD = Objects.requireNonNull(
 		RenderingEnvironmentInternal.renderThread_,
 		"RenderingEnvironmentInternal.renderThread_ not set!"

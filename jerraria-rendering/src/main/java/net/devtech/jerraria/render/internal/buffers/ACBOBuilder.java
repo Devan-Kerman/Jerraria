@@ -5,12 +5,14 @@ import static org.lwjgl.opengl.GL42.GL_ATOMIC_COUNTER_BUFFER;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-public class ABOBuilder extends UBOBuilder {
-	public ABOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
+public class ACBOBuilder extends UBOBuilder {
+	public static final int ACBO_PADDING = 4;
+
+	public ACBOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
 		super(unpaddedLen, paddedLen, structVariableOffsets, structsStart);
 	}
 
-	public ABOBuilder(UBOBuilder buffer) {
+	public ACBOBuilder(UBOBuilder buffer) {
 		super(buffer);
 	}
 

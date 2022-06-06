@@ -169,8 +169,7 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		return type.create(this.uniformData, null);
 	}
 
-	<U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(
-		String name, Shader.BufferFunction<GlValue.Type<U>> type) {
+	<U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, Shader.BufferFunction<U> type) {
 		ShaderBufferImpl<U> array = new ShaderBufferImpl<>(this.uniformData, name, type, Integer.MAX_VALUE);
 		if(!this.isCopy) {
 			this.uniforms.add(array.new ArrayGlValue());
@@ -178,8 +177,7 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		return array;
 	}
 
-	<U extends GlValue<End> & GlValue.Uniform> List<U> array(
-		String name, Function<String, GlValue.Type<U>> initializer, int len) {
+	<U extends GlValue<End> & GlValue.Uniform> List<U> array(String name, Function<String, GlValue.Type<U>> initializer, int len) {
 		List<U> list = new ArrayList<>();
 		for(int i = 0; i < len; i++) {
 			list.add(this.addUniform(initializer.apply(name + "[" + i + "]")));

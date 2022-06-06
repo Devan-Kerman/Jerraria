@@ -17,7 +17,7 @@ public class FragOutput extends GlData {
 	public final Map<String, OutputIndex> indices;
 	final List<OutputBind> binds;
 
-	public FragOutput(Map<String, BareShader.Field> outputs, int program, Id id) {
+	public FragOutput(Map<String, BareShader.Field> outputs, int program) {
 		int buffer = glGenFramebuffers();
 		Map<String, OutputIndex> indices = new HashMap<>();
 		List<OutputBind> binds = new ArrayList<>();

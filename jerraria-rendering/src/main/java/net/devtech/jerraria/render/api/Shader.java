@@ -15,6 +15,7 @@ import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
+import net.devtech.jerraria.render.internal.arr.ListShaderBufferImpl;
 import net.devtech.jerraria.render.internal.arr.ShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
@@ -190,10 +191,13 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	/**
 	 * @return the uniform configurator for the given variable
 	 */
-	protected final <U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(
-		String name,
-		BufferFunction<GlValue.Type<U>> type) {
+	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, BufferFunction<U> type) {
 		return this.delegate.buffer(name, type);
+	}
+
+	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> list(String name, Function<String, GlValue.Type<U>> initializer,
+	                                                                                int len) {
+		return new ListShaderBufferImpl<>(this.array(name, initializer, len));
 	}
 
 	protected final <U extends GlValue<End> & GlValue.Uniform> List<U> array(
@@ -250,8 +254,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		}
 	}
 
-	public interface BufferFunction<U> {
-		U apply(String name);
+	public interface BufferFunction<U extends GlValue<?>> {
+		GlValue.Type<U> apply(String name);
 	}
 
 	public interface Copier<T extends Shader<?>> {

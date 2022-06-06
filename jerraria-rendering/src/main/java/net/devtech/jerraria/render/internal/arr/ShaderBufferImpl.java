@@ -14,11 +14,11 @@ public class ShaderBufferImpl<T extends GlValue<?> & GlValue.Uniform> implements
 	final GlData uniforms;
 	final String name;
 	final Int2ObjectMap<T> cache = new Int2ObjectOpenHashMap<>();
-	final Shader.BufferFunction<GlValue.Type<T>> operator;
+	final Shader.BufferFunction<T> operator;
 	final int maxSize;
 	int current;
 
-	public ShaderBufferImpl(GlData uniforms, String elementName, Shader.BufferFunction<GlValue.Type<T>> operator, int size) {
+	public ShaderBufferImpl(GlData uniforms, String elementName, Shader.BufferFunction<T> operator, int size) {
 		this.name = elementName;
 		this.operator = operator;
 		this.maxSize = size;

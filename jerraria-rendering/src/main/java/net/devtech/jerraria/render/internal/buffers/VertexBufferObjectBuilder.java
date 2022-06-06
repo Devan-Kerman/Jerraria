@@ -42,7 +42,7 @@ public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 		this.binder = binder;
 		this.target = target;
 		this.componentLength = componentLength;
-		this.store = ElementBufferBuilder.allocateBuffer(toStoreCount * componentLength);
+		this.store = StaticBuffers.allocateBuffer(toStoreCount * componentLength);
 	}
 
 	/**
@@ -164,7 +164,7 @@ public final class VertexBufferObjectBuilder extends ByteBufferGlDataBuf {
 		this.storedCount++;
 		int neededSize = (this.storedCount+1) * this.componentLength;
 		if(this.store.capacity() < neededSize) {
-			ByteBuffer buffer = ElementBufferBuilder.allocateBuffer(JMath.nearestPowerOf2(neededSize + 1024));
+			ByteBuffer buffer = StaticBuffers.allocateBuffer(JMath.nearestPowerOf2(neededSize + 1024));
 			buffer.put(0, this.store, 0, this.storedCount * this.componentLength);
 			this.store = buffer;
 		}

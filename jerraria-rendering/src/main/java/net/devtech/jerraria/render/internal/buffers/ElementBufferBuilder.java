@@ -5,7 +5,6 @@ import static org.lwjgl.opengl.GL31.glBufferData;
 import static org.lwjgl.opengl.GL31.glBufferSubData;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.util.math.JMath;
@@ -17,7 +16,7 @@ public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 
 	public ElementBufferBuilder(int vertexLength) {
 		this.vertexLength = vertexLength;
-		this.buffer = allocateBuffer(Math.max(1024, vertexLength*16));
+		this.buffer = StaticBuffers.allocateBuffer(Math.max(1024, vertexLength * 16));
 	}
 
 	public ElementBufferBuilder(ElementBufferBuilder builder) {
@@ -30,7 +29,7 @@ public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 		ByteBuffer buffer = builder.buffer;
 		if(buffer != null) {
 			int copiedBytes = this.vertexLength * vertices;
-			ByteBuffer copy = allocateBuffer(JMath.nearestPowerOf2(copiedBytes));
+			ByteBuffer copy = StaticBuffers.allocateBuffer(JMath.nearestPowerOf2(copiedBytes));
 			copy.put(0, buffer, 0, copiedBytes); // account for unflushed
 			copy.position(copiedBytes);
 			this.buffer = copy;
@@ -40,7 +39,7 @@ public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 	public ElementBufferBuilder(int vertexLength, int expectedSize) {
 		this.vertexLength = vertexLength;
 		// compute the next highest power of 2 of 32-bit v
-		this.buffer = allocateBuffer(JMath.nearestPowerOf2(expectedSize));
+		this.buffer = StaticBuffers.allocateBuffer(JMath.nearestPowerOf2(expectedSize));
 	}
 
 	public void copyVertexes(ElementBufferBuilder builder, int from, int len) {
@@ -95,12 +94,6 @@ public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 		return this.vertexCount;
 	}
 
-	public static ByteBuffer allocateBuffer(int size) {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(size);
-		buffer.order(ByteOrder.nativeOrder());
-		return buffer;
-	}
-
 	public int vertexOffset() {
 		return this.vertexCount * this.vertexLength;
 	}
@@ -132,7 +125,7 @@ public final class ElementBufferBuilder extends ByteBufferGlDataBuf {
 		if((buffer.limit() - this.vertexOffset()) < neededForNext) {
 			ByteBuffer old = buffer;
 			int oldCount = buffer.limit();
-			buffer = allocateBuffer(oldCount << 1);
+			buffer = StaticBuffers.allocateBuffer(oldCount << 1);
 			buffer.put(0, old, 0, oldCount);
 			buffer.position(old.position());
 			this.buffer = buffer;

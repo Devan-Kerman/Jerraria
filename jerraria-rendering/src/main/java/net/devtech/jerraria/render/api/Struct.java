@@ -9,16 +9,17 @@ import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.internal.StructTypeImpl;
 import net.devtech.jerraria.render.internal.UniformData;
 
-public abstract class Struct extends GlValue<End> implements GlValue.Uniform, GlValue.Copiable {
-	protected final String structName;
+public abstract class Struct extends GlValue<End> implements GlValue.Uniform, GlValue.Copiable, GlValue.Indexable {
+	protected final String name;
 	final List<GlValue.Type<?>> fields;
 	final List<GlValue<?>> uniforms = new ArrayList<>();
+	int index = -3;
 	StructTypeImpl<?> type;
 
 	protected Struct(GlData data, GlValue next, String structName) {
 		super(data, next);
 		this.fields = data instanceof StructTypeImpl.DummyGlData ? new ArrayList<>() : null;
-		this.structName = structName;
+		this.name = structName;
 	}
 
 	/**
@@ -54,10 +55,10 @@ public abstract class Struct extends GlValue<End> implements GlValue.Uniform, Gl
 					toU,
 					a.group,
 					a.off,
-					a.array,
+					this.getIndex(),
 					b.group,
 					b.off,
-					b.array,
+					struct.getIndex(),
 					a.len
 				);
 			} else {
@@ -69,6 +70,26 @@ public abstract class Struct extends GlValue<End> implements GlValue.Uniform, Gl
 				ShaderImpl.copyUniform_(from, to);
 			}
 		}
+	}
+
+	@Override
+	public int getIndex() {
+		int index = this.index;
+		if(index == -3) {
+			int i = -3;
+			for(GlValue<?> uniform : this.uniforms) {
+				if(uniform instanceof Indexable idxa) {
+					int j = idxa.getIndex();
+					if(j != i && i != -3) {
+						return this.index = -1;
+					} else {
+						i = j;
+					}
+				}
+			}
+			return this.index = i;
+		}
+		return index;
 	}
 
 	public interface TypeFactory<T extends Struct> {

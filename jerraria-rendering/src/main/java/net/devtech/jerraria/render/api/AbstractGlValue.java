@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.types.Vec3;
+import net.devtech.jerraria.render.internal.ElementImpl;
 import net.devtech.jerraria.render.internal.UniformData;
 
 /**
@@ -24,7 +25,7 @@ import net.devtech.jerraria.render.internal.UniformData;
  *
  * @see Vec3.F
  */
-public abstract class AbstractGlValue<N extends GlValue<?>> extends GlValue<N> implements GlValue.Copiable {
+public abstract class AbstractGlValue<N extends GlValue<?>> extends GlValue<N> implements GlValue.Copiable, GlValue.Indexable {
 	protected final String name;
 	protected final GlData.Element element;
 
@@ -39,5 +40,13 @@ public abstract class AbstractGlValue<N extends GlValue<?>> extends GlValue<N> i
 		AbstractGlValue dst = (AbstractGlValue) value;
 		UniformData from = (UniformData) this.data.getSelf(), to = (UniformData) value.data.getSelf();
 		from.copyTo(this.element, to, dst.element);
+	}
+
+	@Override
+	public int getIndex() {
+		if(this.element.getSelf() instanceof ElementImpl i) {
+			return i.arrayIndex();
+		}
+		return -2;
 	}
 }

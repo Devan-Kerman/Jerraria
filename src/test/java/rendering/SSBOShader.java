@@ -25,8 +25,8 @@ public class SSBOShader extends Shader<Vec3.F<End>> {
 	public final Vec4.F<End> fade = this.uni(Vec4.f("fade"));
 
 	static class Instance extends Struct {
-		public final Vec4.F<End> color = this.field(Vec4.f(this.structName+".color"));
-		public final V.F<End> scale = this.field(V.f(this.structName+".scale"));
+		public final Vec4.F<End> color = this.field(Vec4.f(this.name + ".color"));
+		public final V.F<End> scale = this.field(V.f(this.name + ".scale"));
 
 		protected Instance(GlData data, GlValue next, String name) {
 			super(data, next, name);

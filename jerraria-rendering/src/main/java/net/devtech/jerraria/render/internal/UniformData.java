@@ -29,7 +29,7 @@ import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
-import net.devtech.jerraria.render.internal.buffers.ABOBuilder;
+import net.devtech.jerraria.render.internal.buffers.ACBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.SSBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.UBOBuilder;
 import net.devtech.jerraria.render.internal.state.GLContextState;
@@ -366,10 +366,6 @@ public class UniformData extends GlData {
 				UBOBuilder buffer = group.buffer();
 				buffer.structElement(e.location());
 				return buffer;
-			} else if(index == -2) {
-				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
-				block.builder.offset(e.location());
-				return block.builder;
 			} else {
 				ShaderBufferBlock block = this.ssbos.get(e.groupIndex());
 				block.builder.structVariable(e.arrayIndex(), e.location());
@@ -559,9 +555,9 @@ public class UniformData extends GlData {
 				this.buffer = new UBOBuilder(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
 			} else {
 				this.byteLength = glGetActiveAtomicCounterBufferi(program, index, GL_ATOMIC_COUNTER_BUFFER_DATA_SIZE);
-				this.paddedByteLength = JMath.ceil(this.byteLength, UBOBuilder.ATOMIC_PADDING);
+				this.paddedByteLength = JMath.ceil(this.byteLength, ACBOBuilder.ACBO_PADDING);
 				this.bind = GLContextState.ATOMIC_COUNTERS;
-				this.buffer = new ABOBuilder(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
+				this.buffer = new ACBOBuilder(this.byteLength, this.paddedByteLength, uniformOffsets, 0);
 			}
 
 			this.postInit();
@@ -601,7 +597,6 @@ public class UniformData extends GlData {
 			synchronized(this.deferredCopies) {
 				real = this.deferredCopies.getOrDefault(alloc, alloc);
 			}
-			this.buffer.struct(real);
 			this.buffer.bind(this.binding, real);
 		}
 
