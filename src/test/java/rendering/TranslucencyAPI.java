@@ -21,7 +21,7 @@ public class TranslucencyAPI {
 				TestTranslucentShader rendering = TestTranslucentShader.INSTANCE;
 				Matrix3f idt = new Matrix3f();
 				for(float i = 0; i < 1; i+=.125) {
-					rendering.square(idt, i/2f, i/2f, .5f, .5f, -i, colors[(int) (i * 8)]);
+					rendering.square(idt, i/2f, i/2f, .5f, .5f, i, colors[(int) (i * 8)]);
 				}
 				rendering.draw();
 

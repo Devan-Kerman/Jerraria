@@ -23,13 +23,13 @@ void sort(inout uvec2 fragments[MAX_SORT], int n) {
 			float depthB = uintBitsToFloat(comp.y);
 
 			#ifndef Z_FIGHTING_FIX
-				if (depthA < depthB) {
+				if (depthA > depthB) {
 					fragments[r+1] = comp;
 				} else {
 					break;
 				}
 			#else
-				if (depthA < depthB || (depthA == depthB && comp.x > current.x)) {
+				if (depthA > depthB || (depthA == depthB && comp.x > current.x)) {
 					fragments[r+1] = comp;
 				} else {
 					break;
@@ -57,7 +57,7 @@ vec4 insert(inout uvec2 fragments[MAX_SORT], uvec2 vec) {
 		for (; i >= 0; i--) {
 			uvec2 current = fragments[i];// current Kth furthest fragment
 			float depthA = uintBitsToFloat(current.y);
-			if (depthB < depthA) {
+			if (depthB > depthA) {
 				fragments[i+1] = fragments[i];
 			} else {
 				break;
