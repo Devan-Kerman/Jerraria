@@ -7,8 +7,9 @@ public abstract class AbstractUBOBuilder extends AbstractBOBuilder {
 		int unpaddedLen,
 		int paddedLen,
 		int[] structVariableOffsets,
-		int structsStart) {
-		super(unpaddedLen, paddedLen, structVariableOffsets, structsStart);
+		int structsStart,
+		int expectedCount) {
+		super(unpaddedLen, paddedLen, structVariableOffsets, structsStart, expectedCount);
 	}
 
 	public AbstractUBOBuilder(AbstractBOBuilder buffer) {

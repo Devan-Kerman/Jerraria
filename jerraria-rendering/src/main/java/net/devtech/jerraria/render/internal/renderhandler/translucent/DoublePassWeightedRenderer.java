@@ -13,7 +13,7 @@ import net.devtech.jerraria.render.api.translucency.TranslucentInternal;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.FragOutput;
+import net.devtech.jerraria.render.internal.FragmentOutputData;
 import net.devtech.jerraria.util.Id;
 
 public class DoublePassWeightedRenderer extends WeightedTranslucentRenderer {
@@ -58,11 +58,11 @@ public class DoublePassWeightedRenderer extends WeightedTranslucentRenderer {
 	@Override
 	public void refreshBuffers(Shader<?> shader, int count) {
 		if(count == 0) {
-			FragOutput outputs = shader.getShader().outputs;
+			FragmentOutputData outputs = shader.getShader().outputs;
 			outputs.bind();
 			glClearBufferfv(GL_COLOR, 0, ZEROS);
 		} else if(count == 1) {
-			FragOutput outputs = shader.getShader().outputs;
+			FragmentOutputData outputs = shader.getShader().outputs;
 			outputs.bind();
 			glClearBufferfv(GL_COLOR, 0, ONES);
 		}

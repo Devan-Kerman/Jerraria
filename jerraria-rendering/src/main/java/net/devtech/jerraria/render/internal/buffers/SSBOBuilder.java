@@ -8,8 +8,6 @@ import java.util.BitSet;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-// todo reunify the buffer builders
-//  for VBOs, ignore fixed data, and ignore fractional uploading
 public class SSBOBuilder extends AbstractUBOBuilder {
 	public static final int SSBO_PADDING = glGetInteger(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
 	final ByteBuffer fixedData;
@@ -18,7 +16,7 @@ public class SSBOBuilder extends AbstractUBOBuilder {
 	final int fixedDataLength;
 
 	public SSBOBuilder(int fixedLen, int[] fixedElementOffsets, int structLen, int[] structVariableOffsets, int structsStart) {
-		super(structLen, structLen, structVariableOffsets, structsStart);
+		super(structLen, structLen, structVariableOffsets, structsStart, 64);
 		this.fixedData = BufferUtil.allocateBuffer(fixedLen);
 		this.fixedInitialized = new BitSet(fixedElementOffsets.length);
 		this.fixedIntervals = UBOBuilder.add(fixedElementOffsets, fixedLen);

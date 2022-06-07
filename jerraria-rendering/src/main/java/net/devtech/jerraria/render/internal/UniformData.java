@@ -11,12 +11,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -30,6 +32,7 @@ import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.render.internal.buffers.ACBOBuilder;
+import net.devtech.jerraria.render.internal.buffers.BufferObjectBuilderAccess;
 import net.devtech.jerraria.render.internal.buffers.SSBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.SharedUBOBuilder;
 import net.devtech.jerraria.render.internal.buffers.UBOBuilder;
@@ -258,10 +261,11 @@ public class UniformData extends GlData {
 			Element element;
 			BareShader.Field field = fields.get(name);
 			DataType type = field.type();
-			if(!type.isCompatible(uniform.glslType)) {
+			if(!type.isCompatible(uniform.glslType) || type.normalized) {
 				Set<DataType> types = DataType.forGlslType(uniform.glslType);
 				List<String> glslNames = types.stream().map(DataType::toString).toList();
-				throw new UnsupportedOperationException(type + " is not valid for type for \"" + glslNames + " " + name + "\" " + "suggested types: " + types);
+				Set<String> suggested = types.stream().filter(d -> !d.normalized).map(DataType::toString).collect(Collectors.toSet());
+				throw new UnsupportedOperationException(type + " is not valid for type for \"" + glslNames + " " + name + "\" " + "suggested types: " + suggested);
 			}
 
 			if(uniform.location != -1) {
@@ -364,7 +368,7 @@ public class UniformData extends GlData {
 			int index = e.arrayIndex();
 			if(index == -1) {
 				UniformBufferBlock group = this.groups[e.groupIndex()];
-				SharedUBOBuilder buffer = group.buffer();
+				BufferObjectBuilderAccess buffer = group.buffer();
 				buffer.variable(e.location());
 				return buffer;
 			} else {
@@ -418,8 +422,8 @@ public class UniformData extends GlData {
 		if(fromArrayIndex == -1 && toArrayIndex == -1) {
 			UniformBufferBlock fromGroup = this.groups[fromGroupIndex];
 			UniformBufferBlock toGroup = toData.groups[toGroupIndex];
-			SharedUBOBuilder fromBuffer = fromGroup.buffer();
-			SharedUBOBuilder toBuffer = toGroup.buffer();
+			BufferObjectBuilderAccess fromBuffer = fromGroup.buffer();
+			BufferObjectBuilderAccess toBuffer = toGroup.buffer();
 			toBuffer.copyFrom(fromBuffer, fromGroup.alloc, toGroup.alloc, fromByteOffset, toByteOffset, len);
 		} else if(fromArrayIndex != -1 && toArrayIndex != -1) {
 			ShaderBufferBlock fromBlock = this.ssbos.get(fromGroupIndex);
@@ -565,7 +569,7 @@ public class UniformData extends GlData {
 			this.deferredCopies.defaultReturnValue(-1);
 		}
 
-		public SharedUBOBuilder forIndex(int alloc) {
+		public BufferObjectBuilderAccess forIndex(int alloc) {
 			synchronized(this.deferredCopies) {
 				int from = this.deferredCopies.remove(alloc);
 				if(from != -1) {
@@ -581,9 +585,7 @@ public class UniformData extends GlData {
 					}
 				}
 			}
-
-			this.buffer.struct(alloc);
-			return this.buffer;
+			return this.buffer.struct(alloc);
 		}
 
 		public void addDeferredCopy(int from, int to) {
@@ -594,11 +596,10 @@ public class UniformData extends GlData {
 		}
 
 		public void bindRange(int alloc) {
-			int real;
 			synchronized(this.deferredCopies) {
-				real = this.deferredCopies.getOrDefault(alloc, alloc);
+				int real = this.deferredCopies.getOrDefault(alloc, alloc);
+				this.buffer.bind(this.binding, real);
 			}
-			this.buffer.bind(this.binding, real);
 		}
 
 		public int allocate() {
@@ -689,7 +690,7 @@ public class UniformData extends GlData {
 			}
 		}
 
-		public SharedUBOBuilder buffer() { // todo upload partial or something
+		public BufferObjectBuilderAccess buffer() { // todo upload partial or something
 			return this.manager.forIndex(this.alloc);
 		}
 

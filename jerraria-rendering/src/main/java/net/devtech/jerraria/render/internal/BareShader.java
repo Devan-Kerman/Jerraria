@@ -39,17 +39,17 @@ public class BareShader implements AutoCloseable {
 	public final AtomicInteger uniqueIdCounter;
 	public final int uniqueId;
 	public final Id srcId;
-	public final VAO vao;
+	public final VertexData vao;
 	public final UniformData uniforms;
 	public final ReclamationManager manager;
-	@Nullable public final FragOutput outputs;
+	@Nullable public final FragmentOutputData outputs;
 	@Nullable public EBO ebo;
 	public AutoStrat strategy = AutoStrat.TRIANGLE;
 	public GlIdReference id;
 	int lastCopiedVertex;
 	int currentGlId;
 
-	public BareShader(Id id, int glId, VAO data, UniformData uniformData, @Nullable FragOutput output) {
+	public BareShader(Id id, int glId, VertexData data, UniformData uniformData, @Nullable FragmentOutputData output) {
 		this.id = new GlIdReference();
 		this.id.glId = glId;
 		this.currentGlId = glId;
@@ -66,7 +66,7 @@ public class BareShader implements AutoCloseable {
 		this.srcId = shader.srcId;
 		this.id = shader.id;
 		this.currentGlId = shader.currentGlId;
-		this.vao = new VAO(shader.vao, method.preserveVertexData);
+		this.vao = new VertexData(shader.vao, method.preserveVertexData);
 		this.uniforms = new UniformData(shader.uniforms, method.preserveUniforms);
 		if(shader.ebo != null) {
 			this.ebo = new EBO(shader.ebo);
@@ -74,7 +74,7 @@ public class BareShader implements AutoCloseable {
 		this.strategy = shader.strategy;
 		this.lastCopiedVertex = shader.lastCopiedVertex;
 		if(shader.outputs != null) {
-			this.outputs = new FragOutput(shader.outputs);
+			this.outputs = new FragmentOutputData(shader.outputs);
 		} else {
 			this.outputs = null;
 		}
@@ -109,14 +109,14 @@ public class BareShader implements AutoCloseable {
 					GL_VERTEX_SHADER
 				);
 				int program = ShaderManager.compileShader(fragmentShader, vertexShader);
-				VAO vertex = new VAO(uncompiled.vertexFields, program);
+				VertexData vertex = new VertexData(uncompiled.vertexFields, program);
 				UniformData uniform = new UniformData(uncompiled.uniformFields, program, uncompiled.id);
-				FragOutput output;
+				FragmentOutputData output;
 				if(uncompiled.outputFields.size() > 1) {
 					GLSLParserValidation.validateFragShader(fragmentShader, uncompiled);
 				}
 				if(!uncompiled.outputFields.isEmpty()) {
-					output = new FragOutput(uncompiled.outputFields, program);
+					output = new FragmentOutputData(uncompiled.outputFields, program);
 				} else {
 					output = null;
 				}

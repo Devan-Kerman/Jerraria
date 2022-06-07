@@ -18,13 +18,12 @@ public final class EBOBuilder extends AbstractBOBuilder {
 	}
 
 	public EBOBuilder(int vertexLength) {
-		super(vertexLength, vertexLength, OFFSET, 0);
+		super(vertexLength, vertexLength, OFFSET, 0, 256);
 	}
 
 	public void copyVertexes(EBOBuilder src, int from, int len) {
 		this.copyFrom(src, from, this.getElementCount(), 0, 0, len * this.structLen);
-		this.dirtyToPos = Math.max(this.dirtyToPos, from+len);
-		this.maxPos = Math.max(this.maxPos, from+len);
+		this.mut(from + len);
 	}
 
 	public ByteBuffer vert() {
@@ -38,7 +37,7 @@ public final class EBOBuilder extends AbstractBOBuilder {
 
 	public void bind() {
 		if(!this.flush()) {
-			this.bindBuffer(this.glId);
+			this.bindBuffer(this.getGlId());
 		}
 	}
 

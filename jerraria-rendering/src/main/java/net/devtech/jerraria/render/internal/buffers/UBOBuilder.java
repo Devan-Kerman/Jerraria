@@ -5,16 +5,12 @@ import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT;
 
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-// todo allow setting uniforms on multiple threads
+
 public class UBOBuilder extends SharedUBOBuilder {
 	public static final int UBO_PADDING = glGetInteger(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
 
 	public UBOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
 		super(unpaddedLen, paddedLen, structVariableOffsets, structsStart);
-	}
-
-	public UBOBuilder(AbstractBOBuilder buffer) {
-		super(buffer);
 	}
 
 	@Override
@@ -26,5 +22,4 @@ public class UBOBuilder extends SharedUBOBuilder {
 	protected int padding() {
 		return UBO_PADDING;
 	}
-
 }

@@ -52,7 +52,5 @@ public class GLSLParserValidation {
 		if(!unreferencedNames.isEmpty() || !unresolvedName.isEmpty()) {
 			throw new UnsupportedOperationException("Unable to find output(s) " + unresolvedName + ", outputs with name " + unreferencedNames + " were not referenced!");
 		}
-
-
 	}
 }

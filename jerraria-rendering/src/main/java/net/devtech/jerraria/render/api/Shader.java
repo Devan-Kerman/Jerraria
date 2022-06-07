@@ -2,21 +2,17 @@ package net.devtech.jerraria.render.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.Function;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.End;
-import net.devtech.jerraria.render.api.types.FrameOut;
+import net.devtech.jerraria.render.api.types.Out;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.SourceProvider;
-import net.devtech.jerraria.render.internal.VFBuilderImpl;
 import net.devtech.jerraria.render.internal.arr.ListShaderBufferImpl;
-import net.devtech.jerraria.render.internal.arr.ShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
@@ -162,6 +158,14 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		this.delegate.emptyFrameBuffer();
 	}
 
+	/**
+	 * Tells the current shader instance that the vertex data of this shader will <b>likely</b> remain unchanged.
+	 * Changing the data after baking will incur a significant performance penalty, and should only be done on the render thread.
+	 */
+	public final void bake() {
+		this.delegate.bake();
+	}
+
 	@Override
 	public void close() {
 		try {
@@ -207,11 +211,11 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		return this.delegate.array(name, initializer, len);
 	}
 
-	protected final FrameOut addOutput(String name, DataType imageType) {
+	protected final Out addOutput(String name, DataType imageType) {
 		return this.delegate.addOutput(name, imageType);
 	}
 
-	protected final FrameOut imageOutput(String name) {
+	protected final Out imageOutput(String name) {
 		return this.addOutput(name, DataType.TEXTURE_2D);
 	}
 

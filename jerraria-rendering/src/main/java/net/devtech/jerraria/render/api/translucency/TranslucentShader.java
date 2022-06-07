@@ -7,10 +7,8 @@ import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.ImageFormat;
 import net.devtech.jerraria.render.api.types.AtomicCounter;
-import net.devtech.jerraria.render.api.types.FrameOut;
+import net.devtech.jerraria.render.api.types.Out;
 import net.devtech.jerraria.render.api.types.Tex;
-import net.devtech.jerraria.render.api.types.V;
-import net.devtech.jerraria.util.Id;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -41,16 +39,16 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 	}
 
 	public final class SinglePassWeighted {
-		public final FrameOut accum = imageOutput("accum");
-		public final FrameOut reveal = imageOutput("reveal");
+		public final Out accum = imageOutput("accum");
+		public final Out reveal = imageOutput("reveal");
 	}
 
 	public final class DoublePassWeightedA {
-		public final FrameOut accum = imageOutput("accum");
+		public final Out accum = imageOutput("accum");
 	}
 
 	public final class DoublePassWeightedB {
-		public final FrameOut reveal = imageOutput("reveal");
+		public final Out reveal = imageOutput("reveal");
 	}
 
 	protected TranslucentShader(VFBuilder<T> builder, Object context, TranslucentShaderType strat) {

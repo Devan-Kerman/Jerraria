@@ -13,9 +13,9 @@ import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.types.End;
-import net.devtech.jerraria.render.api.types.FrameOut;
+import net.devtech.jerraria.render.api.types.Out;
 import net.devtech.jerraria.render.internal.BareShader;
-import net.devtech.jerraria.render.internal.FragOutput;
+import net.devtech.jerraria.render.internal.FragmentOutputData;
 import net.devtech.jerraria.render.internal.LazyGlData;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.StructTypeImpl;
@@ -42,11 +42,6 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 	End end;
 
 	public ShaderImpl(ShaderImpl<T> copy, SCopy method) {
-		copy.validate(copy.shader.strategy,
-			copy.shader.strategy.vertexCount(),
-			copy.shader.strategy.minimumVertices()
-		);
-
 		BareShader bare = new BareShader(copy.shader, method);
 		this.verticesSinceStrategy = copy.verticesSinceStrategy;
 		this.copyFunction = copy.copyFunction;
@@ -93,12 +88,16 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		return this.shader;
 	}
 
+	public void bake() {
+		this.getShader().vao.bake();
+	}
+
 	static void copyUniform_(GlValue<?> from, GlValue<?> to) {
 		((GlValue.Copiable)from).copyTo(to);
 	}
 
 	void emptyFrameBuffer() {
-		FragOutput outputs = this.shader.outputs;
+		FragmentOutputData outputs = this.shader.outputs;
 		if(outputs != null) {
 			outputs.flushBuffer();
 		}
@@ -180,8 +179,8 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		return Collections.unmodifiableList(list);
 	}
 
-	FrameOut addOutput(String name, DataType imageType) {
-		GlValue.Type<FrameOut> out = FrameOut.out(name, imageType);
+	Out addOutput(String name, DataType imageType) {
+		GlValue.Type<Out> out = Out.out(name, imageType);
 		if(!this.isCopy) {
 			out.validateOutput();
 			if(this.shader == null) {

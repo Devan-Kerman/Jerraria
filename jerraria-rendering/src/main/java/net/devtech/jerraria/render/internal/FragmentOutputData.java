@@ -10,14 +10,13 @@ import java.util.Map;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.util.Id;
 
-public class FragOutput extends GlData {
+public class FragmentOutputData extends GlData {
 	final int frameBuffer;
 	public final Map<String, OutputIndex> indices;
 	final List<OutputBind> binds;
 
-	public FragOutput(Map<String, BareShader.Field> outputs, int program) {
+	public FragmentOutputData(Map<String, BareShader.Field> outputs, int program) {
 		int buffer = glGenFramebuffers();
 		Map<String, OutputIndex> indices = new HashMap<>();
 		List<OutputBind> binds = new ArrayList<>();
@@ -35,7 +34,7 @@ public class FragOutput extends GlData {
 		this.binds = binds;
 	}
 
-	public FragOutput(FragOutput output) {
+	public FragmentOutputData(FragmentOutputData output) {
 		this.frameBuffer = glGenFramebuffers();
 		this.indices = output.indices;
 		this.binds = output.binds.stream().map(OutputBind::new).toList();

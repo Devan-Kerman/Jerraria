@@ -5,7 +5,7 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
-import net.devtech.jerraria.render.api.types.FrameOut;
+import net.devtech.jerraria.render.api.types.Out;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -18,8 +18,8 @@ public class WBTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> {
 	);
 
 	// todo rebind instead of making new frame buffer
-	public final FrameOut accum = this.imageOutput("accum");
-	public final FrameOut reveal = this.imageOutput("reveal");
+	public final Out accum = this.imageOutput("accum");
+	public final Out reveal = this.imageOutput("reveal");
 
 	protected WBTransRecordShader(VFBuilder<End> builder, Object context) {
 		super(builder.add(Color.argb("color")).add(Vec3.f("pos")), context);

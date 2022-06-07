@@ -20,7 +20,7 @@ import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
-import net.devtech.jerraria.render.internal.FragOutput;
+import net.devtech.jerraria.render.internal.FragmentOutputData;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;
 
 public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderer {
@@ -95,7 +95,7 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderer {
 
 	protected void refreshBuffers(Shader<?> shader, int count) {
 		if(count == 0) {
-			FragOutput outputs = shader.getShader().outputs;
+			FragmentOutputData outputs = shader.getShader().outputs;
 			outputs.bind();
 			glClearBufferfv(GL_COLOR, 0, ZEROS);
 			glClearBufferfv(GL_COLOR, 1, ONES);

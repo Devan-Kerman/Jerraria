@@ -3,6 +3,8 @@ package rendering;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.RenderThread;
+import net.devtech.jerraria.render.api.SCopy;
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.util.math.Matrix3f;
 
@@ -16,7 +18,12 @@ public class BasicRendering {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
 			Matrix3f mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
-			RenderThread.addRenderStage(shader::drawKeep, 10);
+
+			RenderThread.addRenderStage(() -> {
+				try(SolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH)) {
+					copy.draw();
+				}
+			}, 10);
 			return null;
 		});
 	}

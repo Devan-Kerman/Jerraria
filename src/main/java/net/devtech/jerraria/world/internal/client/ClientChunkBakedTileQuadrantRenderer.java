@@ -50,14 +50,15 @@ public class ClientChunkBakedTileQuadrantRenderer {
 
 		// group identical BuiltGlStates together to avoid context switching
 		// maybe sorting to minimize changes at some point?
-		Map<BuiltGlState, List<ClientChunk.BakedClientChunkQuadrantData>> data = new HashMap<>();
+		Map<BuiltGlState, List<ClientChunk.BakedClientChunkQuadrantData>> opaque = new HashMap<>();
 		for(var entry : source.entries()) {
 			if(current.isInterrupted()) {
 				source.close();
 				return null;
 			}
 			var value = entry.getKey();
-			data
+			entry.getValue().bake();
+			opaque
 				.computeIfAbsent(value.state(), s -> new ArrayList<>())
 				.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(),
 					entry.getValue(),
@@ -69,7 +70,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 
 		// todo order independent translucency
 
-		return new ClientChunk.BakedClientChunkQuadrant(data.values().stream().flatMap(List::stream).toList(),
+		return new ClientChunk.BakedClientChunkQuadrant(opaque.values().stream().flatMap(List::stream).toList(),
 			List.of()
 		);
 	}

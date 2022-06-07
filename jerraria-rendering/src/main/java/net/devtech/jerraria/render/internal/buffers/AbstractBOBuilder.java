@@ -14,24 +14,22 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import net.devtech.jerraria.render.api.impl.RenderingEnvironment;
 import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.util.math.JMath;
 
-// todo allow setting uniforms on multiple threads
-public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
+public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements BufferObjectBuilderAccess {
 	public final int[] structIntervals;
 	final int unpaddedStructLen, structLen, structsStart;
 	List<AbstractBOBuilder> deferred;
 	AbstractBOBuilder copy;
 	int glId, bufferObjectLen, structIndex;
-	ByteBuffer buffer;
-	int dirtyToPos = Integer.MIN_VALUE, dirtyFromPos = Integer.MAX_VALUE, maxPos;
+	volatile ByteBuffer buffer; // todo one buffer per instance for SharedUBOBuilder for multithreaded uniform setting
+	final AtomicInteger dirtyFromPos = new AtomicInteger(Integer.MAX_VALUE), dirtyToPos = new AtomicInteger(Integer.MIN_VALUE), maxPos = new AtomicInteger();
 
-	// todo add expectedCount
-	public AbstractBOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart) {
-		this.buffer = BufferUtil.allocateBuffer(structsStart + unpaddedLen * 4);
+	public AbstractBOBuilder(int unpaddedLen, int paddedLen, int[] structVariableOffsets, int structsStart, int expectedCount) {
+		this.buffer = BufferUtil.allocateBuffer(structsStart + unpaddedLen * expectedCount);
 		this.structsStart = structsStart;
 		this.structIntervals = add(structVariableOffsets, unpaddedLen);
 		this.structLen = paddedLen;
@@ -39,17 +37,17 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
 	}
 
 	public AbstractBOBuilder(AbstractBOBuilder buffer) {
-		this(buffer, buffer.maxPos);
+		this(buffer, buffer.maxPos.get());
 	}
 
-	public AbstractBOBuilder(AbstractBOBuilder buffer, int copyCount) { // todo fix
+	public AbstractBOBuilder(AbstractBOBuilder buffer, int copyCount) {
 		this.unpaddedStructLen = buffer.unpaddedStructLen;
 		this.structIntervals = buffer.structIntervals;
 		this.structLen = buffer.structLen;
 		this.structsStart = buffer.structsStart;
 		this.glId = buffer.glId;
 		this.structIndex = buffer.structIndex;
-		this.maxPos = copyCount;
+		this.maxPos.set(copyCount);
 		if(copyCount != 0) {
 			var def = buffer.deferred;
 			if(def == null) {
@@ -60,53 +58,68 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
 		}
 	}
 
-	public void struct(int structIndex) {
-		RenderingEnvironment.validateRenderThread("Modify Uniform Data");
-		this.dirtyToPos = Math.max(this.dirtyToPos, structIndex);
-		this.dirtyFromPos = Math.min(this.dirtyFromPos, structIndex);
-		this.maxPos = Math.max(this.maxPos, structIndex);
+	protected void mut(int structIndex) {
+		this.dirtyToPos.getAndAccumulate(structIndex, Math::max);
+		this.dirtyFromPos.getAndAccumulate(structIndex, Math::min);
+		this.maxPos.getAndAccumulate(structIndex, Math::max);
+	}
+
+	@Override
+	public BufferObjectBuilderAccess struct(int structIndex) {
+		this.mut(structIndex);
 		this.ensureNioBufferCapacity(this.getOffset(structIndex), this.getOffset(structIndex + 1));
 		this.structIndex = structIndex;
+		return this;
 	}
 
-	public void variable(int variableIndex) {
-		RenderingEnvironment.validateRenderThread("Modify Uniform Data");
+	@Override
+	public BufferObjectBuilderAccess variable(int variableIndex) {
 		this.buffer.position(this.getOffset(this.structIndex, variableIndex));
+		return this;
 	}
 
-	public void structVariable(int structIndex, int variableIndex) {
-		this.struct(structIndex);
-		this.variable(variableIndex);
+	@Override
+	public BufferObjectBuilderAccess structVariable(int structIndex, int variableIndex) {
+		return this.struct(structIndex).variable(variableIndex);
 	}
 
 	public void copyFrom(AbstractBOBuilder src, int from, int to) {
 		this.copyFrom(src, from, to, 0, 0, this.structLen);
 	}
 
-	public void copyFrom(AbstractBOBuilder src, int from, int to, int fromOffset, int toOffset, int len) {
+	@Override
+	public void copyFrom(BufferObjectBuilderAccess src_, int from, int to, int fromOffset, int toOffset, int len) {
+		AbstractBOBuilder src = src_.getRoot();
 		// ensure capacity
 		int toStart = this.getOffset(to) + toOffset;
 		this.ensureNioBufferCapacity(toStart, toStart + len);
 		int fromStart = src.getOffset(from) + fromOffset;
 		src.ensureNioBufferCapacity(fromStart, fromStart + len);
 		this.buffer.put(toStart, src.buffer, fromStart, len);
-		this.dirtyToPos = Math.max(this.dirtyToPos, to);
-		this.maxPos = Math.max(this.maxPos, to);
-		this.dirtyFromPos = Math.min(this.dirtyFromPos, to);
+		this.mut(to);
+	}
+
+	public int getGlId() {
+		AbstractBOBuilder copy = this.copy;
+		if(copy != null) {
+			copy.flush();
+			return copy.glId;
+		} else {
+			return this.glId;
+		}
 	}
 
 	public boolean flush() {
-		if(this.dirtyToPos == Integer.MIN_VALUE) {
-			AbstractBOBuilder copy = this.copy;
-			if(copy != null) {
-				copy.flush();
-				this.glId = copy.glId;
-			}
+		if(this.dirtyToPos.get() == Integer.MIN_VALUE) {
 			return false;
 		}
 
-		int from = this.getOffset(this.dirtyFromPos);
-		int to = this.getOffset(this.dirtyToPos + 1);
+		int from = this.getOffset(this.dirtyFromPos.get());
+		int to = this.getOffset(this.dirtyToPos.get() + 1);
+		if(to < from) { // concurrency moment
+			return false;
+		}
+
 		this.ensureNioBufferCapacity(from, to);
 		if(!this.ensureBufferObjectCapacity(from, to)) {
 			this.bindBuffer(this.glId);
@@ -116,11 +129,10 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
 		this.buffer.position(from);
 		glBufferSubData(this.bindTarget(), from, this.buffer);
 		this.buffer.clear();
-		this.dirtyToPos = Integer.MIN_VALUE;
-		this.dirtyFromPos = Integer.MAX_VALUE;
+		this.dirtyToPos.set(Integer.MIN_VALUE);
+		this.dirtyFromPos.set(Integer.MAX_VALUE);
 		return true;
 	}
-
 
 	public void close() {
 		if(this.glId != 0) {
@@ -137,12 +149,17 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
 	private void ensureNioBufferCapacity(int updateFrom, int updateTo) {
 		ByteBuffer buffer = this.buffer;
 		if(buffer == null || buffer.capacity() < updateTo) {
-			this.evaluateDeferredCopies();
-			ByteBuffer new_ = BufferUtil.allocateBuffer(JMath.nearestPowerOf2(updateTo + 64));
-			if(updateFrom != 0 && buffer != null) {
-				new_.put(0, buffer, 0, updateFrom);
+			synchronized(this) {
+				buffer = this.buffer;
+				if(buffer == null || buffer.capacity() < updateTo) { // check again once lock is acquired, since buffer is never downsized
+					this.evaluateDeferredCopies();
+					// update immediately because CAS
+					ByteBuffer new_ = this.buffer = BufferUtil.allocateBuffer(JMath.nearestPowerOf2(updateTo + 64));
+					if(updateFrom != 0 && buffer != null) {
+						new_.put(0, buffer, 0, updateFrom);
+					}
+				}
 			}
-			this.buffer = new_;
 		}
 	}
 
@@ -211,7 +228,21 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf {
 		if(copy != null) {
 			this.copy = null;
 			copy.evaluateDeferredCopies();
-			this.buffer = BufferUtil.reallocateBuffer(copy.buffer, this.getOffset(this.maxPos + 1));
+			int max = this.maxPos.get();
+			this.buffer = BufferUtil.reallocateBuffer(copy.buffer, this.getOffset(max + 1));
+			this.dirtyFromPos.set(0);
+			this.dirtyToPos.accumulateAndGet(max, Math::max);
 		}
+	}
+
+	public void bake() {
+		// todo remember to copy data from GPU if adding weird vertex shit
+		this.evaluateDeferredCopies();
+		this.buffer = null;
+	}
+
+	@Override
+	public AbstractBOBuilder getRoot() {
+		return this;
 	}
 }

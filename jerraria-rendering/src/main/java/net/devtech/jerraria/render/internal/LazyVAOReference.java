@@ -30,7 +30,8 @@ class LazyVAOReference {
 
 		GLContextState.bindVAO(id);
 		for(VertexBufferObject group : groups) {
-			if(group.bindAndUpload() || gen) {
+			boolean needsRebind = group.bind();
+			if(needsRebind || gen) {
 				for(GlData.Element v : group.elements) {
 					ElementImpl value = (ElementImpl) v;
 					DataType type = value.type();

@@ -1,6 +1,7 @@
 package net.devtech.jerraria.render.internal.buffers;
 
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
 
 import java.nio.ByteBuffer;
 
@@ -18,13 +19,13 @@ public final class VBOBuilder extends AbstractBOBuilder {
 	}
 
 	public VBOBuilder(int[] offsets, int vertexLen) {
-		super(vertexLen, vertexLen, offsets, 0);
+		super(vertexLen, vertexLen, offsets, 0, 8192);
 	}
 
 	public boolean bind() {
 		int orig = this.glId;
 		if(!this.flush()) {
-			this.bindBuffer(this.glId);
+			this.bindBuffer(this.getGlId());
 		}
 		return orig != this.glId;
 	}

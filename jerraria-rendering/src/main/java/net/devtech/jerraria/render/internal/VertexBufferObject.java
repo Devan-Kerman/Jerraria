@@ -34,7 +34,7 @@ class VertexBufferObject {
 		return this.buffer;
 	}
 
-	public boolean bindAndUpload() {
+	public boolean bind() {
 		return this.buffer.bind();
 	}
 

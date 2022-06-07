@@ -20,15 +20,13 @@ import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.buffers.VBOBuilder;
 import net.devtech.jerraria.util.Validate;
 
-public class VAO extends GlData {
-	static final IntArrayList RECLAIM_VBO_IDS = new IntArrayList();
-
+public class VertexData extends GlData {
 	final LazyVAOReference reference;
 	final Map<String, ElementImpl> elements;
 	final List<VertexBufferObject> groups;
 	final VertexBufferObject last;
 
-	public VAO(Map<String, BareShader.Field> fields, int program) {
+	public VertexData(Map<String, BareShader.Field> fields, int program) {
 		IntBuffer aBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 		IntBuffer bBuf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
 		record ActiveField(String name, int location, int type) {}
@@ -101,10 +99,9 @@ public class VAO extends GlData {
 		this.last = this.groups.get(0);
 		this.elements = elements;
 		this.reference = new LazyVAOReference();
-		this.reference.bind(this.groups);
 	}
 
-	public VAO(VAO vao, boolean copyContents) {
+	public VertexData(VertexData vao, boolean copyContents) {
 		List<VertexBufferObject> groups = new ArrayList<>();
 		VertexBufferObject last = null;
 		for(VertexBufferObject group : vao.groups) {
@@ -138,7 +135,7 @@ public class VAO extends GlData {
 		return this.elements.get(name);
 	}
 
-	public VAO vert() {
+	public VertexData vert() {
 		this.validate();
 		for(VertexBufferObject group : this.groups) {
 			group.getBuilder().vert();
@@ -146,7 +143,7 @@ public class VAO extends GlData {
 		return this;
 	}
 
-	public VAO bind() {
+	public VertexData bind() {
 		this.validate();
 		this.reference.bind(this.groups);
 		return this;
@@ -177,6 +174,12 @@ public class VAO extends GlData {
 		this.reference.close();
 		for(VertexBufferObject group : this.groups) {
 			group.close();
+		}
+	}
+
+	public void bake() {
+		for(VertexBufferObject group : this.groups) {
+			group.getBuilder().bake();
 		}
 	}
 }

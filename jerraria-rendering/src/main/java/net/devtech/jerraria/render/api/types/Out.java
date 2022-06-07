@@ -6,8 +6,8 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.basic.DataType;
 import net.devtech.jerraria.render.api.basic.GlData;
 
-public class FrameOut extends AbstractGlValue<End> implements GlValue.Output {
-	public static Type<FrameOut> out2d(String name) {
+public class Out extends AbstractGlValue<End> implements GlValue.Output {
+	public static Type<Out> out2d(String name) {
 		return out(name, DataType.TEXTURE_2D);
 	}
 
@@ -16,15 +16,15 @@ public class FrameOut extends AbstractGlValue<End> implements GlValue.Output {
 	 * @param name the name of the output fragment
 	 * @param imageType the image type to write to
 	 */
-	public static Type<FrameOut> out(String name, DataType imageType) {
+	public static Type<Out> out(String name, DataType imageType) {
 		if(DataType.VALID_OUTPUTS.contains(imageType)) {
-			return simple(FrameOut::new, imageType, name);
+			return simple(Out::new, imageType, name);
 		} else {
 			throw new UnsupportedOperationException("Output image types are unrestricted, use one of " + DataType.VALID_OUTPUTS);
 		}
 	}
 
-	protected FrameOut(GlData data, GlValue next, String name) {
+	protected Out(GlData data, GlValue next, String name) {
 		super(data, next, name);
 	}
 

@@ -15,10 +15,6 @@ public class ACBOBuilder extends SharedUBOBuilder {
 		super(unpaddedLen, paddedLen, structVariableOffsets, structsStart);
 	}
 
-	public ACBOBuilder(UBOBuilder buffer) {
-		super(buffer);
-	}
-
 	@Override
 	protected GLContextState.IndexedBufferTargetState state() {
 		return GLContextState.ATOMIC_COUNTERS;
@@ -32,7 +28,7 @@ public class ACBOBuilder extends SharedUBOBuilder {
 	public long readAtomicCounter() {
 		GLContextState.ATOMIC_COUNTERS.bindBuffer(this.glId);
 		int[] buf = new int[1];
-		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, (long) this.structIndex * this.structLen + this.structsStart,
+		glGetBufferSubData(GLContextState.ATOMIC_COUNTERS.type, (long) this.structIndex * this.structLen + this.structsStart,
 			buf);
 		return buf[0] & 0xFFFFFFFFL;
 	}
