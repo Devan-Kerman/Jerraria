@@ -36,7 +36,6 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer 
 			counter = shader.linkedListUniforms.counter.read();
 		}
 
-		glMemoryBarrier(-1);
 		this.clearRenderQueue();
 
 		LLTransResolveShader shader = LLTransResolveShader.INSTANCE;

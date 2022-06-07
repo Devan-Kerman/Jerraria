@@ -33,7 +33,7 @@ public abstract class TranslucentShader<T extends GlValue<?> & GlValue.Attribute
 	public final DoublePassWeightedB doublePassWeightedB;
 
 	public final class LinkedList {
-		public final AtomicCounter counter = uni(AtomicCounter.atomic_ui("counter"));
+		public final AtomicCounter counter = uni(AtomicCounter.atomic_ui("counter", true));
 		public final Tex imgListHead = uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 		public final Tex translucencyBuffer = uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 	}

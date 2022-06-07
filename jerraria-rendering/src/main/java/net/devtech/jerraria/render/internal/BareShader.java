@@ -177,6 +177,7 @@ public class BareShader implements AutoCloseable {
 		} else {
 			this.vao.drawElements(mode, this.getVertexCount(), type);
 		}
+		this.uniforms.feedback();
 	}
 
 	/**
@@ -192,6 +193,7 @@ public class BareShader implements AutoCloseable {
 		} else {
 			this.vao.drawElementsInstanced(mode, this.getVertexCount(), type, count);
 		}
+		this.uniforms.feedback();
 	}
 
 	public int getVertexCount() {

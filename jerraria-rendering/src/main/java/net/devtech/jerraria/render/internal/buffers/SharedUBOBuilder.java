@@ -11,7 +11,7 @@ import net.devtech.jerraria.render.internal.CASByteBufferGlDataBuf;
 
 public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 	final Lock bufferCacheLock = new ReentrantLock();
-	List<CASBuf> buffers = new ArrayList<>();
+	List<CASBuf> instances = new ArrayList<>();
 
 	public SharedUBOBuilder(
 		int unpaddedLen,
@@ -34,7 +34,8 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 
 	@Override
 	public BufferObjectBuilderAccess struct(int structIndex) {
-		final List<CASBuf> buffers = this.buffers;
+		super.struct(structIndex);
+		final List<CASBuf> buffers = this.instances;
 		if(structIndex < buffers.size()) {
 			return buffers.get(structIndex);
 		} else {
@@ -46,12 +47,12 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 					return buffers.get(structIndex);
 				}
 
-				List<CASBuf> copy = new ArrayList<>(this.buffers);
+				List<CASBuf> copy = new ArrayList<>(this.instances);
 				int size;
 				while(structIndex >= (size = copy.size())) {
 					copy.add(new CASBuf(size));
 				}
-				this.buffers = copy;
+				this.instances = copy;
 				return copy.get(structIndex);
 			} finally {
 				lock.unlock();
@@ -63,8 +64,15 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 		return super.struct(structIndex);
 	}
 
+	public BufferObjectBuilderAccess structVar0(int structIndex, int varIndex) {
+		super.struct(structIndex);
+		super.variable(varIndex);
+		return SharedUBOBuilder.this;
+	}
+
 	public class CASBuf extends CASByteBufferGlDataBuf implements BufferObjectBuilderAccess {
 		final int structIndex;
+		int varIndex;
 
 		public CASBuf(int index) {
 			this.structIndex = index;
@@ -78,13 +86,10 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 		@Override
 		public BufferObjectBuilderAccess variable(int variableIndex) {
 			this.pos = SharedUBOBuilder.this.getOffset(this.structIndex, variableIndex);
+			this.varIndex = variableIndex;
 			return this;
 		}
 
-		@Override
-		public BufferObjectBuilderAccess structVariable(int structIndex, int variableIndex) {
-			return this.struct(structIndex).variable(variableIndex);
-		}
 
 		@Override
 		public void copyFrom(BufferObjectBuilderAccess src, int from, int to, int fromOffset, int toOffset, int len) {
@@ -94,6 +99,17 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 		@Override
 		public AbstractBOBuilder getRoot() {
 			return SharedUBOBuilder.this;
+		}
+
+		@Override
+		public void loadFeedback() {
+			SharedUBOBuilder.this.struct0(this.structIndex);
+			SharedUBOBuilder.this.loadFeedback();
+		}
+
+		@Override
+		public long uint() {
+			return SharedUBOBuilder.this.structVar0(this.structIndex, this.varIndex).uint();
 		}
 
 		@Override

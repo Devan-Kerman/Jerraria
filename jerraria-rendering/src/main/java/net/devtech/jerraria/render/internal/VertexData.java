@@ -88,7 +88,7 @@ public class VertexData extends GlData {
 
 			ProtoVertexBufferObject last = vbos.computeIfAbsent(field.groupName(false), ProtoVertexBufferObject::new);
 			int groupIndex = new ArrayList<>(vbos.values()).indexOf(last);
-			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.offsets.size(), -1);
+			var element = new ElementImpl(groupIndex, name, field.type(), value.location, last.offsets.size(), -1, false);
 			last.offsets.add(last.len[0]);
 			last.len[0] += element.type().byteCount;
 			elements.put(name, element);

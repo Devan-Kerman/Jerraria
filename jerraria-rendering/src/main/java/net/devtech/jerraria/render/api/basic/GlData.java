@@ -55,6 +55,10 @@ public abstract class GlData implements AutoCloseable {
 		Buf o(Object o);
 	}
 
+	public interface ReadableBuf {
+		long uint();
+	}
+
 	public interface Atomic {
 		long value();
 	}

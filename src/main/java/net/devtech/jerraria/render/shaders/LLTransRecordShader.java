@@ -20,7 +20,7 @@ public class LLTransRecordShader extends Shader<Vec3.F<Color.ARGB<End>>> { // ve
 		LLTransRecordShader::new
 	);
 
-	public final AtomicCounter counter = this.uni(AtomicCounter.atomic_ui("counter"));
+	public final AtomicCounter counter = this.uni(AtomicCounter.atomic_ui("counter", true));
 	public final Tex imgListHead = this.uni(Tex.img("imgListHead", DataType.UINT_IMAGE_2D, ImageFormat.R32UI));
 	public final Tex translucencyBuffer = this.uni(Tex.img("translucencyBuffer", DataType.UINT_IMAGE_BUFFER, ImageFormat.RGBA32UI));
 

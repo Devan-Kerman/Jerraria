@@ -6,8 +6,10 @@ import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glBufferSubData;
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
+import static org.lwjgl.opengl.GL15.glGetBufferSubData;
 import static org.lwjgl.opengl.GL31.GL_COPY_READ_BUFFER;
 import static org.lwjgl.opengl.GL31.GL_COPY_WRITE_BUFFER;
+import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL46.glCopyBufferSubData;
 
 import java.nio.ByteBuffer;
@@ -16,10 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.devtech.jerraria.render.api.basic.GlData;
 import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.util.math.JMath;
 
-public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements BufferObjectBuilderAccess {
+public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements BufferObjectBuilderAccess, GlData.ReadableBuf {
 	public final int[] structIntervals;
 	final int unpaddedStructLen, structLen, structsStart;
 	List<AbstractBOBuilder> deferred;
@@ -78,10 +81,7 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 		return this;
 	}
 
-	@Override
-	public BufferObjectBuilderAccess structVariable(int structIndex, int variableIndex) {
-		return this.struct(structIndex).variable(variableIndex);
-	}
+
 
 	public void copyFrom(AbstractBOBuilder src, int from, int to) {
 		this.copyFrom(src, from, to, 0, 0, this.structLen);
@@ -185,6 +185,16 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 		}
 	}
 
+	@Override
+	public void loadFeedback() { // todo fix, counters not working
+		this.bindBuffer(this.glId);
+		this.buffer.clear();
+		this.buffer.limit(Math.min(this.bufferObjectLen, this.buffer.capacity()));
+		glMemoryBarrier(-1);
+		glGetBufferSubData(this.bindTarget(), 0, this.buffer);
+		this.buffer.clear();
+	}
+
 	protected int getOffset(int structIndex) {
 		return this.structsStart + structIndex * this.structLen;
 	}
@@ -210,6 +220,11 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 	@Override
 	protected ByteBuffer getBuffer() {
 		return this.buffer;
+	}
+
+	@Override
+	public long uint() {
+		return this.buffer.getInt() & 0xFFFFFFFFL;
 	}
 
 	private void evaluateDeferredCopies() {

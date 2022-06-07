@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +40,7 @@ import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
+import org.lwjgl.opengl.GL46;
 
 public class UniformData extends GlData {
 	public final Map<String, Element> elements;
@@ -170,7 +170,10 @@ public class UniformData extends GlData {
 				for(int i = 0; i < structArrayFields.size(); i++) {
 					StructArrayField field = structArrayFields.get(i);
 					structOffsets[i] = field.rootOffset - off;
-					uniformMap.put(field.name, new ActiveUniform(field.name, -1, ssbo, structOffsets[i], field.type, 1));
+					uniformMap.put(
+						field.name,
+						new ActiveUniform(field.name, -1, ssbo, structOffsets[i], field.type, 1)
+					);
 				}
 				fixed.sort(IntComparators.NATURAL_COMPARATOR);
 				int[] fixedOffsets = fixed.toIntArray();
@@ -264,7 +267,11 @@ public class UniformData extends GlData {
 			if(!type.isCompatible(uniform.glslType) || type.normalized) {
 				Set<DataType> types = DataType.forGlslType(uniform.glslType);
 				List<String> glslNames = types.stream().map(DataType::toString).toList();
-				Set<String> suggested = types.stream().filter(d -> !d.normalized).map(DataType::toString).collect(Collectors.toSet());
+				Set<String> suggested = types
+					.stream()
+					.filter(d -> !d.normalized)
+					.map(DataType::toString)
+					.collect(Collectors.toSet());
 				throw new UnsupportedOperationException(type + " is not valid for type for \"" + glslNames + " " + name + "\" " + "suggested types: " + suggested);
 			}
 
@@ -305,7 +312,13 @@ public class UniformData extends GlData {
 				if(offsetIndex == -1) {
 					throw new IllegalStateException();
 				}
-				element = new ElementImpl(group.groupIndex, name, type, offsetIndex, uniform.byteOffset, -1);
+				// todo check for atomic
+				boolean feedback = false;
+				if(type == DataType.ATOMIC_UINT && field.extra() instanceof Boolean b) {
+					feedback = b;
+				}
+				element = new ElementImpl(group.groupIndex, name, type, offsetIndex, uniform.byteOffset, -1, feedback);
+				group.manager.needsFeedback = true;
 			} else {
 				ShaderBufferBlock block = ssbos.get(uniform.index);
 				if(uniform.ssboType == -2) {
@@ -313,13 +326,13 @@ public class UniformData extends GlData {
 					if(offsetIndex == -1) {
 						throw new IllegalStateException();
 					}
-					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, -2);
+					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, -2, false);
 				} else {
 					int offsetIndex = Arrays.binarySearch(block.builder.structIntervals, uniform.byteOffset);
 					if(offsetIndex == -1) {
 						throw new IllegalStateException();
 					}
-					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, 0);
+					element = new ElementImpl(uniform.index, name, type, offsetIndex, uniform.byteOffset, 0, false);
 				}
 			}
 
@@ -470,8 +483,7 @@ public class UniformData extends GlData {
 			if(fromE.type() != toE.type()) {
 				throw new UnsupportedOperationException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
 			}
-			this.copyTo(
-				toData,
+			this.copyTo(toData,
 				fromE.groupIndex(),
 				fromE.offsetIndex(),
 				fromE.arrayIndex(),
@@ -510,6 +522,19 @@ public class UniformData extends GlData {
 		}
 	}
 
+	public void feedback() {
+		boolean membar = true;
+		for(UniformBufferBlock group : this.groups) {
+			if(group != null && group.manager.needsFeedback) {
+				if(membar) {
+					glMemoryBarrier(GL46.GL_ATOMIC_COUNTER_BARRIER_BIT);
+					membar = false;
+				}
+				group.buffer().loadFeedback();
+			}
+		}
+	}
+
 	private static String arrayIndexTemplate(String name) {
 		String baseName;
 		if(name.charAt(name.length() - 1) == ']') {
@@ -545,6 +570,7 @@ public class UniformData extends GlData {
 		 * to -> from
 		 */
 		final Int2IntMap deferredCopies = new Int2IntOpenHashMap();
+		boolean needsFeedback;
 		int nextNewId;
 
 		UniformBufferBlockManager(String group, int[] uniformOffsets, int program, int binding, int index, int type) {
@@ -663,8 +689,6 @@ public class UniformData extends GlData {
 		final int groupIndex;
 		final int bufferType;
 		final String name;
-
-		// todo deferred copy
 
 		public UniformBufferBlock(UniformBufferBlockManager manager, int bufferType) {
 			this.manager = manager;

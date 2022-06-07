@@ -26,6 +26,7 @@ public class ACBOBuilder extends SharedUBOBuilder {
 	}
 
 	public long readAtomicCounter() {
+		this.loadFeedback();
 		GLContextState.ATOMIC_COUNTERS.bindBuffer(this.glId);
 		int[] buf = new int[1];
 		glGetBufferSubData(GLContextState.ATOMIC_COUNTERS.type, (long) this.structIndex * this.structLen + this.structsStart,
