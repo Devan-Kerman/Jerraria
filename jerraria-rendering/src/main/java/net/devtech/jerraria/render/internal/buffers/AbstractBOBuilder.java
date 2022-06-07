@@ -186,8 +186,10 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 	}
 
 	@Override
-	public void loadFeedback() { // todo fix, counters not working
-		this.bindBuffer(this.glId);
+	public void loadFeedback() {
+		if(!this.flush()) {
+			this.bindBuffer(this.getGlId());
+		}
 		this.buffer.clear();
 		this.buffer.limit(Math.min(this.bufferObjectLen, this.buffer.capacity()));
 		glMemoryBarrier(-1);

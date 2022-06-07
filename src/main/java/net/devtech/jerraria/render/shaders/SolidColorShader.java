@@ -24,12 +24,13 @@ public class SolidColorShader extends Shader<Color.ARGB<Vec3.F<End>>> {
 	 * draws a rectangle using triangles
 	 */
 	public void drawRect(Matrix3f mat, float x, float y, float width, float height, int rgb) {
-		this.vert().argb(rgb).vec3f(mat, x, y, 1);
-		this.vert().argb(rgb).vec3f(mat, x+width, y, 1);
-		this.vert().argb(rgb).vec3f(mat, x, y+height, 1);
+		final float depth = 1f;
+		this.vert().argb(rgb).vec3f(mat, x, y, depth);
+		this.vert().argb(rgb).vec3f(mat, x+width, y, depth);
+		this.vert().argb(rgb).vec3f(mat, x, y+height, depth);
 
-		this.vert().argb(rgb).vec3f(mat, x+width, y+height, 1);
-		this.vert().argb(rgb).vec3f(mat, x+width, y, 1);
-		this.vert().argb(rgb).vec3f(mat, x, y+height, 1);
+		this.vert().argb(rgb).vec3f(mat, x+width, y+height, depth);
+		this.vert().argb(rgb).vec3f(mat, x+width, y, depth);
+		this.vert().argb(rgb).vec3f(mat, x, y+height, depth);
 	}
 }
