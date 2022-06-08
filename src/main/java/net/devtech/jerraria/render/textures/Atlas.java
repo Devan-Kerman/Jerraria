@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Vector;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -153,7 +154,7 @@ public class Atlas {
 
 		int finalAtlasWidth = atlasWidth;
 		int finalAtlasHeight = atlasHeight;
-		CompletableFuture<Integer> glFuture = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<Integer> atlasFuture = CompletableFuture.supplyAsync(() -> {
 			int glId = glGenTextures();
 			glBindTexture(GL_TEXTURE_2D, glId);
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -177,10 +178,10 @@ public class Atlas {
 		List<AnimatedTexture> animated = new ArrayList<>();
 		float fwidth = atlasWidth;
 		float fheight = atlasHeight;
-		List<CompletableFuture<?>> futures = new ArrayList<>();
+		List<CompletableFuture<?>> imageList = new ArrayList<>();
 		spriteMap.forEach((sprite, rect) -> {
 			if(sprite instanceof RawImageSprite s) {
-				CompletableFuture<Void> after = glFuture.thenAcceptAsync(glId -> {
+				CompletableFuture<Void> after = atlasFuture.thenAcceptAsync(glId -> {
 					Texture texture = new Texture(glId,
 						rect.offX / fwidth, // it just works:tm:
 						rect.offY / fheight,
@@ -199,16 +200,16 @@ public class Atlas {
 						s.buffer);
 					uploading.complete(1);
 				}, executor);
-				futures.add(after);
+				imageList.add(after);
 			}
 		});
 
-		CompletableFuture<Void> images = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
-		List<CompletableFuture<Void>> animations = new ArrayList<>();
+		CompletableFuture<Void> images = CompletableFuture.allOf(imageList.toArray(CompletableFuture[]::new));
+		List<CompletableFuture<Void>> animations = new Vector<>();
 		spriteMap.forEach((sprite, rect) -> {
 			if(sprite instanceof RawAnimatedSprite s) {
 				animations.add(images.thenRunAsync(() -> {
-					int glId = glFuture.join();
+					int glId = atlasFuture.join();
 					Texture texture = new Texture(glId,
 						rect.offX / fwidth,
 						rect.offY / fheight,
@@ -228,14 +229,15 @@ public class Atlas {
 						s.msPerFrame,
 						Arrays.stream(s.msPerFrame).sum());
 					glBindTexture(GL_TEXTURE_2D, glId);
-					animatedTexture.update(glId, 0);
+					animatedTexture.update(glId, 0, true);
 					animated.add(animatedTexture);
 					uploading.complete(1);
 				}, executor));
 			}
 		});
 
-		this.glId = glFuture.join();
+
+		this.glId = atlasFuture.join();
 		this.textureMap = textureMap;
 		this.animated = animated;
 		this.atlasWidth = atlasWidth;
@@ -272,8 +274,10 @@ public class Atlas {
 
 	public void updateAnimation(long timeSrc) {
 		glBindTexture(GL_TEXTURE_2D, this.glId);
+		boolean bind = true;
 		for(AnimatedTexture animatedTexture : this.animated) {
-			animatedTexture.update(glId, timeSrc);
+			animatedTexture.update(this.glId, timeSrc, bind);
+			bind = false;
 		}
 	}
 
@@ -388,7 +392,7 @@ public class Atlas {
 	                       int frames,
 	                       int[] msPerFrame,
 	                       int msPerRotation) {
-		public void update(int glId, long timeSrc) {
+		public void update(int glId, long timeSrc, boolean bind) {
 			long time = timeSrc % this.msPerRotation;
 			int frame = 0;
 			for(int ms : msPerFrame) {
@@ -399,11 +403,13 @@ public class Atlas {
 				frame++;
 			}
 
-			if(copyFrameBufferId == -1) {
-				copyFrameBufferId = glGenFramebuffers();
+			if(bind) {
+				if(copyFrameBufferId == -1) {
+					copyFrameBufferId = glGenFramebuffers();
+				}
+				GLContextState.bindFrameBuffer(copyFrameBufferId);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
 			}
-			GLContextState.bindFrameBuffer(copyFrameBufferId);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
 			glCopyTexSubImage2D(GL_TEXTURE_2D,
 				0,
 				destination.offX,

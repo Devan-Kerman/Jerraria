@@ -1,15 +1,18 @@
 package net.devtech.jerraria.client;
 
+import static org.lwjgl.opengl.GL11C.GL_LESS;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import net.devtech.jerraria.render.api.GLStateBuilder;
+import net.devtech.jerraria.render.api.GlStateStack;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Atlas;
-import net.devtech.jerraria.world.internal.client.ClientChunk;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -17,11 +20,24 @@ public class RenderThread {
 	private static final List<Runnable> RENDER_QUEUE = new Vector<>();
 	private static final Set<RenderStage> STAGES = new ConcurrentSkipListSet<>(Comparator.comparingInt(r -> r.id));
 
+	public static void queueRenderTask(Runnable task) {
+		RENDER_QUEUE.add(task);
+	}
+
+	public static void addRenderStage(Runnable runnable, int priority) {
+		STAGES.add(new RenderStage(priority, runnable));
+	}
+
+	public static void removeRenderStage(Runnable runnable) {
+		STAGES.remove(new RenderStage(0, runnable));
+	}
+
 	static void startRender() {
 		while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
 			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GLFW.glfwPollEvents();
+
 			long src = System.currentTimeMillis();
 			for(Atlas value : Atlas.getAtlases().values()) {
 				value.updateAnimation(src);
@@ -29,7 +45,6 @@ public class RenderThread {
 
 			for(RenderStage stage : STAGES) {
 				stage.runnable.run();
-
 				// todo error handling screen
 			}
 
@@ -42,18 +57,6 @@ public class RenderThread {
 				System.gc();
 			}
 		}
-	}
-
-	public static void queueRenderTask(Runnable task) {
-		RENDER_QUEUE.add(task);
-	}
-
-	public static void addRenderStage(Runnable runnable, int priority) {
-		STAGES.add(new RenderStage(priority, runnable));
-	}
-
-	public static void removeRenderStage(Runnable runnable) {
-		STAGES.remove(new RenderStage(0, runnable));
 	}
 
 	record RenderStage(int id, Runnable runnable) {

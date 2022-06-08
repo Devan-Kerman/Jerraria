@@ -1,13 +1,14 @@
 package net.devtech.jerraria.render.api;
 
+import java.util.Arrays;
+
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-public final class GLStateBuilder {
-	public static final int DEPTH_TEST_SET = 0b1, DEPTH_FUNC_SET = 0b100000, DEPTH_MASK_SET = 0b100000;
+public final class GLStateBuilder implements BuiltGlState {
+	public static final int DEPTH_TEST_SET = 0b1, DEPTH_FUNC_SET = 0b100000, DEPTH_MASK_SET = 0b100000, FACE_CULLING_SET = 0b1000000;
 	public static final int BLEND_SET = 0b10, BLEND_ALL_SET = 0b100, BLEND_EQ_SET = 0b1000, BLEND_I_SET = 0b10000;
 
-	public static final int DEPTH_TEST = 0b1, DEPTH_MASK = 0b10;
-	public static final int BLEND = 0b10000;
+	public static final int DEPTH_TEST = 0b1, DEPTH_MASK = 0b10, BLEND = 0b100, FACE_CULLING = 0b1000;
 
 	int set, flags;
 	int depthFunc;
@@ -15,13 +16,7 @@ public final class GLStateBuilder {
 	int blendSrc, blendDst;
 	int[] blendISrc, blendIDst;
 
-	public static GLStateBuilder builder() {
-		return new GLStateBuilder();
-	}
-
 	public GLStateBuilder() {
-		this.depthFunc = GLContextState.DEPTH_FUNC.initialState;
-		this.blendEquation = GLContextState.BLEND_EQUATION.initialState;
 	}
 
 	public GLStateBuilder(GLStateBuilder builder) {
@@ -31,6 +26,12 @@ public final class GLStateBuilder {
 		this.flags = builder.flags;
 		this.blendISrc = builder.blendISrc;
 		this.blendIDst = builder.blendIDst;
+		this.blendSrc = builder.blendSrc;
+		this.blendDst = builder.blendDst;
+	}
+
+	public static GLStateBuilder builder() {
+		return new GLStateBuilder();
 	}
 
 	public GLStateBuilder unsetBlend() {
@@ -46,6 +47,22 @@ public final class GLStateBuilder {
 	public GLStateBuilder blend(boolean blend) {
 		this.enabled(BLEND_SET);
 		this.set(BLEND, blend);
+		return this;
+	}
+
+	public GLStateBuilder unsetFaceCulling() {
+		this.enabled(FACE_CULLING_SET, false);
+		return this;
+	}
+
+	public GLStateBuilder defaultFaceCulling() {
+		this.enabled(FACE_CULLING_SET, GLContextState.FACE_CULLING.initialState);
+		return this;
+	}
+
+	public GLStateBuilder faceCulling(boolean culling) {
+		this.enabled(FACE_CULLING_SET);
+		this.set(FACE_CULLING, culling);
 		return this;
 	}
 
@@ -170,28 +187,40 @@ public final class GLStateBuilder {
 		return new BuiltGlStateImpl(new GLStateBuilder(this));
 	}
 
-	private void enabled(int clearFlag, int setFlag) {
-		this.set = (this.set & ~clearFlag) | setFlag;
+	/**
+	 * Applies the current builder to the current gl context, you should restore the state by calling {@link GlStateStack#close()}
+	 *
+	 * <pre>{@code
+	 *  try(GlStateStack stack = GLStateBuilder.builder().depthMask(false).apply()) {
+	 *      // disables writing to the depth buffer for all shaders
+	 *          // unless they overwrite it with a custom BuiltGlState
+	 *          // or a second stack is created
+	 *
+	 *      // ...
+	 *  }
+	 * }</pre>
+	 */
+	public GlStateStack apply() {
+		return new GlStateStackImpl(this);
 	}
 
-	private void enabled(int flag) {
-		this.set = (this.set & ~flag) | flag;
+	public GlStateStack applyAndCopy() {
+		return new GlStateStackImpl(new GLStateBuilder(this));
 	}
 
-	private void enabled(int flag, boolean enabled) {
-		this.set = (this.set & ~flag) | (enabled ? flag : 0);
+	@Override
+	public void applyState() {
+		BuiltGlStateImpl.apply(this);
 	}
 
-	private void set(int clearFlag, int setFlag) {
-		this.flags = (this.flags & ~clearFlag) | setFlag;
+	@Override
+	public GLStateBuilder copyToBuilder() {
+		return new GLStateBuilder(this);
 	}
 
-	private void set(int flag) {
-		this.flags = (this.flags & ~flag) | flag;
-	}
-
-	private void set(int flag, boolean state) {
-		this.flags = (this.flags & ~flag) | (state ? flag : 0);
+	@Override
+	public BuiltGlState copy() {
+		return this.build();
 	}
 
 	public boolean isEnabled(int flag) {
@@ -202,7 +231,61 @@ public final class GLStateBuilder {
 		return (this.flags & flag) != 0;
 	}
 
-	// todo equals
+	@Override
+	public int hashCode() {
+		int result = this.set;
+		result = 31 * result + this.flags;
+		result = 31 * result + this.depthFunc;
+		result = 31 * result + this.blendEquation;
+		result = 31 * result + this.blendSrc;
+		result = 31 * result + this.blendDst;
+		result = 31 * result + Arrays.hashCode(this.blendISrc);
+		result = 31 * result + Arrays.hashCode(this.blendIDst);
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) {
+			return true;
+		}
+		if(!(o instanceof GLStateBuilder builder)) {
+			return false;
+		}
 
+		if(this.set != builder.set) {
+			return false;
+		}
+		if(this.flags != builder.flags) {
+			return false;
+		}
+		if(this.depthFunc != builder.depthFunc) {
+			return false;
+		}
+		if(this.blendEquation != builder.blendEquation) {
+			return false;
+		}
+		if(this.blendSrc != builder.blendSrc) {
+			return false;
+		}
+		if(this.blendDst != builder.blendDst) {
+			return false;
+		}
+		if(!Arrays.equals(this.blendISrc, builder.blendISrc)) {
+			return false;
+		}
+		return Arrays.equals(this.blendIDst, builder.blendIDst);
+	}
+
+	private void enabled(int flag) {
+		this.set = (this.set & ~flag) | flag;
+	}
+
+	private void enabled(int flag, boolean enabled) {
+		this.set = (this.set & ~flag) | (enabled ? flag : 0);
+	}
+
+	private void set(int flag, boolean state) {
+		this.flags = (this.flags & ~flag) | (state ? flag : 0);
+	}
 }

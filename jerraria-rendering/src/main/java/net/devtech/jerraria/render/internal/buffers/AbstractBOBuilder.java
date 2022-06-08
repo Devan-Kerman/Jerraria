@@ -253,7 +253,7 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 	}
 
 	public void bake() {
-		// todo remember to copy data from GPU if adding weird vertex shit
+		// todo remember to current data from GPU if adding weird vertex shit
 		this.evaluateDeferredCopies();
 		this.buffer = null;
 	}

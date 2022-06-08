@@ -10,19 +10,19 @@ import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL46;
 
-// todo untrack binded deleted buffers
 public final class GLContextState {
 	private static final int[][] BUFFER_ARRAYS;
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState SHADER_BUFFER = new IndexedBufferTargetState(GL_SHADER_STORAGE_BUFFER, GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS);
-
 	public static final IntState DEPTH_FUNC = new IntState(GL46::glDepthFunc, GL_LESS);
+	public static final IntState CULL_FACE = new IntState(GL46::glCullFace, GL_BACK);
 	public static final BoolState DEPTH_MASK = new BoolState(GL46::glDepthMask, true);
 	public static final EnableState DEPTH_TEST = new EnableState(GL_DEPTH_TEST, false);
 	public static final EnableState BLEND = new EnableState(GL_BLEND, false);
+	public static final EnableState FACE_CULLING = new EnableState(GL_CULL_FACE, false);
 	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
-	public static final BlendStateI[] BLEND_STATE_IS; // todo better version of this, we should store a "generic" target
+	public static final BlendStateI[] BLEND_STATE_IS;
 	public static final BlendStateI BLEND_ALL_INTERNAL;
 
 	static int currentGlId, currentVAO, readFBO, writeFBO, defaultFBO;
@@ -128,18 +128,18 @@ public final class GLContextState {
 	public static final class IntState {
 		final IntConsumer binder;
 		public final int initialState;
-		int id, default_;
+		int state, default_;
 
 		public IntState(IntConsumer binder, int initialState) {
 			this.binder = binder;
-			this.default_ = this.initialState = this.id = initialState;
+			this.default_ = this.initialState = this.state = initialState;
 		}
 
 		public void set(int id) {
-			int current = this.id;
+			int current = this.state;
 			if(current != id) {
 				this.binder.accept(id);
-				this.id = id;
+				this.state = id;
 			}
 		}
 
@@ -157,6 +157,10 @@ public final class GLContextState {
 
 		public void defaultToInitial() {
 			this.default_ = this.initialState;
+		}
+
+		public int getDefault() {
+			return this.default_;
 		}
 	}
 
@@ -192,6 +196,10 @@ public final class GLContextState {
 
 		public void defaultToInitial() {
 			this.default_ = this.initialState;
+		}
+
+		public boolean getDefault() {
+			return this.default_;
 		}
 	}
 
@@ -232,6 +240,10 @@ public final class GLContextState {
 		public void defaultToInitial() {
 			this.default_ = this.initialState;
 		}
+
+		public boolean getDefault() {
+			return this.default_;
+		}
 	}
 
 	public static final class BlendStateI {
@@ -252,11 +264,13 @@ public final class GLContextState {
 			}
 		}
 
-		public void setDefault(int src, int dst) {
-			this.defaultSrc = src;
-			this.defaultDst = dst;
+		public int getDefaultSrc() {
+			return this.defaultSrc;
 		}
 
+		public int getDefaultDst() {
+			return this.defaultDst;
+		}
 	}
 
 	public static final class IndexedBufferTargetState {
@@ -322,13 +336,13 @@ public final class GLContextState {
 
 	static {
 		if(OpenGLSupport.BLEND_FUNC_I) {
-			BLEND_STATE_IS = new BlendStateI[32];
+			BLEND_STATE_IS = new BlendStateI[4];
 			Arrays.setAll(BLEND_STATE_IS, BlendStateI::new);
 		} else {
 			BLEND_STATE_IS = null;
 		}
 
-		BLEND_ALL_INTERNAL = new BlendStateI(0);
+		BLEND_ALL_INTERNAL = new BlendStateI(-1);
 
 		BUFFER_ARRAYS = new int[32][];
 		for(int i = 0; i < BUFFER_ARRAYS.length; i++) {

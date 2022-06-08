@@ -8,12 +8,13 @@ import net.devtech.jerraria.render.internal.renderhandler.OpaqueRenderHandler;
 import net.devtech.jerraria.world.tile.render.ShaderSource.ShaderConfigurator;
 
 public record ShaderKey<T extends Shader<?>>(
-                                             ShaderConfigurator<? super T> config,
-                                             T shader,
-                                             SCopy copy,
-                                             AutoBlockLayerInvalidation invalidation,
-                                             DrawMethod primitive,
-                                             BuiltGlState state) {
+	ShaderConfigurator<? super T> config,
+	T shader,
+	SCopy copy,
+	AutoBlockLayerInvalidation invalidation,
+	DrawMethod primitive,
+	BuiltGlState state
+) {
 
 	public ShaderKey(ShaderConfigurator<? super T> config, T shader) {
 		this(

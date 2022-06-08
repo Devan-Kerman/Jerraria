@@ -11,7 +11,7 @@ import net.devtech.jerraria.render.internal.UniformData;
 
 /**
  * A struct in the glsl codebase, this is useful as it's {@link Shader#copyUniform(GlValue, GlValue)}} function is
- * optimized to copy every field in one go instead of having to {@link Shader#copyUniform(GlValue, GlValue)} for each
+ * optimized to current every field in one go instead of having to {@link Shader#copyUniform(GlValue, GlValue)} for each
  * field.
  */
 public abstract class Struct extends GlValue<End> implements GlValue.Uniform, GlValue.Copiable, GlValue.Indexable {
@@ -64,7 +64,7 @@ public abstract class Struct extends GlValue<End> implements GlValue.Uniform, Gl
 	}
 
 	/**
-	 * If struct copying <b>might</b> be optimized to copy the entire struct in one go.
+	 * If struct copying <b>might</b> be optimized to current the entire struct in one go.
 	 */
 	public boolean isSequential() {
 		return this.type.isSequential(this.data);
@@ -91,7 +91,7 @@ public abstract class Struct extends GlValue<End> implements GlValue.Uniform, Gl
 				StructTypeImpl.FactoryImpl a = this.type.factory, b = dst.type.factory;
 				fromU.copyTo(toU, a.group, a.off, this.getIndex(), b.group, b.off, dst.getIndex(), a.len);
 			} else {
-				throw new UnsupportedOperationException("unrecognized copy " + toData.getClass() + " to " + fromData.getClass());
+				throw new UnsupportedOperationException("unrecognized current " + toData.getClass() + " to " + fromData.getClass());
 			}
 		} else {
 			for(int i = 0; i < dst.uniforms.size(); i++) {

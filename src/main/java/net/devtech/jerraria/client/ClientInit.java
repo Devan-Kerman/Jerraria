@@ -77,9 +77,6 @@ class ClientInit {
 		GLFW.glfwShowWindow(window);
 		GL.createCapabilities();
 
-		RenderingEnvironmentInternal.defaultState_ = GLStateBuilder
-			.builder().depthTest(true).depthFunc(GL_LESS).depthMask(true).build();
-
 		maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
 
 		// todo save viewport size

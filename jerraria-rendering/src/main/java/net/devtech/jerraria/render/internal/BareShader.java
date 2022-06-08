@@ -169,7 +169,7 @@ public class BareShader implements AutoCloseable {
 	 */
 	public void drawKeep(BuiltGlState state) {
 		this.validateState();
-		state.apply();
+		state.applyState();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
 		if(type == -1) {
@@ -185,7 +185,7 @@ public class BareShader implements AutoCloseable {
 	 */
 	public void drawInstancedKeep(BuiltGlState state, int count) {
 		this.validateState();
-		state.apply();
+		state.applyState();
 		int mode = this.strategy.getDrawMethod().glId;
 		int type = this.setupDraw(true);
 		if(type == -1) {

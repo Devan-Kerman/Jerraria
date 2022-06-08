@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
- * Computes the minimum number of copy actions necessary to convert a sparse array into a compact one. This is useful
+ * Computes the minimum number of current actions necessary to convert a sparse array into a compact one. This is useful
  * for instancing where particular instances may be removed or added back in the course of a frame, and then must be
  * rendered as one sequential array.
  */

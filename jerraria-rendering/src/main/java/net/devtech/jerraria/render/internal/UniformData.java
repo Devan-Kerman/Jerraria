@@ -450,7 +450,7 @@ public class UniformData extends GlData {
 			);
 		} else {
 			throw new UnsupportedOperationException(
-				"Cannot copy between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
+				"Cannot current between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
 		}
 	}
 
@@ -471,7 +471,7 @@ public class UniformData extends GlData {
 		if(from instanceof StandardUniform standard) {
 			if(!(to instanceof StandardUniform to_)) {
 				throw new UnsupportedOperationException(
-					"Cannot copy between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
+					"Cannot current between Uniforms in different locations (eg. SSBO vs UBO vs Standard Uniform)!");
 			}
 			Uniform fromUniform = this.uniforms.get(standard.uniformIndex);
 			Uniform toUniform = this.uniforms.get(to_.uniformIndex);
@@ -481,7 +481,7 @@ public class UniformData extends GlData {
 			ElementImpl fromE = (ElementImpl) from;
 			ElementImpl toE = (ElementImpl) to;
 			if(fromE.type() != toE.type()) {
-				throw new UnsupportedOperationException("Cannot copy " + fromE.type() + " to " + toE.type() + "!");
+				throw new UnsupportedOperationException("Cannot current " + fromE.type() + " to " + toE.type() + "!");
 			}
 			this.copyTo(toData,
 				fromE.groupIndex(),

@@ -125,8 +125,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 * Copy the contents of one uniform to another, they must be the same type and in the same place (as in they both
 	 * must be normal uniforms, uniform buffer variables, or shader buffer variables)
 	 *
-	 * @param from the place to copy the data from
-	 * @param to the place to copy the data to
+	 * @param from the place to current the data from
+	 * @param to the place to current the data to
 	 */
 	public static <U extends GlValue<?> & GlValue.Uniform & GlValue.Copiable> void copyUniform(U from, U to) {
 		ShaderImpl.copyUniform_(from, to);

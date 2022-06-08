@@ -24,7 +24,7 @@ public class OpaqueTranslucentRenderer extends OpaqueRenderHandler implements In
 	}
 
 	@Override
-	public void renderResolve() throws Exception {
+	public void renderResolve() {
 
 	}
 

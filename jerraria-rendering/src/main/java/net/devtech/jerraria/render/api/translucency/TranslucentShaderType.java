@@ -39,7 +39,13 @@ public enum TranslucentShaderType {
 	),
 	DOUBLE_PASS_A("330",
 		TranslucencyStrategy.DOUBLE_PASS_WEIGHTED_BLENDED,
-		GLStateBuilder.builder().depthTest(true).depthMask(false).blend(true).blendFunc(GL_ONE, GL_ONE).build()
+		GLStateBuilder
+			.builder()
+			.depthTest(true)
+			.depthMask(false)
+			.blend(true)
+			.blendFunc(GL_ONE, GL_ONE)
+			.build()
 	),
 	DOUBLE_PASS_B("330",
 		TranslucencyStrategy.DOUBLE_PASS_WEIGHTED_BLENDED,
@@ -55,12 +61,12 @@ public enum TranslucentShaderType {
 		TranslucencyStrategy.SOLID,
 		RenderingEnvironment.DEFAULT_GL_STATE
 			.copyToBuilder()
+			.depthTest(true)
+			.depthMask(false)
 			.blend(true)
 			.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 			.build()
 	);
-
-	// todo immediate renderer
 
 	public final BuiltGlState defaultState;
 	final String glslVers;

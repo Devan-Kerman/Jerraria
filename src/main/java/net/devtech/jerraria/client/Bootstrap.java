@@ -1,7 +1,7 @@
 package net.devtech.jerraria.client;
 
 import static java.util.Objects.requireNonNull;
-import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
+import static org.lwjgl.opengl.GL11C.GL_LESS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -17,6 +17,7 @@ import java.util.concurrent.Callable;
 
 import com.beust.jcommander.JCommander;
 import net.devtech.jerraria.render.api.GLStateBuilder;
+import net.devtech.jerraria.render.api.GlStateStack;
 import net.devtech.jerraria.render.api.impl.RenderingEnvironmentInternal;
 import net.devtech.jerraria.resource.IndexVirtualFile;
 import net.devtech.jerraria.resource.OverlayDirectory;
@@ -29,12 +30,10 @@ import org.lwjgl.glfw.GLFW;
 public class Bootstrap {
 	public static OverlayDirectory clientResources;
 	public static Thread renderThread;
+
 	public static void startClient(String[] argv, Callable<?> run) {
 		ClientArgs args = new ClientArgs();
-		JCommander.newBuilder()
-		          .addObject(args)
-		          .build()
-		          .parse(argv);
+		JCommander.newBuilder().addObject(args).build().parse(argv);
 		RenderingEnvironmentInternal.renderThread_ = Thread.currentThread();
 		startClient(args, run);
 	}
@@ -51,11 +50,7 @@ public class Bootstrap {
 			addResourcePack(argv.resources, resourcePacks, closeables);
 			for(File directory : argv.resourcesDirectories) {
 				File[] files = requireNonNull(directory.listFiles(), directory + " is not directory!");
-				addResourcePack(
-					Arrays.asList(files),
-					resourcePacks,
-					closeables
-				);
+				addResourcePack(Arrays.asList(files), resourcePacks, closeables);
 			}
 
 			resourcePacks.add(client);

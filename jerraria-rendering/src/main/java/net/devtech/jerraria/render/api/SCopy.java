@@ -1,7 +1,7 @@
 package net.devtech.jerraria.render.api;
 
 /**
- * The method in which to copy the contents of the previous shader object.
+ * The method in which to current the contents of the previous shader object.
  */
 public enum SCopy {
 	/**

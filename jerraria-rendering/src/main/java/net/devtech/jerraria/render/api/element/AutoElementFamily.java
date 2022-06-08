@@ -24,17 +24,17 @@ public final class AutoElementFamily implements AutoStrat {
 
 	@Override
 	public int vertexCount() {
-		return byte_.vertexCount(this.method);
+		return this.byte_.vertexCount(this.method);
 	}
 
 	@Override
 	public int minimumVertices() {
-		return byte_.minumumVertices(this.method);
+		return this.byte_.minumumVertices(this.method);
 	}
 
 	@Override
 	public int elementsForVertexData(int count) {
-		return byte_.elementsForVertexData(count);
+		return this.byte_.elementsForVertexData(count);
 	}
 
 	public ShapeStrat forCount(int count) {
