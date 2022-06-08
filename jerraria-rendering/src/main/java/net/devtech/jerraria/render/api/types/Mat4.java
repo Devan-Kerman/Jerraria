@@ -2,8 +2,8 @@ package net.devtech.jerraria.render.api.types;
 
 import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 
 /**
  * A 4xn matrix value.

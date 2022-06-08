@@ -13,7 +13,7 @@ import static org.lwjgl.opengl.GL42.glTexStorage2D;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.GLStateBuilder;
-import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.shaders.WBTransResolveShader;

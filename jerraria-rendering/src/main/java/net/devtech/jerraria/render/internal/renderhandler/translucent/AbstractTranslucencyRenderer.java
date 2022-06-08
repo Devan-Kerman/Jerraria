@@ -14,11 +14,12 @@ import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.translucency.TranslucencyRenderer;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
+import net.devtech.jerraria.render.internal.renderhandler.InternalTranslucencyRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.OpaqueRenderHandler;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 
-public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler implements RenderHandler, TranslucencyRenderer {
+public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler implements RenderHandler, InternalTranslucencyRenderer {
 	public List<RenderCall> renderQueue = new ArrayList<>();
 	public record RenderCall(Shader<?> shader, Consumer<Shader<?>> exec) {}
 
@@ -63,12 +64,8 @@ public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler i
 
 	protected abstract TranslucentShaderType type();
 
+	@Override
 	public void renderStart() {}
-
-	public abstract void renderResolve() throws Exception;
-
-	public abstract void frameSize(int width, int height);
-
 
 	/*public static <S extends TranslucentShader<?>> void drawKeep(TranslucentPass<S> translucent) {
 		BareShader shaderA = translucent.getPrimaryShader().getShader();

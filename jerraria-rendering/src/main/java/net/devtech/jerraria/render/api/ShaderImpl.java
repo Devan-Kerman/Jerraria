@@ -8,9 +8,10 @@ import java.util.Map;
 
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.Pair;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.api.impl.RenderingEnvironment;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Out;
@@ -139,13 +140,14 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	void drawKeep(Shader<?> shader, BuiltGlState state) {
+		RenderingEnvironment.validateRenderThread("draw");
 		AutoStrat strategy = shader.getStrategy();
 		this.validate(strategy, strategy.vertexCount(), strategy.minimumVertices());
 		this.handler.drawKeep(shader, state);
 	}
 
-	void drawInstancedKeep(
-		Shader<T> shader, BuiltGlState state, int count) {
+	void drawInstancedKeep(Shader<T> shader, BuiltGlState state, int count) {
+		RenderingEnvironment.validateRenderThread("drawInstanced");
 		AutoStrat strategy = shader.getStrategy();
 		this.validate(strategy, strategy.vertexCount(), strategy.minimumVertices());
 		this.handler.drawInstancedKeep(shader, state, count);

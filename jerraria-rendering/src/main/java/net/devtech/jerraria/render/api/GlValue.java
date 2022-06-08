@@ -1,9 +1,7 @@
 package net.devtech.jerraria.render.api;
 
-import java.util.Objects;
-
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;

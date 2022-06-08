@@ -8,21 +8,21 @@ import net.devtech.jerraria.render.internal.buffers.EBOBuilder;
 import net.devtech.jerraria.render.internal.element.ShapeStrat;
 
 // todo move EBO into VAO class?
-public class EBO {
+public class ElementData {
 	int currentType;
 	EBOBuilder builder;
 
-	public EBO() {
+	public ElementData() {
 		this.builder = new EBOBuilder(1);
 		this.currentType = GL_UNSIGNED_BYTE;
 	}
 
-	public EBO(EBO ebo) {
+	public ElementData(ElementData ebo) {
 		this.builder = new EBOBuilder(ebo.builder);
 		this.currentType = ebo.currentType;
 	}
 
-	public EBO(ShapeStrat strat, int elements) {
+	public ElementData(ShapeStrat strat, int elements) {
 		this.builder = new EBOBuilder(strat.builder, elements);
 		this.currentType = strat.getType();
 	}
@@ -37,7 +37,6 @@ public class EBO {
 	}
 
 	private void ensureCanIndex(int index) {
-		// todo avoid direct buffer access
 		if(index >= 65536 && this.currentType < GL_UNSIGNED_INT) {
 			// resize to int
 			EBOBuilder current = this.builder;
@@ -61,7 +60,7 @@ public class EBO {
 			ByteBuffer buffer = current.getBuffer();
 			EBOBuilder new_ = new EBOBuilder(2);
 			buffer.flip();
-			for(int i = 0; i < current.getElementCount(); i++) {
+			for(int i = 0; i < current.getElementCount(); i++) { // byte -> short
 				new_.vert().putShort(buffer.get());
 			}
 			this.builder = new_;

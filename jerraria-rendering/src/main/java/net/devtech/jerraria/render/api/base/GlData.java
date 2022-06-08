@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.api.basic;
+package net.devtech.jerraria.render.api.base;
 
 public abstract class GlData implements AutoCloseable {
 	boolean isInvalid;
@@ -57,10 +57,6 @@ public abstract class GlData implements AutoCloseable {
 
 	public interface ReadableBuf {
 		long uint();
-	}
-
-	public interface Atomic {
-		long value();
 	}
 
 	public interface BufAdapter extends Buf {

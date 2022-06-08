@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.ShaderBuffer;
-import net.devtech.jerraria.render.api.basic.GlData;
 
 public interface InstanceKey<T> {
 	T block();

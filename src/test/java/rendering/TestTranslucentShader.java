@@ -8,13 +8,14 @@ import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
+import net.devtech.jerraria.render.internal.renderhandler.InternalTranslucencyRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.TranslucencyStrategy;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.AbstractTranslucencyRenderer;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class TestTranslucentShader extends TranslucentShader<Vec3.F<Color.ARGB<End>>> {
-	public static final AbstractTranslucencyRenderer HANDLER = TranslucencyStrategy.createTranslucentRenderer(TranslucencyStrategy.RECOMMENDED);
+	public static final InternalTranslucencyRenderer HANDLER = TranslucencyStrategy.createTranslucentRenderer(TranslucencyStrategy.RECOMMENDED);
 	public static final TestTranslucentShader INSTANCE = HANDLER.create(
 		Id.create("jerraria", "translucency_test"),
 		TestTranslucentShader::new,

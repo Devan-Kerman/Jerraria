@@ -20,7 +20,7 @@ public sealed interface AutoStrat permits AutoElementFamily {
 	AutoStrat TRIANGLE = sequence(DrawMethod.TRIANGLE);
 
 	/**
-	 * Renders Quads with {@link DrawMethod#TRIANGLE}s
+	 * Renders Quads with {@link DrawMethod#TRIANGLE}s. The vertices in this must be specified in a counter-clockwise order!
 	 */
 	AutoStrat QUADS = new AutoElementFamily(Quad.BYTE_, Quad.SHORT_, Quad.INT_, DrawMethod.TRIANGLE, "QUADS");
 
@@ -44,6 +44,9 @@ public sealed interface AutoStrat permits AutoElementFamily {
 		"LINE_STRIP"
 	);
 
+	/**
+	 * @return an AutoStrat for a supported opengl primitive
+	 */
 	static AutoStrat sequence(DrawMethod method) {
 		return Seq.SEQUENCES[method.ordinal()];
 	}

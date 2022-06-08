@@ -1,9 +1,8 @@
 package net.devtech.jerraria.render.api.types;
 
 import net.devtech.jerraria.render.api.GlValue;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.internal.buffers.ACBOBuilder;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.buffers.BufferObjectBuilderAccess;
 
 public class AtomicCounter extends V.UI<End> {
@@ -14,10 +13,7 @@ public class AtomicCounter extends V.UI<End> {
 		this.canRead = read;
 	}
 
-	/**
-	 * This may be unreliable with multiple elements, as soon as you call this u
-	 */
-	public long read() {
+	public long readUnsignedInteger() {
 		if(this.canRead) {
 			return ((BufferObjectBuilderAccess) this.data.element(this.element)).uint();
 		} else {
@@ -26,7 +22,7 @@ public class AtomicCounter extends V.UI<End> {
 	}
 
 	/**
-	 * @param canRead {@link #read}
+	 * @param canRead {@link #readUnsignedInteger}
 	 */
 	public static Type<AtomicCounter> atomic_ui(String name, String groupName, boolean canRead) {
 		return new Simple<>(

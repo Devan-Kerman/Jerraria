@@ -2,7 +2,7 @@ package net.devtech.jerraria.render.internal;
 
 import java.nio.ByteBuffer;
 
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 
 public abstract class CASByteBufferGlDataBuf extends ByteBufferGlDataBuf {
 	protected int pos;

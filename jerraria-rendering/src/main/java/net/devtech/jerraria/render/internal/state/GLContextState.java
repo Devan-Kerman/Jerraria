@@ -23,7 +23,7 @@ public final class GLContextState {
 	public static final EnableState BLEND = new EnableState(GL_BLEND, false);
 	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
 	public static final BlendStateI[] BLEND_STATE_IS; // todo better version of this, we should store a "generic" target
-	private static final BlendStateI defaultManager;
+	public static final BlendStateI BLEND_ALL_INTERNAL;
 
 	static int currentGlId, currentVAO, readFBO, writeFBO, defaultFBO;
 
@@ -82,17 +82,16 @@ public final class GLContextState {
 	}
 
 	public static void blendFunc(int src, int dst) {
-		boolean diff = false;
+		boolean diff = BLEND_ALL_INTERNAL.src != src || BLEND_ALL_INTERNAL.dst != dst;
+		BLEND_ALL_INTERNAL.src = src;
+		BLEND_ALL_INTERNAL.dst = dst;
+
 		if(BLEND_STATE_IS != null) {
 			for(BlendStateI i : BLEND_STATE_IS) {
 				diff |= i.src != src || i.dst != dst;
 				i.src = src;
 				i.dst = dst;
 			}
-		} else {
-			diff = defaultManager.src != src || defaultManager.dst != dst;
-			defaultManager.src = src;
-			defaultManager.dst = dst;
 		}
 
 		if(diff) {
@@ -128,12 +127,12 @@ public final class GLContextState {
 
 	public static final class IntState {
 		final IntConsumer binder;
-		public final int default_;
-		int id;
+		public final int initialState;
+		int id, default_;
 
-		public IntState(IntConsumer binder, int default_) {
+		public IntState(IntConsumer binder, int initialState) {
 			this.binder = binder;
-			this.default_ = this.id = default_;
+			this.default_ = this.initialState = this.id = initialState;
 		}
 
 		public void set(int id) {
@@ -143,16 +142,32 @@ public final class GLContextState {
 				this.id = id;
 			}
 		}
+
+		public void setDefault(int id) {
+			this.default_ = id;
+		}
+
+		public void setAndDefault(int id) {
+			this.set(this.default_ = id);
+		}
+
+		public void setToDefault() {
+			this.set(this.default_);
+		}
+
+		public void defaultToInitial() {
+			this.default_ = this.initialState;
+		}
 	}
 
 	public static final class BoolState {
 		final BooleanConsumer binder;
-		public final boolean default_;
-		boolean state;
+		public final boolean initialState;
+		boolean state, default_;
 
-		public BoolState(BooleanConsumer binder, boolean default_) {
+		public BoolState(BooleanConsumer binder, boolean initialState) {
 			this.binder = binder;
-			this.default_ = this.state = default_;
+			this.default_ = this.initialState = this.state = initialState;
 		}
 
 		public void set(boolean value) {
@@ -162,19 +177,35 @@ public final class GLContextState {
 				this.state = value;
 			}
 		}
+
+		public void setDefault(boolean id) {
+			this.default_ = id;
+		}
+
+		public void setAndDefault(boolean id) {
+			this.set(this.default_ = id);
+		}
+
+		public void setToDefault() {
+			this.set(this.default_);
+		}
+
+		public void defaultToInitial() {
+			this.default_ = this.initialState;
+		}
 	}
 
 	public static final class EnableState {
 		final int type;
-		public final boolean default_;
-		boolean state;
+		public final boolean initialState;
+		boolean state, default_;
 
-		public EnableState(int type, boolean default_) {
+		public EnableState(int type, boolean initialState) {
 			this.type = type;
-			this.default_ = this.state = default_;
+			this.default_ = this.initialState = this.state = initialState;
 		}
 
-		public void set(boolean enable) {
+		public boolean set(boolean enable) {
 			if(this.state ^ enable) {
 				if(enable) {
 					glEnable(this.type);
@@ -183,13 +214,31 @@ public final class GLContextState {
 				}
 				this.state = enable;
 			}
+			return enable;
+		}
+
+		public void setDefault(boolean id) {
+			this.default_ = id;
+		}
+
+		public void setAndDefault(boolean id) {
+			this.set(this.default_ = id);
+		}
+
+		public boolean setToDefault() {
+			return this.set(this.default_);
+		}
+
+		public void defaultToInitial() {
+			this.default_ = this.initialState;
 		}
 	}
 
 	public static final class BlendStateI {
 		final int index;
-		public final int defaultSrc = GL_ONE, defaultDst = GL_ZERO;
-		int src = this.defaultSrc, dst = this.defaultDst;
+		public final int initialSrc = GL_ONE, initialDst = GL_ZERO;
+		public int defaultSrc = this.initialSrc, defaultDst = this.initialDst;
+		int src = this.initialSrc, dst = this.initialDst;
 
 		public BlendStateI(int index) {
 			this.index = index;
@@ -202,6 +251,12 @@ public final class GLContextState {
 				this.dst = dst;
 			}
 		}
+
+		public void setDefault(int src, int dst) {
+			this.defaultSrc = src;
+			this.defaultDst = dst;
+		}
+
 	}
 
 	public static final class IndexedBufferTargetState {
@@ -268,12 +323,12 @@ public final class GLContextState {
 	static {
 		if(OpenGLSupport.BLEND_FUNC_I) {
 			BLEND_STATE_IS = new BlendStateI[32];
-			defaultManager = null;
 			Arrays.setAll(BLEND_STATE_IS, BlendStateI::new);
 		} else {
 			BLEND_STATE_IS = null;
-			defaultManager = new BlendStateI(0);
 		}
+
+		BLEND_ALL_INTERNAL = new BlendStateI(0);
 
 		BUFFER_ARRAYS = new int[32][];
 		for(int i = 0; i < BUFFER_ARRAYS.length; i++) {

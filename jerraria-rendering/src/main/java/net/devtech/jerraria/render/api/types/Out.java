@@ -3,8 +3,8 @@ package net.devtech.jerraria.render.api.types;
 import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 
 public class Out extends AbstractGlValue<End> implements GlValue.Output {
 	public static Type<Out> out2d(String name) {

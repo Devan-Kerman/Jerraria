@@ -6,14 +6,13 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 import java.util.List;
 
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import org.lwjgl.opengl.GL20;
 
 /**
- * Since it cannot be guaranteed that a VAO is created on render thread, we need to lazily initialize it. And we use an
- * object for garbage collection reasons.
+ * Since it cannot be guaranteed that a VAO is created on render thread, we need to lazily initialize it.
  */
 class LazyVAOReference {
 	int vaoGlId;

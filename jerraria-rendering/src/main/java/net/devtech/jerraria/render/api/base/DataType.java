@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.api.basic;
+package net.devtech.jerraria.render.api.base;
 
 import static org.lwjgl.opengl.GL33.*;
 import static org.lwjgl.opengl.GL43.*;
@@ -10,6 +10,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.devtech.jerraria.render.api.OpenGLSupport;
 
+/**
+ * All supported OpenGL types
+ */
 public enum DataType {
 	BOOL(GL_BOOL, 1, "bool", GL_BOOL),
 	I8(GL_BYTE, 1, "int", GL_INT),

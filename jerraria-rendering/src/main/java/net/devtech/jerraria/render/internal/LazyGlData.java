@@ -2,9 +2,8 @@ package net.devtech.jerraria.render.internal;
 
 import java.util.function.Function;
 
-import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderImpl;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 
 public final class LazyGlData extends GlData {
 	private final ShaderImpl shader;

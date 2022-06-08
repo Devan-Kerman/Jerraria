@@ -12,7 +12,8 @@ public enum DrawMethod {
 	LINES(GL11.GL_LINES, 2, 2),
 	LINE_STRIP(GL11.GL_LINE_STRIP, 1, 2),
 	LINE_LOOP(GL11.GL_LINE_LOOP, 1, 2),
-	TRIANGLE_STRIP(GL11.GL_TRIANGLE_STRIP, 1, 3);
+	TRIANGLE_STRIP(GL11.GL_TRIANGLE_STRIP, 1, 3),
+	TRIANGLE_FAN(GL11.GL_TRIANGLE_FAN, 1, 3);
 
 	public static final List<DrawMethod> VALUES = List.of(DrawMethod.values());
 
@@ -20,9 +21,9 @@ public enum DrawMethod {
 	public final int vertexCount;
 	public final int minimumVertices;
 
-	DrawMethod(int id, int count, int vertices) {
+	DrawMethod(int id, int vertPerPrim, int minVertices) {
 		this.glId = id;
-		this.vertexCount = count;
-		this.minimumVertices = vertices;
+		this.vertexCount = vertPerPrim;
+		this.minimumVertices = minVertices;
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Set;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.Struct;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 
 public final class StructTypeImpl<T extends Struct> extends GlValue.Type<T> {
 	public final FactoryImpl<T> factory;

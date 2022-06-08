@@ -16,7 +16,7 @@ import java.util.List;
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;

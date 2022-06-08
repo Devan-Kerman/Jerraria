@@ -11,11 +11,11 @@ import java.util.function.Supplier;
 
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.GLStateBuilder;
+import net.devtech.jerraria.render.api.impl.RenderingEnvironment;
 import net.devtech.jerraria.render.internal.renderhandler.TranslucencyStrategy;
 
 public enum TranslucentShaderType {
-	LINKED_LIST(
-		"430",
+	LINKED_LIST("430",
 		TranslucencyStrategy.LINKED_LIST,
 		GLStateBuilder
 			.builder()
@@ -34,7 +34,7 @@ public enum TranslucentShaderType {
 			.blend(true)
 			.srcBlendFuncs(GL_ONE, GL_ZERO)
 			.dstBlendFuncs(GL_ONE, GL_ONE_MINUS_SRC_COLOR)
-			.blendEquation(GL_FUNC_ADD)
+			.blendEq(GL_FUNC_ADD)
 			.build()
 	),
 	DOUBLE_PASS_A("330",
@@ -49,6 +49,14 @@ public enum TranslucentShaderType {
 			.depthMask(false)
 			.blend(true)
 			.blendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR)
+			.build()
+	),
+	SOLID("330",
+		TranslucencyStrategy.SOLID,
+		RenderingEnvironment.DEFAULT_GL_STATE
+			.copyToBuilder()
+			.blend(true)
+			.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 			.build()
 	);
 

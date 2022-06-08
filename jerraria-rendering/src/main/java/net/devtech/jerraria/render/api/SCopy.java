@@ -21,9 +21,7 @@ public enum SCopy {
 	 */
 	PRESERVE_NEITHER(false, false);
 
-	// todo deferred/undeferred versions
-
-	// todo more granular copying, view-only is useless with deferred copying which we already did
+	// todo more granular copying
 
 	public final boolean preserveUniforms, preserveVertexData;
 

@@ -2,7 +2,7 @@ package net.devtech.jerraria.render.internal.renderhandler.translucent;
 
 import static org.lwjgl.opengl.GL42.*;
 
-import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
@@ -33,7 +33,7 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer 
 			shader.linkedListUniforms.translucencyBuffer.tex(this.translucencyBufferTex);
 			shader.linkedListUniforms.imgListHead.tex(this.imageListHead);
 			call.exec().accept(shader);
-			counter = shader.linkedListUniforms.counter.read();
+			counter = shader.linkedListUniforms.counter.readUnsignedInteger();
 		}
 
 		this.clearRenderQueue();

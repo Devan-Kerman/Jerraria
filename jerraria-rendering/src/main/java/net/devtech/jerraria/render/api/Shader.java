@@ -5,18 +5,17 @@ import java.util.Collection;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.Function;
-import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Out;
-import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.SourceProvider;
 import net.devtech.jerraria.render.internal.arr.ListShaderBufferImpl;
 import net.devtech.jerraria.render.internal.renderhandler.RenderHandler;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
-import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 
@@ -25,7 +24,6 @@ import org.jetbrains.annotations.Contract;
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implements AutoCloseable {
-	// todo effecient copy commands (lazily evaluated, and can operate on whole ranges)
 	final ShaderImpl<T> delegate;
 
 	/**
@@ -51,7 +49,7 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	 *
 	 * @return T the vertex configurator
 	 * @see GlValue#getNext()
-	 * @see Vec3.F#vec3f(Matrix3f, float, float, float)
+	 * @see Color.ARGB#argb(int, int, int, int)
 	 */
 	public final T vert() {
 		return this.delegate.vert();
@@ -81,12 +79,12 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	}
 
 	public final void drawKeep() {
-		this.delegate.drawKeep(this, this.delegate.defaultGlState());
+		this.drawKeep(this.delegate.defaultGlState());
 	}
 
 	/**
-	 * Bind the shader and render its contents X times using opengl's instanced rendering and retain its contents to be
-	 * redrawn another time.
+	 * Bind the shader and render its contents {@code count} times using opengl's instanced rendering and retain its
+	 * contents to be redrawn another time.
 	 */
 	public final void drawInstancedKeep(BuiltGlState state, int count) {
 		this.preRender(RenderCall.DRAW_INSTANCED);
@@ -123,7 +121,14 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		return this.delegate.defaultGlState();
 	}
 
-	public static <U extends GlValue<?> & GlValue.Uniform & GlValue.Copiable> void copyUniform(U from, U to) { // todo allow copying structs
+	/**
+	 * Copy the contents of one uniform to another, they must be the same type and in the same place (as in they both
+	 * must be normal uniforms, uniform buffer variables, or shader buffer variables)
+	 *
+	 * @param from the place to copy the data from
+	 * @param to the place to copy the data to
+	 */
+	public static <U extends GlValue<?> & GlValue.Uniform & GlValue.Copiable> void copyUniform(U from, U to) {
 		ShaderImpl.copyUniform_(from, to);
 	}
 
@@ -160,7 +165,8 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 
 	/**
 	 * Tells the current shader instance that the vertex data of this shader will <b>likely</b> remain unchanged.
-	 * Changing the data after baking will incur a significant performance penalty, and should only be done on the render thread.
+	 * Changing the data after baking will incur a significant performance penalty, and should only be done on the
+	 * render thread.
 	 */
 	public final void bake() {
 		this.delegate.bake();
@@ -195,19 +201,18 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 	/**
 	 * @return the uniform configurator for the given variable
 	 */
-	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, BufferFunction<U> type) {
+	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> buffer(
+		String name, BufferFunction<U> type) {
 		return this.delegate.buffer(name, type);
 	}
 
-	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> list(String name, Function<String, GlValue.Type<U>> initializer,
-	                                                                                int len) {
+	protected final <U extends GlValue<End> & GlValue.Uniform> ShaderBuffer<U> list(
+		String name, Function<String, GlValue.Type<U>> initializer, int len) {
 		return new ListShaderBufferImpl<>(this.array(name, initializer, len));
 	}
 
 	protected final <U extends GlValue<End> & GlValue.Uniform> List<U> array(
-		String name,
-		Function<String, GlValue.Type<U>> initializer,
-		int len) {
+		String name, Function<String, GlValue.Type<U>> initializer, int len) {
 		return this.delegate.array(name, initializer, len);
 	}
 

@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderBuffer;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.BareShader;
 import net.devtech.jerraria.render.internal.UniformData;
 

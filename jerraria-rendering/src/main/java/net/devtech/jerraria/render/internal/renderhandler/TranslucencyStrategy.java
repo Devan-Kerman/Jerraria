@@ -6,6 +6,7 @@ import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.AbstractTranslucencyRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.LinkedListTranslucentRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.DoublePassWeightedRenderer;
+import net.devtech.jerraria.render.internal.renderhandler.translucent.OpaqueTranslucentRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.translucent.WeightedTranslucentRenderer;
 
 public enum TranslucencyStrategy {
@@ -35,28 +36,33 @@ public enum TranslucencyStrategy {
 	 */
 	SINGLE_PASS_WEIGHTED_BLENDED("330"),
 
-	DOUBLE_PASS_WEIGHTED_BLENDED("330");
+	DOUBLE_PASS_WEIGHTED_BLENDED("330"),
+
+	SOLID("330");
 
 	public static final boolean SUPPORTS_LINKED_LIST = OpenGLSupport.ATOMIC_COUNTERS & OpenGLSupport.IMAGE_LOAD_SIZE & OpenGLSupport.IMAGE_LOAD_STORE;
 	public static final boolean SUPPORTS_SINGLE_PASS_WEIGHTED_BLENDED = OpenGLSupport.BLEND_FUNC_I;
 
-	public static final TranslucencyStrategy RECOMMENDED;
+	public static final TranslucencyStrategy RECOMMENDED, RECOMMENDED_SOLID;
 
 	static {
 		if(SUPPORTS_LINKED_LIST) {
-			RECOMMENDED = LINKED_LIST;
+			RECOMMENDED_SOLID = RECOMMENDED = LINKED_LIST;
 		} else if(SUPPORTS_SINGLE_PASS_WEIGHTED_BLENDED) {
 			RECOMMENDED = SINGLE_PASS_WEIGHTED_BLENDED;
+			RECOMMENDED_SOLID = SOLID;
 		} else {
 			RECOMMENDED = DOUBLE_PASS_WEIGHTED_BLENDED;
+			RECOMMENDED_SOLID = SOLID;
 		}
 	}
 
-	public static AbstractTranslucencyRenderer createTranslucentRenderer(TranslucencyStrategy strategy) {
+	public static InternalTranslucencyRenderer createTranslucentRenderer(TranslucencyStrategy strategy) {
 		return switch(strategy) {
 			case LINKED_LIST -> new LinkedListTranslucentRenderer();
 			case SINGLE_PASS_WEIGHTED_BLENDED -> new WeightedTranslucentRenderer();
 			case DOUBLE_PASS_WEIGHTED_BLENDED -> new DoublePassWeightedRenderer();
+			case SOLID -> new OpaqueTranslucentRenderer();
 		};
 	}
 

@@ -15,8 +15,8 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.buffers.VBOBuilder;
 import net.devtech.jerraria.util.Validate;
 

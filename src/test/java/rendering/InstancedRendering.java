@@ -5,7 +5,6 @@ import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.types.Vec3;
-import net.devtech.jerraria.render.shaders.InstancedSolidColorShader;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 public class InstancedRendering {

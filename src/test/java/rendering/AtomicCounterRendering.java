@@ -6,8 +6,7 @@ import static org.lwjgl.opengl.GL46.*;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.shaders.TestSolidColorShader;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.lwjgl.system.MemoryUtil;
 

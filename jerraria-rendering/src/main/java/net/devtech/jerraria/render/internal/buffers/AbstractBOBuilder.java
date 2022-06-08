@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.ByteBufferGlDataBuf;
 import net.devtech.jerraria.util.math.JMath;
 

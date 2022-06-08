@@ -1,31 +1,69 @@
 package net.devtech.jerraria.render.api;
 
-import static org.lwjgl.opengl.GL11.GL_ONE;
-import static org.lwjgl.opengl.GL11.GL_ZERO;
-
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
 record BuiltGlStateImpl(GLStateBuilder copy) implements BuiltGlState {
 	@Override
 	public void apply() {
-		GLContextState.DEPTH_FUNC.set(this.copy.depthFunc);
-		GLContextState.BLEND_EQUATION.set(this.copy.blendEquation);
-		GLContextState.DEPTH_MASK.set(this.copy.depthMask);
-		GLContextState.DEPTH_TEST.set(this.copy.depthTest);
-		GLContextState.BLEND.set(this.copy.blend);
-		if(this.copy.srcStates != null) {
-			if(this.copy.all) {
-				GLContextState.blendFunc(this.copy.srcStates[0], this.copy.dstStates[0]);
-			} else {
-				if(this.copy.srcStates.length != this.copy.dstStates.length) {
-					throw new UnsupportedOperationException("blend func lengths are different!");
-				}
-				for(int i = 0; i < this.copy.srcStates.length; i++) {
-					GLContextState.BLEND_STATE_IS[i].set(this.copy.srcStates[i], this.copy.dstStates[i]);
-				}
-			}
+		boolean blend;
+		if(this.copy.isEnabled(GLStateBuilder.BLEND_SET)) {
+			blend = GLContextState.BLEND.set(this.copy.getBoolean(GLStateBuilder.BLEND));
 		} else {
-			GLContextState.blendFunc(GL_ONE, GL_ZERO);
+			blend = GLContextState.BLEND.setToDefault();
+		}
+
+		if(blend) {
+			if(this.copy.isEnabled(GLStateBuilder.BLEND_EQ_SET)) {
+				GLContextState.BLEND_EQUATION.set(this.copy.blendEquation);
+			} else {
+				GLContextState.BLEND_EQUATION.setToDefault();
+			}
+
+			if(this.copy.isEnabled(GLStateBuilder.BLEND_ALL_SET)) {
+				GLContextState.blendFunc(this.copy.blendSrc, this.copy.blendDst);
+			} else {
+				GLContextState.blendFunc(GLContextState.BLEND_ALL_INTERNAL.defaultSrc, GLContextState.BLEND_ALL_INTERNAL.defaultDst);
+			}
+
+			if(this.copy.isEnabled(GLStateBuilder.BLEND_I_SET)) {
+				int[] srcs = this.copy.blendISrc, dsts = this.copy.blendIDst;
+				for(int i = 0; i < Math.max(srcs.length, dsts.length); i++) {
+					int src = i < srcs.length ? srcs[i] : 0;
+					int dst = i < dsts.length ? dsts[i] : 0;
+					GLContextState.BlendStateI state = GLContextState.BLEND_STATE_IS[i];
+					if(src == 0) {
+						src = state.defaultSrc;
+					}
+					if(dst == 0) {
+						dst = state.defaultDst;
+					}
+					state.set(src, dst);
+				}
+			} else {
+				GLContextState.blendFunc(GLContextState.BLEND_ALL_INTERNAL.defaultSrc, GLContextState.BLEND_ALL_INTERNAL.defaultDst);
+			}
+		}
+
+
+		if(this.copy.isEnabled(GLStateBuilder.DEPTH_MASK_SET)) {
+			GLContextState.DEPTH_MASK.set(this.copy.getBoolean(GLStateBuilder.DEPTH_MASK));
+		} else {
+			GLContextState.DEPTH_MASK.setToDefault();
+		}
+
+		boolean depthTest;
+		if(this.copy.isEnabled(GLStateBuilder.DEPTH_TEST_SET)) {
+			depthTest = GLContextState.DEPTH_TEST.set(this.copy.getBoolean(GLStateBuilder.DEPTH_TEST));
+		} else {
+			depthTest = GLContextState.DEPTH_TEST.setToDefault();
+		}
+
+		if(depthTest) {
+			if(this.copy.isEnabled(GLStateBuilder.DEPTH_FUNC_SET)) {
+				GLContextState.DEPTH_FUNC.set(this.copy.depthFunc);
+			} else {
+				GLContextState.DEPTH_FUNC.setToDefault();
+			}
 		}
 	}
 

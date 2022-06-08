@@ -3,7 +3,7 @@ package net.devtech.jerraria.render.internal;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.internal.buffers.VBOBuilder;
 
 class VertexBufferObject {

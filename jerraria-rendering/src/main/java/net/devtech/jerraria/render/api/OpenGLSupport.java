@@ -2,6 +2,9 @@ package net.devtech.jerraria.render.api;
 
 import static org.lwjgl.opengl.GL46.*;
 
+/**
+ * List of supported or unsupported OpenGL features
+ */
 public class OpenGLSupport {
 	public static final int MAJOR_V = glGetInteger(GL_MAJOR_VERSION);
 	public static final int MINOR_V = glGetInteger(GL_MINOR_VERSION);

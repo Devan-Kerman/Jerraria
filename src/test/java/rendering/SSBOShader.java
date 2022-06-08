@@ -6,7 +6,7 @@ import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderBuffer;
 import net.devtech.jerraria.render.api.Struct;
 import net.devtech.jerraria.render.api.VFBuilder;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.V;
 import net.devtech.jerraria.render.api.types.Vec3;

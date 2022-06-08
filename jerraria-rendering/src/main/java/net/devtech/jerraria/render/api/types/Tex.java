@@ -2,9 +2,9 @@ package net.devtech.jerraria.render.api.types;
 
 import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
+import net.devtech.jerraria.render.api.base.ImageFormat;
 import net.devtech.jerraria.render.textures.Texture;
 
 /**
@@ -31,7 +31,7 @@ public class Tex extends AbstractGlValue<End> implements GlValue.Uniform {
 	 * @param name the full path of the uniform in the shader {@link #simple(SimpleType, DataType, String)}
 	 * @param format the format that passed images will come in, this must be identical to the format specified in the
 	 * 	shader (if it is specified). This sets how the image will be interpreted by opengl. There is some "interesting"
-	 * 	(see, painful) mechanisms whereby you can use "compatible" image formats. So there would be a potential
+	 * 	(see: painful) mechanisms whereby you can use "compatible" image formats. So there would be a potential
 	 * 	uses for not statically declaring the image format, however this is so full of holes, and I don't know of any
 	 * 	way to add a validation mechanism, so we'll ignore it.
 	 */

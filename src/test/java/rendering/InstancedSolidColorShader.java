@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.shaders;
+package rendering;
 
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.SCopy;

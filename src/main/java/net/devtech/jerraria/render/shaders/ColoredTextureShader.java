@@ -29,10 +29,14 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	public static final ShaderKey<ColoredTextureShader> MAIN_ATLAS = keyFor(() -> JerrariaClient.MAIN_ATLAS);
 
 	static {
-		INSTANCE.mat.mat(new Matrix3f());
+		INSTANCE.mat.identity();
 	}
 
 	public final Tex texture = this.uni(Tex.tex2d("texture_")); // uniforms
+
+	/**
+	 * Chunk translation matrix
+	 */
 	public final Mat3.x3<?> mat = this.uni(Mat3.mat3("mat_"));
 
 	protected ColoredTextureShader(VFBuilder<End> builder, Object function) {

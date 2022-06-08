@@ -6,6 +6,9 @@ import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.util.Id;
 
+/**
+ * {@link Shader#create(Id, Shader.Copier, Shader.Initializer)} for {@link TranslucentShader}s
+ */
 public interface TranslucencyRenderer {
 	<S extends TranslucentShader<?>> S create(Id id, Copier<S> copier, Initializer<S> initializer);
 

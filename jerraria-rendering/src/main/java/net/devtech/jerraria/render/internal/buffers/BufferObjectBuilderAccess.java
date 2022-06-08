@@ -1,6 +1,6 @@
 package net.devtech.jerraria.render.internal.buffers;
 
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.GlData;
 
 public interface BufferObjectBuilderAccess extends GlData.Buf, GlData.ReadableBuf {
 	BufferObjectBuilderAccess struct(int structIndex);

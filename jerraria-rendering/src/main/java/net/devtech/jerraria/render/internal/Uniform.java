@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
-import net.devtech.jerraria.render.api.basic.ImageFormat;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
+import net.devtech.jerraria.render.api.base.ImageFormat;
 import net.devtech.jerraria.render.internal.state.ProgramDefaultUniformState;
 import org.lwjgl.opengl.GL13;
 
@@ -338,7 +338,6 @@ public abstract class Uniform implements GlData.BufAdapter {
 
 		@Override
 		void alwaysUpload() {
-			// format from id: GL46.glGetIntegeri(GL46.GL_IMAGE_BINDING_FORMAT, imageId)
 			glBindImageTexture(
 				this.imageUnit,
 				this.imageId,

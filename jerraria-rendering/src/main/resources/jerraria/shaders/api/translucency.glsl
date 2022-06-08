@@ -15,3 +15,7 @@ void emit(vec4 color);
 #ifdef DOUBLE_PASS_B
 	#include jerraria:impl/record_dpwb_trans_b
 #endif
+
+#ifdef SOLID
+	#include jerraria:impl/record_solid
+#endif

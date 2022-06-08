@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
-import net.devtech.jerraria.render.api.basic.DataType;
+import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoElementFamily;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.internal.element.Seq;
@@ -43,7 +43,7 @@ public class BareShader implements AutoCloseable {
 	public final UniformData uniforms;
 	public final ReclamationManager manager;
 	@Nullable public final FragmentOutputData outputs;
-	@Nullable public EBO ebo;
+	@Nullable public ElementData ebo;
 	public AutoStrat strategy = AutoStrat.TRIANGLE;
 	public GlIdReference id;
 	int lastCopiedVertex;
@@ -69,7 +69,7 @@ public class BareShader implements AutoCloseable {
 		this.vao = new VertexData(shader.vao, method.preserveVertexData);
 		this.uniforms = new UniformData(shader.uniforms, method.preserveUniforms);
 		if(shader.ebo != null) {
-			this.ebo = new EBO(shader.ebo);
+			this.ebo = new ElementData(shader.ebo);
 		}
 		this.strategy = shader.strategy;
 		this.lastCopiedVertex = shader.lastCopiedVertex;
@@ -232,9 +232,9 @@ public class BareShader implements AutoCloseable {
 			if(this.ebo == null) {
 				int elements = current.elementsForVertexData(count);
 				if(elements != 0) {
-					this.ebo = new EBO(family.forCount(count), elements);
+					this.ebo = new ElementData(family.forCount(count), elements);
 				} else {
-					this.ebo = new EBO();
+					this.ebo = new ElementData();
 				}
 			} else {
 				int len = current.elementsForVertexData(count - this.lastCopiedVertex);

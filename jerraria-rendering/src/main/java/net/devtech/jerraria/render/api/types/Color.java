@@ -2,8 +2,8 @@ package net.devtech.jerraria.render.api.types;
 
 import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
-import net.devtech.jerraria.render.api.basic.DataType;
-import net.devtech.jerraria.render.api.basic.GlData;
+import net.devtech.jerraria.render.api.base.DataType;
+import net.devtech.jerraria.render.api.base.GlData;
 
 /**
  * A packed RGB or ARGB color that is sent to the GPU as an int for efficiency.
@@ -55,6 +55,10 @@ public abstract class Color<N extends GlValue<?>> extends AbstractGlValue<N> imp
 		public N rgb(int rgb) {
 			return this.rgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
 		}
+
+		public N rgbf(float r, float g, float b) {
+			return this.rgb((int)(r*255), (int)(g*255), (int)(b*255));
+		}
 	}
 
 	public static class ARGB<N extends GlValue<?>> extends Color<N> {
@@ -63,12 +67,17 @@ public abstract class Color<N extends GlValue<?>> extends AbstractGlValue<N> imp
 		}
 
 		public N argb(int a, int r, int g, int b) {
+			// OpenGL wants RGBA, ARGB is better, so we flip the order in implementation
 			this.data.element(this.element).b((byte) r).b((byte) g).b((byte) b).b((byte) a);
 			return this.getNext();
 		}
 
 		public N argb(int rgb) {
 			return this.argb((rgb >> 24) & 0xFF, (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+		}
+
+		public N argbf(float a, float r, float g, float b) {
+			return this.argb((int) (a*255), (int)(r*255), (int)(g*255), (int)(b*255));
 		}
 	}
 }
