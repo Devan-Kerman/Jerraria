@@ -530,7 +530,7 @@ public class UniformData extends GlData {
 					glMemoryBarrier(GL46.GL_ATOMIC_COUNTER_BARRIER_BIT);
 					membar = false;
 				}
-				group.buffer().loadFeedback();
+				group.manager.buffer.loadFeedback();
 			}
 		}
 	}

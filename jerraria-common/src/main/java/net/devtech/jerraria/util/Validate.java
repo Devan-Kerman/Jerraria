@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class Validate {
 	public static final String PROPERTIES_FILE_EXTENSION = "prop";
+	public static final boolean IN_DEV = Boolean.getBoolean("jerraria.dev");
 
 	public static void void_(Object object) {}
 

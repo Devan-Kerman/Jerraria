@@ -1,9 +1,10 @@
 package net.devtech.jerraria.render.internal.renderhandler.translucent;
 
-import static org.lwjgl.opengl.GL11.GL_ALWAYS;
 import static org.lwjgl.opengl.GL11.GL_COLOR;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL30.glClearBufferfv;
 import static org.lwjgl.opengl.GL33.GL_R32F;
 import static org.lwjgl.opengl.GL33.GL_RGBA32F;
@@ -35,29 +36,17 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderer {
 		1,
 		1
 	};
+
 	static final BuiltGlState RESOLVE_STATE = GLStateBuilder
 		.builder()
-		.depthFunc(GL_ALWAYS)
 		.depthMask(false)
+		.depthTest(false)
 		.blend(true)
 		.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 		.build();
 
 	int revealage; // doesn't need to get cleared
 	int accum;
-
-	private static int allocTranslucencyBuffer(int width, int height, int storageType) {
-		int tex = glGenTextures();
-		int type = DataType.TEXTURE_2D.elementType;
-		glBindTexture(type, tex);
-		glTexStorage2D(type, 1, storageType, width, height);
-		return tex;
-	}
-
-	@Override
-	protected TranslucentShaderType type() {
-		return TranslucentShaderType.SINGLE_PASS;
-	}
 
 	@Override
 	public void renderResolve() throws Exception {
@@ -83,9 +72,29 @@ public class WeightedTranslucentRenderer extends AbstractTranslucencyRenderer {
 	}
 
 	@Override
-	public void frameSize(int width, int height) { // todo dealloc
+	public void frameSize(int width, int height) {
+		if(this.revealage != 0) {
+			glDeleteTextures(this.revealage);
+		}
+		if(this.accum != 0) {
+			glDeleteTextures(this.accum);
+		}
+
 		this.revealage = allocTranslucencyBuffer(width, height, GL_R32F); // doesn't need to get cleared
 		this.accum = allocTranslucencyBuffer(width, height, GL_RGBA32F);
+	}
+
+	private static int allocTranslucencyBuffer(int width, int height, int storageType) {
+		int tex = glGenTextures();
+		int type = DataType.TEXTURE_2D.elementType;
+		glBindTexture(type, tex);
+		glTexStorage2D(type, 1, storageType, width, height);
+		return tex;
+	}
+
+	@Override
+	protected TranslucentShaderType type() {
+		return TranslucentShaderType.SINGLE_PASS;
 	}
 
 	protected void initialize(TranslucentShader<?> lucent) {

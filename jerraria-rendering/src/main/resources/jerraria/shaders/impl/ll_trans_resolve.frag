@@ -6,8 +6,6 @@
 #define MAX_SORT 10
 #endif
 
-layout (early_fragment_tests) in;
-
 layout(rgba32ui) uniform readonly coherent uimageBuffer translucencyBuffer;
 layout(r32ui) uniform readonly coherent uimage2D imgListHead;
 uniform vec2 screenSpace;
@@ -78,10 +76,9 @@ void main() {
 	// load first K colors, maybe we should only load the first K high alpha numbers?
 	int sorted = 0;
 	while ((idx != 0) && sorted < MAX_SORT) {
-		// todo automix small translucency?
 		uvec4 translucency = imageLoad(translucencyBuffer, int(idx));
 		fragments[sorted++] = translucency.rg;
-		idx = translucency.a;
+		idx = translucency.b;
 	}
 
 	// the paper says to do a preliminary sort, dunno why
@@ -94,7 +91,7 @@ void main() {
 		uvec4 translucency = imageLoad(translucencyBuffer, int(idx));
 		vec4 blend = insert(fragments, translucency.rg);
 		color = blend * blend.a + color * (1-color.a);
-		idx = translucency.a;
+		idx = translucency.b;
 	}
 
 	// sorted blending

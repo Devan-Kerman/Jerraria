@@ -34,7 +34,6 @@ import org.lwjgl.opengl.GL20;
  * Un-abstracted view of a "shader object" (think VAO or UBO) thing. The shader object has its own VAO and its own UBO.
  */
 public class BareShader implements AutoCloseable {
-	public static final boolean IN_DEV = Boolean.getBoolean("jerraria.dev");
 	public static final Cleaner GL_CLEANUP = Cleaner.create();
 	public final AtomicInteger uniqueIdCounter;
 	public final int uniqueId;
@@ -81,7 +80,7 @@ public class BareShader implements AutoCloseable {
 		this.uniqueIdCounter = shader.uniqueIdCounter;
 		this.uniqueId = this.uniqueIdCounter.getAndIncrement();
 
-		StackTraceElement[] init = IN_DEV ? new Throwable().getStackTrace() : null;
+		StackTraceElement[] init = Validate.IN_DEV ? new Throwable().getStackTrace() : null;
 		ReclamationManager manager = new ReclamationManager(init);
 		this.manager = manager;
 		GL_CLEANUP.register(this, manager);

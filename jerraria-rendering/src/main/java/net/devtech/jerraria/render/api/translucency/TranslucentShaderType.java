@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.api.translucency;
 
+import static org.lwjgl.opengl.GL11.GL_LESS;
 import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
 import static org.lwjgl.opengl.GL42.GL_ONE;
 import static org.lwjgl.opengl.GL42.GL_ONE_MINUS_SRC_ALPHA;

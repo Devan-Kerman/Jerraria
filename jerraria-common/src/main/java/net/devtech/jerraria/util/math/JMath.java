@@ -29,6 +29,10 @@ public class JMath {
 		return (int) v;
 	}
 
+	public static void main(String[] args) {
+		System.out.println();
+	}
+
 	public static int log2(int in) {
 		if(in < 0) {
 			throw new IllegalArgumentException("in cannot be less than 0!");

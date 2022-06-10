@@ -5,7 +5,7 @@ import java.util.Arrays;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
 public final class GLStateBuilder implements BuiltGlState {
-	public static final int DEPTH_TEST_SET = 0b1, DEPTH_FUNC_SET = 0b100000, DEPTH_MASK_SET = 0b100000, FACE_CULLING_SET = 0b1000000;
+	public static final int DEPTH_TEST_SET = 0b1, DEPTH_FUNC_SET = 0b1000000, DEPTH_MASK_SET = 0b100000, FACE_CULLING_SET = 0b10000000;
 	public static final int BLEND_SET = 0b10, BLEND_ALL_SET = 0b100, BLEND_EQ_SET = 0b1000, BLEND_I_SET = 0b10000;
 
 	public static final int DEPTH_TEST = 0b1, DEPTH_MASK = 0b10, BLEND = 0b100, FACE_CULLING = 0b1000;

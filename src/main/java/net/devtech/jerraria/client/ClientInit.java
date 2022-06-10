@@ -1,7 +1,6 @@
 package net.devtech.jerraria.client;
 
-import static org.lwjgl.opengl.GL11C.GL_ALWAYS;
-import static org.lwjgl.opengl.GL11C.GL_LESS;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,23 +13,24 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
-import net.devtech.jerraria.render.api.GLStateBuilder;
-import net.devtech.jerraria.render.api.impl.RenderingEnvironmentInternal;
-import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.textures.Textures;
-import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.internal.ShaderManager;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.resource.VirtualFile;
-import net.devtech.jerraria.util.collect.RandomCollection;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.collect.RandomCollection;
+import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL21;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryUtil;
 
 class ClientInit {
@@ -43,6 +43,11 @@ class ClientInit {
 	static int[] dims = {800, 600};
 
 	static boolean init(VirtualFile.Directory directory) {
+		if(Validate.IN_DEV) {
+			Configuration.DEBUG_STREAM.set(System.out);
+			Configuration.DEBUG.set(true);
+		}
+
 		// handled by static block
 		titleTextCollection = readSplashText(directory, "boot/title.txt");
 		String title = titleTextCollection.next();
@@ -51,6 +56,12 @@ class ClientInit {
 
 		int[][] maxGlVersions = {{4, 6, 0}, {3, 3, 3}};
 		long window = MemoryUtil.NULL;
+
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
+		if(Validate.IN_DEV) {
+			GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
+		}
+
 		outer:
 		for(int[] version : maxGlVersions) {
 			int major = version[0];
@@ -58,7 +69,6 @@ class ClientInit {
 			int minMinor = version[2];
 			for(int minor = version[1]; minor >= minMinor; minor--) {
 				GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, minor);
-				GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
 				window = GLFW.glfwCreateWindow(800, 600, title, MemoryUtil.NULL, MemoryUtil.NULL);
 				if(window != MemoryUtil.NULL) {
 					System.out.println("Using OpenGL " + major + "." + minor);
@@ -76,15 +86,21 @@ class ClientInit {
 		GLFW.glfwSwapInterval(1);
 		GLFW.glfwShowWindow(window);
 		GL.createCapabilities();
+		if(Validate.IN_DEV) {
+			GLUtil.setupDebugMessageCallback(System.out);
+		}
 
 		maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
 
 		// todo save viewport size
 
-		GL11.glViewport(0, 0, 800, 600);
 		GLFW.glfwSetFramebufferSizeCallback(window, ($, width, height) -> {
+			GLContextState.DEPTH_MASK.set(true); // this is needed trust me
+			GLContextState.DEPTH_TEST.set(true);
+			GLContextState.bindDefaultFrameBuffer();
 			GL11.glViewport(0, 0, width, height);
 			ClientInit.dims = new int[]{width, height};
+			RenderThread.RESIZE.get().onResize(width, height);
 		});
 
 		ShaderManager.FRAG_SOURCES.add((process, shaderId) -> Pair.of(process, findShaderSource(directory, shaderId, ".frag")));
@@ -133,7 +149,7 @@ class ClientInit {
 		boolean exit;
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GLContextState.bindDefaultFrameBuffer();
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			GL11.glClear(GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			Matrix3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.draw();

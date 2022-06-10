@@ -33,4 +33,13 @@ public class SolidColorShader extends Shader<Color.ARGB<Vec3.F<End>>> {
 		this.vert().argb(rgb).vec3f(mat, x+width, y, depth);
 		this.vert().argb(rgb).vec3f(mat, x, y+height, depth);
 	}
+
+	public void square(Matrix3f mat, float offX, float offY, float width, float height, float z, int argb) {
+		this.vert().argb(argb).vec3f(mat, offX, offY, z);
+		this.vert().argb(argb).vec3f(mat, offX, offY + height, z);
+		this.vert().argb(argb).vec3f(mat, offX + width, offY, z);
+		this.vert().argb(argb).vec3f(mat, offX + width, offY + height, z);
+		this.vert().argb(argb).vec3f(mat, offX, offY + height, z);
+		this.vert().argb(argb).vec3f(mat, offX + width, offY, z);
+	}
 }

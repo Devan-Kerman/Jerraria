@@ -11,36 +11,48 @@ import net.devtech.jerraria.render.shaders.LLTransResolveShader;
 import net.devtech.jerraria.util.math.JMath;
 
 public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer {
-	int clearingFramebuffer = glGenFramebuffers();
-	int translucencyBufferTex, translucencyBuffer;
-	int imageListHead;
+	final int clearingFramebuffer = glGenFramebuffers();
+	int bufferTex;
+	int buffer;
+	int headTex;
+	long bufferSize;
 
-	@Override
-	protected TranslucentShaderType type() {
-		return TranslucentShaderType.LINKED_LIST;
+	public LinkedListTranslucentRenderer() {
 	}
 
 	@Override
 	public void renderResolve() throws Exception {
 		GLContextState.bindFrameBuffer(this.clearingFramebuffer);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.imageListHead, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.headTex, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GLContextState.bindDefaultFrameBuffer();
 
 		long counter = 0L;
 		for(RenderCall call : this.renderQueue) {
 			TranslucentShader<?> shader = (TranslucentShader<?>) call.shader();
 			shader.linkedListUniforms.counter.ui(counter);
-			shader.linkedListUniforms.translucencyBuffer.tex(this.translucencyBufferTex);
-			shader.linkedListUniforms.imgListHead.tex(this.imageListHead);
+			shader.linkedListUniforms.translucencyBuffer.tex(this.bufferTex);
+			shader.linkedListUniforms.imgListHead.tex(this.headTex);
 			call.exec().accept(shader);
 			counter = shader.linkedListUniforms.counter.readUnsignedInteger();
+		}
+
+		if(counter >= this.bufferSize) {
+			if(this.bufferTex != 0) {
+				glDeleteTextures(this.bufferTex);
+				glDeleteBuffers(this.buffer);
+			}
+			this.bufferTex = glGenTextures();
+			this.buffer = glGenBuffers();
+			int newSize = (int) Math.min(counter*16+1024, Integer.MAX_VALUE);
+			this.allocateTranslucencyBuffer(JMath.nearestPowerOf2(newSize) & 0xFFFFFFFFL);
 		}
 
 		this.clearRenderQueue();
 
 		LLTransResolveShader shader = LLTransResolveShader.INSTANCE;
-		shader.translucencyBuffer.tex(this.translucencyBufferTex);
-		shader.imgListHead.tex(this.imageListHead);
+		shader.translucencyBuffer.tex(this.bufferTex);
+		shader.imgListHead.tex(this.headTex);
 
 		shader.strategy(AutoStrat.QUADS);
 		shader.vert().vec3f(0, 0, 0);
@@ -50,35 +62,41 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer 
 		shader.draw(WeightedTranslucentRenderer.RESOLVE_STATE);
 	}
 
+
+
 	@Override
-	public void frameSize(int width, int height) { // todo dealloc
-		if(this.translucencyBufferTex != 0) {
-			glDeleteTextures(this.translucencyBufferTex);
-			glDeleteTextures(this.imageListHead);
-			glDeleteBuffers(this.translucencyBuffer);
+	public void frameSize(int width, int height) {
+		if(this.bufferTex != 0) {
+			glDeleteTextures(this.bufferTex);
+			glDeleteBuffers(this.buffer);
+			glDeleteTextures(this.headTex);
 		}
-		this.allocateTranslucencyBuffer(width, height, 16); // doesn't need to get cleared
-		this.allocateImageListHead(width + 2, height + 2);
+		this.bufferTex = glGenTextures();
+		this.buffer = glGenBuffers();
+		this.headTex = glGenTextures();
+		this.allocateTranslucencyBuffer(JMath.nearestPowerOf2(width * height * 16) & 0xFFFFFFFFL); // doesn't need to get cleared
+		this.allocateImageListHead(width, height);
 	}
 
-	private void allocateTranslucencyBuffer(int width, int height, int K) {
-		int tex = glGenTextures();
-		int buf = glGenBuffers();
+	@Override
+	protected TranslucentShaderType type() {
+		return TranslucentShaderType.LINKED_LIST;
+	}
+
+
+	private void allocateTranslucencyBuffer(long count) {
+		int buf = this.buffer;
 		int type = DataType.UINT_IMAGE_BUFFER.elementType;
 		glBindBuffer(type, buf);
-		int size = JMath.nearestPowerOf2(width * height * K * 16);
-		glBufferData(type, size, GL_STATIC_DRAW);
-		glBindTexture(type, tex);
+		glBufferData(type, count, GL_STATIC_DRAW);
+		glBindTexture(type, this.bufferTex);
 		glTexBuffer(type, GL_RGBA32UI, buf);
-		this.translucencyBufferTex = tex;
-		this.translucencyBuffer = buf;
+		this.bufferSize = count;
 	}
 
 	private void allocateImageListHead(int width, int height) {
-		int tex = glGenTextures();
 		int type = DataType.UINT_IMAGE_2D.elementType;
-		glBindTexture(type, tex);
+		glBindTexture(type, this.headTex);
 		glTexStorage2D(type, 1, GL_R32UI, width, height);
-		this.imageListHead = tex;
 	}
 }

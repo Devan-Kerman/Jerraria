@@ -79,7 +79,7 @@ record BuiltGlStateImpl(GLStateBuilder state) implements BuiltGlState {
 		}
 
 		if(builder.isEnabled(FACE_CULLING_SET)) {
-			GLContextState.FACE_CULLING.set(builder.getBoolean(FACE_CULLING_SET));
+			GLContextState.FACE_CULLING.set(builder.getBoolean(FACE_CULLING));
 		} else {
 			GLContextState.FACE_CULLING.setToDefault();
 		}

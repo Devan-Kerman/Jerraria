@@ -1,24 +1,34 @@
 package net.devtech.jerraria.client;
 
-import static org.lwjgl.opengl.GL11C.GL_LESS;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Executor;
 
-import net.devtech.jerraria.render.api.GLStateBuilder;
-import net.devtech.jerraria.render.api.GlStateStack;
-import net.devtech.jerraria.render.internal.BareShader;
+import net.devtech.jerraria.access.Access;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.util.Validate;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GL46;
 
 public class RenderThread {
 	private static final List<Runnable> RENDER_QUEUE = new Vector<>();
 	private static final Set<RenderStage> STAGES = new ConcurrentSkipListSet<>(Comparator.comparingInt(r -> r.id));
+	public static final Executor EXECUTOR = RenderThread::queueRenderTask;
+	public static final Access<ResizeListener> RESIZE = Access.create(array -> (width, height) -> {
+		for(ResizeListener listener : array) {
+			listener.onResize(width, height);
+		}
+	});
+
+	public interface ResizeListener {
+		void onResize(int width, int height);
+	}
 
 	public static void queueRenderTask(Runnable task) {
 		RENDER_QUEUE.add(task);
@@ -35,8 +45,7 @@ public class RenderThread {
 	static void startRender() {
 		while(!GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) {
 			GLContextState.bindDefaultFrameBuffer();
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			GLFW.glfwPollEvents();
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_STENCIL_BUFFER_BIT);
 
 			long src = System.currentTimeMillis();
 			for(Atlas value : Atlas.getAtlases().values()) {
@@ -45,15 +54,16 @@ public class RenderThread {
 
 			for(RenderStage stage : STAGES) {
 				stage.runnable.run();
-				// todo error handling screen
 			}
 
 			for(int i = RENDER_QUEUE.size() - 1; i >= 0; i--) {
 				RENDER_QUEUE.remove(i).run();
 			}
-			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 
-			if(BareShader.IN_DEV) {
+			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
+			GLFW.glfwPollEvents();
+
+			if(Validate.IN_DEV) {
 				System.gc();
 			}
 		}
@@ -62,7 +72,10 @@ public class RenderThread {
 	record RenderStage(int id, Runnable runnable) {
 		@Override
 		public boolean equals(Object o) {
-			return this == o || o instanceof RenderStage render && this.runnable.equals(render.runnable);
+			if(this == o) {
+				return true;
+			}
+			return o instanceof RenderStage render && this.runnable.equals(render.runnable);
 		}
 
 		@Override

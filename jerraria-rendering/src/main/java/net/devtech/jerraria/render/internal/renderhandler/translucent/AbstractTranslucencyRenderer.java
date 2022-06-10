@@ -24,6 +24,10 @@ public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler i
 	public record RenderCall(Shader<?> shader, Consumer<Shader<?>> exec) {}
 
 	public AbstractTranslucencyRenderer() {
+		this.initialSize();
+	}
+
+	protected void initialSize() {
 		int[] dims = new int[4];
 		glGetIntegerv(GL_VIEWPORT, dims);
 		int width = dims[2], height = dims[3];

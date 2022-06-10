@@ -11,6 +11,7 @@ import net.devtech.jerraria.util.math.JMath;
 import org.lwjgl.opengl.GL46;
 
 public final class GLContextState {
+	public static final boolean FORCE = false;
 	private static final int[][] BUFFER_ARRAYS;
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
@@ -34,7 +35,7 @@ public final class GLContextState {
 	public static void bindFrameBuffer(int frameBufferId) {
 		boolean read = readFBO != frameBufferId;
 		boolean write = writeFBO != frameBufferId;
-		if(read && write) {
+		if(FORCE || (read && write)) {
 			glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 			writeFBO = readFBO = frameBufferId;
 		} else if(read) {
@@ -47,28 +48,28 @@ public final class GLContextState {
 	}
 
 	public static void bindDrawFBO(int frameBufferId) {
-		if(writeFBO != frameBufferId) {
+		if(FORCE || writeFBO != frameBufferId) {
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferId);
 			writeFBO = frameBufferId;
 		}
 	}
 
 	public static void bindReadFBO(int frameBufferId) {
-		if(readFBO != frameBufferId) {
+		if(FORCE || readFBO != frameBufferId) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBufferId);
 			readFBO = frameBufferId;
 		}
 	}
 
 	public static void bindProgram(int programId) {
-		if(currentGlId != programId) {
+		if(FORCE || currentGlId != programId) {
 			glUseProgram(programId);
 			currentGlId = programId;
 		}
 	}
 
 	public static void bindVAO(int vaoId) {
-		if(currentVAO != vaoId) {
+		if(FORCE || currentVAO != vaoId) {
 			glBindVertexArray(vaoId);
 			currentVAO = vaoId;
 		}
@@ -94,7 +95,7 @@ public final class GLContextState {
 			}
 		}
 
-		if(diff) {
+		if(FORCE || diff) {
 			glBlendFunc(src, dst);
 		}
 	}
@@ -137,7 +138,7 @@ public final class GLContextState {
 
 		public void set(int id) {
 			int current = this.state;
-			if(current != id) {
+			if(FORCE|| current != id) {
 				this.binder.accept(id);
 				this.state = id;
 			}
@@ -176,7 +177,7 @@ public final class GLContextState {
 
 		public void set(boolean value) {
 			boolean current = this.state;
-			if(current != value) {
+			if(FORCE || current != value) {
 				this.binder.accept(value);
 				this.state = value;
 			}
@@ -214,7 +215,7 @@ public final class GLContextState {
 		}
 
 		public boolean set(boolean enable) {
-			if(this.state ^ enable) {
+			if(FORCE || this.state ^ enable) {
 				if(enable) {
 					glEnable(this.type);
 				} else {
@@ -257,7 +258,7 @@ public final class GLContextState {
 		}
 
 		public void set(int src, int dst) {
-			if(this.src != src || this.dst != dst) {
+			if(FORCE || this.src != src || this.dst != dst) {
 				glBlendFunci(this.index, src, dst);
 				this.src = src;
 				this.dst = dst;
@@ -289,7 +290,7 @@ public final class GLContextState {
 		public void bindBufferRange(int index, int bufferId, int offset, int byteLength) {
 			long ubid = JMath.combineInts(offset ^ 0b101010101, bufferId); // prevent offset 0 and index-less bind from conflicting
 			long current = this.ids[index];
-			if(current != ubid || this.generic != ubid) {
+			if(FORCE || current != ubid || this.generic != ubid) {
 				glBindBufferRange(
 					this.type,
 					index,
@@ -307,7 +308,7 @@ public final class GLContextState {
 		 */
 		public void bindBufferBase(int index, int bufferId) {
 			long current = this.ids[index];
-			if(current != bufferId || this.generic != bufferId) {
+			if(FORCE || current != bufferId || this.generic != bufferId) {
 				glBindBufferBase(this.type, index, bufferId);
 				this.ids[index] = bufferId;
 				this.generic = bufferId;
@@ -315,7 +316,7 @@ public final class GLContextState {
 		}
 
 		public void bindBuffer(int bufferId) {
-			if(this.generic != bufferId) {
+			if(FORCE || this.generic != bufferId) {
 				glBindBuffer(this.type, bufferId);
 				this.generic = bufferId;
 			}

@@ -48,7 +48,6 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 		this.structIntervals = buffer.structIntervals;
 		this.structLen = buffer.structLen;
 		this.structsStart = buffer.structsStart;
-		this.glId = buffer.glId;
 		this.structIndex = buffer.structIndex;
 		this.maxPos.set(copyCount);
 		if(copyCount != 0) {
@@ -192,7 +191,6 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 		}
 		this.buffer.clear();
 		this.buffer.limit(Math.min(this.bufferObjectLen, this.buffer.capacity()));
-		glMemoryBarrier(-1);
 		glGetBufferSubData(this.bindTarget(), 0, this.buffer);
 		this.buffer.clear();
 	}
