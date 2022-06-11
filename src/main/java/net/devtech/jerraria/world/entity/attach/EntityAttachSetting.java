@@ -8,7 +8,7 @@ import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityAttachSetting extends AttachmentSetting.HasConcurrent {
+public interface EntityAttachSetting extends AttachmentSetting {
 
 	static <T, N> Serializer<Entity, T, N> serializer(Id uniqueName, JCType<T, N> type) {
 		return serializer(uniqueName, type, false);

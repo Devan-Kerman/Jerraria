@@ -1,26 +1,46 @@
 package net.devtech.jerraria.attachment;
 
+import java.lang.invoke.VarHandle;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import net.devtech.jerraria.attachment.impl.ArrayAttachmentProvider;
+import net.devtech.jerraria.attachment.impl.ConcurrentAttachmentProvider;
 
 public interface AttachmentProvider<O, B extends AttachmentSetting> {
-	static <E, B extends AttachmentSetting> AttachmentProvider<E, B> simple(Function<E, Object[]> arrayGetter, BiConsumer<E, Object[]> arraySetter) {
-		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter, false);
+	static <E, B extends AttachmentSetting> AttachmentProvider<E, B> simple(
+		Function<E, Object[]> arrayGetter,
+		BiConsumer<E, Object[]> arraySetter) {
+		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter);
 	}
 
 	/**
-	 * Creates an attachment provider that can be accessed from multiple threads. This however does not allow for CAS
-	 * operations on attached data. For that your AttachmentSetting generic must implement {@link
-	 * AttachmentSetting.HasConcurrent} and your attachment must have {@link AttachmentSetting.Concurrency#VOLATILE}.
+	 * Creates an attachment provider that can be accessed from multiple threads.
 	 * <br>
 	 * <b>The array field must be marked `volatile`!</b>
 	 */
-	static <E, B extends AttachmentSetting> AttachmentProvider<E, B> concurrent(Function<E, Object[]> arrayGetter, BiConsumer<E, Object[]> arraySetter) {
-		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter, true);
+	static <E, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic(
+		Function<E, Object[]> getVolatile,
+		CompareAndSet<E> compareAndSet) {
+		return new ConcurrentAttachmentProvider<>(getVolatile, compareAndSet);
+	}
+
+	/**
+	 * This method is similar to {@link #atomic(Function, CompareAndSet)} however it <b>may</b> be slower as the jvm might have a harder time inlining it
+	 * @param handle the varhandle of an Object[] field in E
+	 */
+	static <E, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic(VarHandle handle) {
+		return new ConcurrentAttachmentProvider<>(handle);
+	}
+
+	interface CompareAndSet<E> {
+		boolean compareAndSet(E obj, Object[] expected, Object[] set);
+	}
+
+	interface Atomic<O, B extends AttachmentSetting> extends AttachmentProvider<O, B> {
+		<T> Attachment.Atomic<O, T> registerAtomicAttachment(B... behavior);
 	}
 
 	<T> Attachment<O, T> registerAttachment(B... behavior);

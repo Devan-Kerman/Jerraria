@@ -1,14 +1,28 @@
 package net.devtech.jerraria.world.entity;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
+import net.devtech.jerraria.attachment.Attachment;
 import net.devtech.jerraria.attachment.AttachmentProvider;
+import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerraria.Items;
+import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
+import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.func.TSupplier;
 import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.util.math.Pos2d;
 import net.devtech.jerraria.util.math.Vec2d;
@@ -20,8 +34,36 @@ import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class Entity implements Pos2d {
-	public static final AttachmentProvider<Entity, EntityAttachSetting> PROVIDER =
-		AttachmentProvider.concurrent(e -> e.attachedData, (e, o) -> e.attachedData = o);
+	public static final VarHandle HANDLE = TSupplier.of(() -> MethodHandles.lookup().findVarHandle(Entity.class, "attachedData", Object[].class)).get();
+	public static final AttachmentProvider.Atomic<Entity, EntityAttachSetting> PROVIDER = AttachmentProvider.atomic(e -> (Object[]) HANDLE.getVolatile(e), HANDLE::compareAndSet);
+	// stores all attachment data, each attachment has an id, which is an index in this array
+	// if u want to have per-entity-type attachment, eg. one for player only data and one for item entity only data
+	// you could do a map, but that makes concurrency a bit more difficult, and it's a bit slower if you don't want to use ConcurrentMap
+	// an interesting middle ground would be a ConcurrentMap per entity-type that stores custom indexes to allow easy per-entity-type attachment
+	Object[] attachedData;
+	public static final Attachment.Atomic<Entity, Integer> TIME = PROVIDER.registerAtomicAttachment(
+		EntityAttachSetting.serializer(Id.create("jerraria", "time"), NativeJCType.INT),
+		EntityAttachSetting.PlayerDeath.COPY_IF_KEEP_INVENTORY
+	);
+
+	public static Object incrementTime(Entity entity) {
+		return TIME.strongGetOrDefaultAndUpdate(entity, 0, v -> v+1);
+	}
+
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		ExecutorService executor = Executors.newFixedThreadPool(16);
+		Collection<Callable<Object>> futures = new ArrayList<>();
+		Entity entity = new PlayerEntity(null);
+		for(int i = 0; i < 16384; i++) {
+			futures.add(() -> incrementTime(entity));
+		}
+		System.out.println("Yes");
+		for(Future<Object> future : executor.invokeAll(futures)) {
+			future.get();
+		}
+		System.out.println(executor.shutdownNow());
+		System.out.println(TIME.getValue(entity));
+	}
 
 	/**
 	 * this states the entity does not belong to a chunk
@@ -33,7 +75,7 @@ public abstract class Entity implements Pos2d {
 	}
 
 	int oldChunkX = HOBO_CHUNK_POS, oldChunkY, oldWorldId;
-	volatile Object[] attachedData;
+
 	Type<?> type;
 	double x, y;
 	World world;
