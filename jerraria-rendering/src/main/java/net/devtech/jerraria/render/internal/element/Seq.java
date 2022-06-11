@@ -44,8 +44,8 @@ public final class Seq extends ShapeStrat {
 	}
 
 	@Override
-	void ensureCapacity0(int vertices) {
-		for(int i = this.builder.getElementCount(); i < vertices; i++) {
+	void ensureCapacity0(int elements) {
+		for(int i = this.builder.getElementCount(); i < elements; i++) {
 			this.inserter.insert(this.builder.vert(), i);
 		}
 	}

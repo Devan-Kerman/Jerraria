@@ -6,6 +6,7 @@ import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
+import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Mat3;
@@ -63,12 +64,10 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	}
 
 	public ColoredTextureShader square(Matrix3f mat, Texture texture, float offX, float offY, float width, float height, int color) {
+		this.strategy(AutoStrat.QUADS);
 		this.vert().vec3f(mat, offX, offY, 1).uv(texture, 0, 0).argb(color);
 		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).argb(color);
-		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).argb(color);
-
 		this.vert().vec3f(mat, offX + width, offY + height, 1).uv(texture, 1, 1).argb(color);
-		this.vert().vec3f(mat, offX, offY + height, 1).uv(texture, 0, 1).argb(color);
 		this.vert().vec3f(mat, offX + width, offY, 1).uv(texture, 1, 0).argb(color);
 		return this;
 	}

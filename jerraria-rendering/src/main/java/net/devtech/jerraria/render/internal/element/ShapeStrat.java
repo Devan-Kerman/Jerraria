@@ -26,8 +26,8 @@ public abstract class ShapeStrat {
 		this.type = type;
 	}
 
-	public void ensureCapacity(int vertices) {
-		this.ensureCapacity0(vertices);
+	public void ensureCapacity(int elements) {
+		this.ensureCapacity0(elements);
 	}
 
 	public abstract int elementsForVertexData(int count);
@@ -36,7 +36,7 @@ public abstract class ShapeStrat {
 
 	public abstract int minumumVertices(DrawMethod method);
 
-	abstract void ensureCapacity0(int vertices);
+	abstract void ensureCapacity0(int elements);
 
 	public void bind() {
 		this.builder.bind();

@@ -274,9 +274,9 @@ public class BareShader implements AutoCloseable {
 				return this.ebo.currentType;
 			} else {
 				// custom strategy without hotswaps
-				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(this.vao.last
-					.getBuilder()
-					.getVertexCount());
+				int vertexes = this.vao.last.getBuilder().getVertexCount();
+				int elements = this.strategy.elementsForVertexData(vertexes);
+				ShapeStrat strat = ((AutoElementFamily) this.strategy).forCount(elements);
 				strat.bind();
 				return strat.getType();
 			}

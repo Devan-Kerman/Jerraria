@@ -34,9 +34,9 @@ public class LineStrip extends ShapeStrat {
 	}
 
 	@Override
-	void ensureCapacity0(int vertices) {
+	void ensureCapacity0(int elements) {
 		int primitives = this.builder.getElementCount() / 2;
-		for(int i = primitives; i < vertices - 1; i++) {
+		for(int i = primitives; i < elements - 1; i++) {
 			ByteBuffer buffer = this.builder.getBuffer();
 			this.inserter.insert(this.builder.vert(), i);
 			this.inserter.insert(this.builder.vert(), i + 1);

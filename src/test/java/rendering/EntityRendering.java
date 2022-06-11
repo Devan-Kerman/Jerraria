@@ -4,6 +4,7 @@ import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.client.WorldRenderer;
+import net.devtech.jerraria.client.overworld.OverworldWorldRenderer;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.util.math.Matrix3f;
@@ -40,7 +41,7 @@ public class EntityRendering {
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(JerrariaClient.windowHeight() / ((float) JerrariaClient.windowWidth()), 1);
-				WorldRenderer renderer = new WorldRenderer(client);
+				WorldRenderer renderer = new OverworldWorldRenderer(client);
 				renderer.render(mat, player, 256, 256);
 			}, 10);
 			return null;

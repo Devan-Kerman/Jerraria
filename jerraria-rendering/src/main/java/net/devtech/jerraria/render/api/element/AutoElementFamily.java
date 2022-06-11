@@ -49,16 +49,16 @@ public final class AutoElementFamily implements AutoStrat {
 		return this.forceRestart;
 	}
 
-	public ShapeStrat forCount(int count) {
+	public ShapeStrat forCount(int elements) {
 		ShapeStrat strat;
-		if(count > 65536) {
+		if(elements > 65536) {
 			strat = this.int_;
-		} else if(count > 256) {
+		} else if(elements > 256) {
 			strat = this.short_;
 		} else {
 			strat = this.byte_;
 		}
-		strat.ensureCapacity(count);
+		strat.ensureCapacity(elements);
 		return strat;
 	}
 

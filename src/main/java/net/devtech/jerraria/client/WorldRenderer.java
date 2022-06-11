@@ -8,14 +8,14 @@ import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 
-public class WorldRenderer {
+public abstract class WorldRenderer {
 	final ClientWorld world;
 
 	public WorldRenderer(ClientWorld world) {
 		this.world = world;
 	}
 
-	//protected abstract void renderBackground(Matrix3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight);
+	protected abstract void renderBackground(Matrix3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight);
 
 	public void render(Matrix3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
 		Matrix3f rel = cartToAwt.copy().scale(1f/blockScreenWidth, 1f/blockScreenHeight);
@@ -26,13 +26,14 @@ public class WorldRenderer {
 		int fromBlockX = blockX - extendedOffX, fromBlockY = blockY - extendedOffY;
 		int toBlockX   = blockX + extendedOffX,   toBlockY = blockY + extendedOffY;
 
+		Matrix3f chunkMatrix = new Matrix3f();
 		// block coordinate of top left corner
 		double fromBlockXScreen = player.x() - blockScreenWidth / 2f, fromBlockYScreen = player.y() + blockScreenHeight / 2f;
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
 			for(int cy = (fromBlockY >> World.LOG2_CHUNK_SIZE); cy <= (toBlockY >> World.LOG2_CHUNK_SIZE); cy++) {
 				int bx = cx * World.CHUNK_SIZE, topLeftY = World.CHUNK_SIZE + cy * World.CHUNK_SIZE;
 				float offX = (float) (bx - fromBlockXScreen), offY = (float) (fromBlockYScreen - topLeftY);
-				Matrix3f chunkMatrix = rel.copy().offset(offX, offY);
+				chunkMatrix.load(rel).offset(offX, offY);
 				ClientChunk chunk = (ClientChunk) this.world.getChunk(cx, cy);
 				if(chunk != null) {
 					chunk.render(chunkMatrix);
@@ -40,7 +41,7 @@ public class WorldRenderer {
 			}
 		}
 
-		Matrix3f entityMatrix = rel.copy();
+		Matrix3f entityMatrix = new Matrix3f();
 		// multithreaded entity rendering could be a possibility?
 		this.world.entityLayer().getEntitiesIntersect(EntitySearchType.Standard.RENDERING, fromBlockX, fromBlockY, toBlockX, toBlockY, 10).forEach(entity -> {
 			EntityRenderer renderer = entity.getRenderer();
@@ -52,6 +53,5 @@ public class WorldRenderer {
 				extra.renderEntity(entity, entityMatrix, fromBlockX, fromBlockY, toBlockX, toBlockY);
 			}
 		});
-
 	}
 }

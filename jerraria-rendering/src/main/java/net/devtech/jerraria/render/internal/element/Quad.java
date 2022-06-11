@@ -37,13 +37,13 @@ public final class Quad extends ShapeStrat {
 	}
 
 	@Override
-	public void ensureCapacity0(int vertices) {
-		if(vertices > this.maxSize) {
+	public void ensureCapacity0(int elements) {
+		if(elements > this.maxSize) {
 			throw new IllegalStateException("size is too big for quad type!");
 		}
 
 		int primitives = this.builder.getElementCount() / 6;
-		for(int i = primitives; i < JMath.ceilDiv(vertices, 6); i++) {
+		for(int i = primitives; i < JMath.ceilDiv(elements, 6); i++) {
 			this.inserter.insert(this.builder.vert(), i * 4);
 			this.inserter.insert(this.builder.vert(), i * 4 + 1);
 			this.inserter.insert(this.builder.vert(), i * 4 + 2);

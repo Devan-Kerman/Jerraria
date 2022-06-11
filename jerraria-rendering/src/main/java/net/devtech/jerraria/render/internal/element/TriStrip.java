@@ -33,9 +33,9 @@ public class TriStrip extends ShapeStrat {
 	}
 
 	@Override
-	void ensureCapacity0(int vertices) {
+	void ensureCapacity0(int elements) {
 		int primitives = this.builder.getElementCount() / 3;
-		for(int i = primitives; i < vertices - 2; i++) {
+		for(int i = primitives; i < elements - 2; i++) {
 			this.inserter.insert(this.builder.vert(), i);
 			this.inserter.insert(this.builder.vert(), i + 1);
 			this.inserter.insert(this.builder.vert(), i + 2);
