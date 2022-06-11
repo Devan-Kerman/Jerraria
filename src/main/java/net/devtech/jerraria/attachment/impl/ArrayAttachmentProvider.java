@@ -61,11 +61,7 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSetting>
 		@Override
 		public void setValue(E object, T value) {
 			int index = this.index;
-			Object[] arr = ArrayAttachmentProvider.this.arrayGetter.apply(object);
-			if(index >= arr.length) {
-				arr = Arrays.copyOf(arr, index + 1);
-				ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
-			}
+			Object[] arr = ArrayAttachmentProvider.this.getDataArray(object, index);
 			arr[index] = value;
 		}
 
@@ -73,6 +69,18 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSetting>
 		public AttachmentProvider<E, ?> getProvider() {
 			return ArrayAttachmentProvider.this;
 		}
+	}
+
+	private Object[] getDataArray(E object, int index) {
+		Object[] arr = ArrayAttachmentProvider.this.arrayGetter.apply(object);
+		if(arr == null) {
+			arr = new Object[index + 1];
+			ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
+		} else if(index >= arr.length) {
+			arr = Arrays.copyOf(arr, index + 1);
+			ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
+		}
+		return arr;
 	}
 
 	public class CASAttachmentImpl<T> extends AttachmentImpl<T> {
@@ -90,11 +98,7 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSetting>
 			int index = this.index;
 			Object[] arr;
 			do {
-				arr = ArrayAttachmentProvider.this.arrayGetter.apply(object);
-				if(index >= arr.length) {
-					arr = Arrays.copyOf(arr, index + 1);
-					ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
-				}
+				arr = ArrayAttachmentProvider.this.getDataArray(object, index);
 				arr[index] = value;
 			} while(arr != ArrayAttachmentProvider.this.arrayGetter.apply(object));
 		}
@@ -117,12 +121,7 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSetting>
 			int index = this.index;
 			Object[] arr;
 			do {
-				arr = ArrayAttachmentProvider.this.arrayGetter.apply(object);
-				if(index >= arr.length) {
-					arr = Arrays.copyOf(arr, index + 1);
-					ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
-				}
-
+				arr = ArrayAttachmentProvider.this.getDataArray(object, index);
 				ARRAY_ELEMENT_VAR_HANDLE.setVolatile(arr, index, value);
 			} while(arr != ArrayAttachmentProvider.this.arrayGetter.apply(object));
 		}
