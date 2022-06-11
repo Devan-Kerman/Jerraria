@@ -3,6 +3,7 @@ package net.devtech.jerraria.world.entity;
 import java.util.Objects;
 import java.util.function.Function;
 
+import net.devtech.jerraria.attachment.AttachmentProvider;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerraria.Items;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
@@ -13,17 +14,27 @@ import net.devtech.jerraria.util.math.Pos2d;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
+import net.devtech.jerraria.world.entity.attach.EntityAttachmentSettings;
 import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class Entity implements Pos2d {
+	public static final AttachmentProvider<Entity, EntityAttachmentSettings> PROVIDER = AttachmentProvider.concurrent(
+		e -> e.attachedData,
+		(e, o) -> e.attachedData = o
+	);
+
+	static {
+		Objects.requireNonNull(EntityInternal.SERIALIZABLE_ATTACHMENTS); // run static initializer
+	}
+
 	/**
 	 * this states the entity does not belong to a chunk
 	 */
 	public static final int HOBO_CHUNK_POS = Integer.MIN_VALUE;
 	int oldChunkX = HOBO_CHUNK_POS, oldChunkY, oldWorldId;
-
+	volatile Object[] attachedData; // todo saving
 	Type<?> type;
 	double x, y;
 	World world;
@@ -58,15 +69,12 @@ public abstract class Entity implements Pos2d {
 	public EntityRenderer getRenderer() {
 		EntityRenderer renderer = this.renderer;
 		if(renderer == null) {
-			this.renderer = renderer = Objects.requireNonNull(
-				this.createRenderer(),
+			this.renderer = renderer = Objects.requireNonNull(this.createRenderer(),
 				"Cannot have null entity renderer!"
 			);
 		}
 		return renderer;
 	}
-
-
 
 	/**
 	 * @return true if the entity is entirely enclosed by the given bounding box
@@ -128,6 +136,14 @@ public abstract class Entity implements Pos2d {
 		}
 	}
 
+	public int getChunkX() {
+		return this.getBlockX() >> World.LOG2_CHUNK_SIZE;
+	}
+
+	public int getChunkY() {
+		return this.getBlockY() >> World.LOG2_CHUNK_SIZE;
+	}
+
 	protected void remove() {
 		this.world = null;
 		this.oldChunkX = HOBO_CHUNK_POS;
@@ -164,7 +180,7 @@ public abstract class Entity implements Pos2d {
 			this.oldChunkX = cx;
 			this.oldChunkY = cy;
 			this.world = w;
-			this.afterRelocation(world);
+			this.afterRelocation(w);
 		});
 		return true;
 	}
@@ -177,14 +193,6 @@ public abstract class Entity implements Pos2d {
 		this.oldChunkX = chunk.getChunkX();
 		this.oldChunkY = chunk.getChunkY();
 		this.oldWorldId = chunk.getWorld().sessionId();
-	}
-
-	public int getChunkX() {
-		return this.getBlockX() >> World.LOG2_CHUNK_SIZE;
-	}
-
-	public int getChunkY() {
-		return this.getBlockY() >> World.LOG2_CHUNK_SIZE;
 	}
 
 	public interface Deserializer<T> {

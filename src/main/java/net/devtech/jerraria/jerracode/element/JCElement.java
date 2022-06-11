@@ -18,7 +18,7 @@ public interface JCElement<T> {
 		JCIO.write(this.type(), pool, output, this.value());
 	}
 
-	default <C> C castTo(NativeJCType<C> type) {
+	default <C> C as(NativeJCType<C> type) {
 		if(type != this.type()) {
 			throw new IllegalArgumentException("type mismatch " + type + " " + this.type());
 		}

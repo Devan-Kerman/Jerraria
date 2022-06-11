@@ -110,10 +110,10 @@ public abstract class Item {
 	}
 
 	public static Item deserializeItem(JCElement<?> element) {
-		if(element.type() == NativeJCType.POOLED_PACKED_ID) {
-			return Items.REGISTRY.getForId(element.castTo(NativeJCType.POOLED_PACKED_ID)).deserialize(null);
+		if(element.type() == NativeJCType.POOLED_ID) {
+			return Items.REGISTRY.getForId(element.as(NativeJCType.POOLED_ID)).deserialize(null);
 		} else {
-			Pair<Id.Full, JCElement> pair = element.castTo(NativeJCType.ID_ANY);
+			Pair<Id, JCElement> pair = element.as(NativeJCType.ID_ANY);
 			Type<?> id = Items.REGISTRY.getForId(pair.first());
 			return id.deserialize(pair.second());
 		}
@@ -122,11 +122,11 @@ public abstract class Item {
 	public static JCElement<?> serializeItem(Item item) {
 		Type<?> type = (Type<?>) item.getType();
 		JCElement<?> serialize = type.serialize(item);
-		Id.Full id = Items.REGISTRY.getId(type);
+		Id id = Items.REGISTRY.getId(type);
 		if(serialize == null) {
-			return JCElement.create(NativeJCType.POOLED_PACKED_ID, id);
+			return JCElement.create(NativeJCType.POOLED_ID, id);
 		} else {
-			Pair<Id.Full, JCElement> pair = new ObjectObjectImmutablePair<>(id, serialize);
+			Pair<Id, JCElement> pair = new ObjectObjectImmutablePair<>(id, serialize);
 			return JCElement.create(NativeJCType.ID_ANY, pair);
 		}
 	}

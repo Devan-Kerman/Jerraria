@@ -82,21 +82,30 @@ public final class NativeJCType<T> implements JCType<T, T> {
 		});
 	});
 	public static final NativeJCType<List<JCTagView>> TAG_LIST = listType(TAG);
-	public static final NativeJCType<Id.Full> PACKED_ID = new NativeJCType<>((pool, input) -> {
-		return Id.create(input.readLong(), input.readLong());
+	public static final NativeJCType<Id> ID = new NativeJCType<>((pool, input) -> {
+		long name = input.readLong(), path = input.readLong();
+		if(path != -1) {
+			return Id.create(name, path);
+		} else {
+			return Id.partial(name, input.readUTF());
+		}
 	}, (pool, output, value) -> {
 		output.writeLong(value.getPackedNamespace());
-		output.writeLong(value.getPath());
+		long path = value.getPath();
+		output.writeLong(path);
+		if(path == -1) {
+			output.writeUTF(value.path());
+		}
 	});
-	public static final NativeJCType<Id.Full> POOLED_PACKED_ID = pooled(PACKED_ID);
+	public static final NativeJCType<Id> POOLED_ID = pooled(ID);
 	public static final NativeJCType<JCTagView> POOLED_TAG = pooled(TAG);
 	public static final NativeJCType<List<JCTagView>> POOLED_TAG_LIST = listType(POOLED_TAG);
 	public static final NativeJCType<Pair<JCElement, JCElement>> PAIR = NativeJCType.pairType(
 		ANY,
 		ANY,
 		ObjectObjectImmutablePair::new);
-	public static final NativeJCType<Pair<Id.Full, JCElement>> ID_ANY = NativeJCType.pairType(
-		PACKED_ID,
+	public static final NativeJCType<Pair<Id, JCElement>> ID_ANY = NativeJCType.pairType(
+		ID,
 		ANY,
 		ObjectObjectImmutablePair::new);
 	public static final NativeJCType<IntObjectPair<JCElement>> INT_ANY = NativeJCType.pairType(
@@ -108,7 +117,7 @@ public final class NativeJCType<T> implements JCType<T, T> {
 		INT,
 		LONG,
 		IntLongImmutablePair::new);
-	public static final NativeJCType<List<Pair<Id.Full, JCElement>>> ID_ANY_LIST = listType(ID_ANY);
+	public static final NativeJCType<List<Pair<Id, JCElement>>> ID_ANY_LIST = listType(ID_ANY);
 	public static final NativeJCType<List<IntLongPair>> INT_LONG_LIST = listType(INT_LONG);
 	public static final NativeJCType<Vec2d> POS = new NativeJCType<>((pool, input) -> {
 		return new Vec2d(input.readDouble(), input.readDouble());
@@ -118,8 +127,8 @@ public final class NativeJCType<T> implements JCType<T, T> {
 	});
 	static final NativeJCType<SerializedEntity> ENTITY = pairType(POS, ANY, SerializedEntity::new).unregister();
 	static final NativeJCType<List<SerializedEntity>> ENTITIES_OF_SAME_TYPE = listType(ENTITY).unregister();
-	static final NativeJCType<Pair<Id.Full, List<SerializedEntity>>> ENTITY_GROUP = pairType(PACKED_ID, ENTITIES_OF_SAME_TYPE, ObjectObjectImmutablePair::new);
-	public static final NativeJCType<List<Pair<Id.Full, List<SerializedEntity>>>> ENTITIES = listType(ENTITY_GROUP);
+	static final NativeJCType<Pair<Id, List<SerializedEntity>>> ENTITY_GROUP = pairType(ID, ENTITIES_OF_SAME_TYPE, ObjectObjectImmutablePair::new);
+	public static final NativeJCType<List<Pair<Id, List<SerializedEntity>>>> ENTITIES = listType(ENTITY_GROUP);
 	static int idCounter;
 	private final BinDecode<T> decode;
 	private final BinEncode<T> encode;

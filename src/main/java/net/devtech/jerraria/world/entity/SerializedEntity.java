@@ -4,10 +4,10 @@ import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.jerracode.element.JCElement;
 
-public class SerializedEntity implements Pair<Vec2d, JCElement> {
+public class SerializedEntity implements Pair<Vec2d, JCElement<?>> {
 	public final double x;
 	public final double y;
-	public final JCElement data;
+	public final JCElement<?> data;
 
 	public SerializedEntity(double x, double y, JCElement data) {
 		this.x = x;

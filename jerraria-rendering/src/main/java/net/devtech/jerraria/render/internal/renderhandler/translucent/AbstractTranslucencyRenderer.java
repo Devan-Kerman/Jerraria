@@ -70,27 +70,4 @@ public abstract class AbstractTranslucencyRenderer extends OpaqueRenderHandler i
 
 	@Override
 	public void renderStart() {}
-
-	/*public static <S extends TranslucentShader<?>> void drawKeep(TranslucentPass<S> translucent) {
-		BareShader shaderA = translucent.getPrimaryShader().getShader();
-		shaderA.bindProgram();
-		shaderA.drawKeep(translucent.getPrimaryShader().strategy.defaultState);
-		if(translucent.getSecondPass() != null) {
-			BareShader shaderB = translucent.getSecondPass().getShader();
-			translucent.getSecondPass().strategy.defaultState.apply();
-			shaderB.bindProgram();
-			shaderA.drawKeep(translucent.getPrimaryShader().strategy.defaultState);
-		}
-	}
-
-	public static <S extends TranslucentShader<?>> void drawInstancedKeep(TranslucentPass<S> translucent, int instances) {
-		BareShader shaderA = translucent.getPrimaryShader().getShader();
-		shaderA.bindProgram();
-		shaderA.drawInstancedKeep(translucent.getPrimaryShader().strategy.defaultState, instances);
-		if(translucent.getSecondPass() != null) {
-			BareShader shaderB = translucent.getSecondPass().getShader();
-			shaderB.bindProgram();
-			shaderA.drawInstancedKeep(translucent.getSecondPass().strategy.defaultState, instances); // redraw with new shader
-		}
-	}*/
 }

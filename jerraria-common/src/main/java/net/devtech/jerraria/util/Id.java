@@ -49,6 +49,11 @@ public abstract class Id implements Comparable<Id> {
 		return new Full(namespace, path);
 	}
 
+	public static Partial partial(long namespace, String path) {
+		IdentifierPacker.throwErr("<unknown>", namespace);
+		return new Partial(namespace, path);
+	}
+
 	public final long getNamespace() {
 		return this.packedNamespace;
 	}

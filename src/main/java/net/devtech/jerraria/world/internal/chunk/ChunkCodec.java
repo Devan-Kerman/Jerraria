@@ -42,7 +42,7 @@ public class ChunkCodec {
 	public static void populateTiles(TileVariant[] variants, List<JCTagView> tags) {
 		for(int i = 0; i < tags.size(); i++) {
 			JCTagView tag = tags.get(i);
-			Id.Full full = tag.get(RESERVED_ID, NativeJCType.POOLED_PACKED_ID);
+			Id full = tag.get(RESERVED_ID, NativeJCType.POOLED_ID);
 			Tile tile = Tiles.REGISTRY.getForId(full);
 			TileVariant variant = tile.getDefaultVariant();
 			for(var entry : tile.getProperties()) {
@@ -60,7 +60,7 @@ public class ChunkCodec {
 			JCTagView.Builder builder = JCTagView.builder();
 			Tile owner = variant.getOwner();
 			Id.Full id = Tiles.REGISTRY.getId(owner);
-			builder.put(RESERVED_ID, NativeJCType.POOLED_PACKED_ID, id);
+			builder.put(RESERVED_ID, NativeJCType.POOLED_ID, id);
 			for(EnumerableProperty property : owner.getProperties()) {
 				Object value = variant.get(property);
 				JCElement convert = property.convert(value);
@@ -95,10 +95,10 @@ public class ChunkCodec {
 		return tiles;
 	}
 
-	public static Set<Entity> deserializeEntities(World world, List<Pair<Id.Full, List<SerializedEntity>>> entities) {
+	public static Set<Entity> deserializeEntities(World world, List<Pair<Id, List<SerializedEntity>>> entities) {
 		Set<Entity> entitySet = new HashSet<>();
 		for(var ofTypes : entities) {
-			Id.Full id = ofTypes.first();
+			Id id = ofTypes.first();
 			for(SerializedEntity entity : ofTypes.second()) {
 				Entity deserialized = EntityInternal.deserialize(world, id, entity);
 				entitySet.add(deserialized);
@@ -107,16 +107,16 @@ public class ChunkCodec {
 		return entitySet;
 	}
 
-	public static List<Pair<Id.Full, List<SerializedEntity>>> serializeEntities(Iterable<Entity> entities) {
-		ListMultimap<Id.Full, SerializedEntity> map = ArrayListMultimap.create();
+	public static List<Pair<Id, List<SerializedEntity>>> serializeEntities(Iterable<Entity> entities) {
+		ListMultimap<Id, SerializedEntity> map = ArrayListMultimap.create();
 		for(Entity entity : entities) {
 			if(entity.doesSaveInChunk()) {
-				Id.Full id = Entities.REGISTRY.getId(entity.getType());
+				Id id = Entities.REGISTRY.getId(entity.getType());
 				SerializedEntity serialize = EntityInternal.serialize(entity);
 				map.put(id, serialize);
 			}
 		}
-		List<Pair<Id.Full, List<SerializedEntity>>> list = new ArrayList<>();
+		List<Pair<Id, List<SerializedEntity>>> list = new ArrayList<>();
 		for(var entry : asMap(map).entrySet()) {
 			List<SerializedEntity> entityList = entry.getValue();
 			list.add(new ObjectObjectImmutablePair<>(entry.getKey(), entityList));
@@ -124,8 +124,8 @@ public class ChunkCodec {
 		return list;
 	}
 
-	public static List<Pair<Id.Full, JCElement>> serializeTemporaryData(List<UnpositionedTileData> data) {
-		List<Pair<Id.Full, JCElement>> elements = new ArrayList<>(data.size());
+	public static List<Pair<Id, JCElement>> serializeTemporaryData(List<UnpositionedTileData> data) {
+		List<Pair<Id, JCElement>> elements = new ArrayList<>(data.size());
 		for(UnpositionedTileData datum : data) {
 			elements.add(new ObjectObjectImmutablePair<>(
 				UnpositionedTileData.REGISTRY.getId(datum.getType()),
@@ -136,10 +136,10 @@ public class ChunkCodec {
 	}
 
 	// might be more effecient to store this as stack Map<Id, List<JCElement>>
-	public static List<UnpositionedTileData> deserializeTemporaryData(Chunk chunk, List<Pair<Id.Full, JCElement>> elements) {
+	public static List<UnpositionedTileData> deserializeTemporaryData(Chunk chunk, List<Pair<Id, JCElement>> elements) {
 		List<UnpositionedTileData> data = new ArrayList<>();
 		for(var element : elements) {
-			Id.Full id = element.first();
+			Id id = element.first();
 			TemporaryTileData.Type type = UnpositionedTileData.REGISTRY.getForId(id);
 			UnpositionedTileData read = type.read(chunk, element.second());
 			data.add(read);

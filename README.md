@@ -47,7 +47,16 @@ They are all licenced under LGPLv3 in `OSS_MODULE_LICENCE`
    - [x] atlas stitching
    - [x] animated textures
    - [x] type-safe java api
- - [ ] world rendering
+   - [x] atomic counters
+   - [x] SSBOs
+   - [x] UBOs
+   - [x] instanced rendering
+     - [x] struct copying (copy whole structs of data at once)
+   - [x] order independent translucency
+     - [x] linked list (OpenGL 4.3+)
+     - [x] weighted (OpenGL 4.0+)
+     - [x] dual pass weighted (OpenGL 3.3+)
+ - [x] world rendering
  - [ ] gui api
  - [x] loading screen
  - [ ] main menu

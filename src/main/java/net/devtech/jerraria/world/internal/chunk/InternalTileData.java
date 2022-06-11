@@ -66,7 +66,7 @@ public class InternalTileData extends UnpositionedTileData.Tickable {
 	static class Type extends UnpositionedTileData.Type<InternalTileData> {
 		@Override
 		public InternalTileData read(Chunk chunk, JCElement<?> element) {
-			return chunk.data.get(element.castTo(NativeJCType.INT));
+			return chunk.data.get(element.as(NativeJCType.INT));
 		}
 
 		@Override

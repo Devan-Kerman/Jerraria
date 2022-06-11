@@ -334,12 +334,13 @@ public class Atlas {
 					} else if(file.hasFileExtension("png")) {
 						try(InputStream input = file.read()) {
 							PNGDecoder decoder = new PNGDecoder(input);
-							ByteBuffer buffer =
-								ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
-							decoder.decode(buffer, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
-							buffer.flip();
+							int width = decoder.getWidth();
+							int capacity = 4 * width * decoder.getHeight();
+							ByteBuffer buf = ByteBuffer.allocateDirect(capacity);
+							decoder.decode(buf, width * 4, PNGDecoder.Format.RGBA);
+							buf.flip();
 							String name = file.withoutExtension();
-							imageSprites.put(name, new RawImageSprite(name, buffer, decoder.getWidth(), decoder.getHeight()));
+							imageSprites.put(name, new RawImageSprite(name, buf, width, decoder.getHeight()));
 						} catch(Exception e) {
 							System.out.println(e.getLocalizedMessage() + " " + file.name());
 						}

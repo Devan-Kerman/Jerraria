@@ -137,7 +137,6 @@ public class Chunk implements Executor {
 		}
 	}
 
-
 	public void removeLink(Chunk chunk) {
 		if(chunk == this) {
 			return;

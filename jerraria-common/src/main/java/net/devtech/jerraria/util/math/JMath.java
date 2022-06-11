@@ -5,12 +5,12 @@ public class JMath {
 	public static final float PI2 = (float) (Math.PI * 2);
 	static final byte[] LogTable256 = new byte[256];
 
-	public static int ifloor(double x) {
-		return (int) Math.floor(x);
+	public static int ifloor(double val) {
+		return (int) Math.floor(val);
 	}
 
-	public static int iceil(double x) {
-		return (int) Math.ceil(x);
+	public static int iceil(double val) {
+		return (int) Math.ceil(val);
 	}
 
 	public static int ceilDiv(int numerator, int denominator) {
