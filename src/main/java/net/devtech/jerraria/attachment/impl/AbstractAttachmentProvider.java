@@ -9,15 +9,15 @@ import java.util.Set;
 
 import net.devtech.jerraria.attachment.Attachment;
 import net.devtech.jerraria.attachment.AttachmentProvider;
-import net.devtech.jerraria.attachment.AttachmentSettings;
+import net.devtech.jerraria.attachment.AttachmentSetting;
 
-public abstract class AbstractAttachmentProvider<E, B extends AttachmentSettings> implements AttachmentProvider<E, B> {
+public abstract class AbstractAttachmentProvider<E, B extends AttachmentSetting> implements AttachmentProvider<E, B> {
 	protected final List<AttachmentPair<E, B>> attachments = new ArrayList<>();
 	protected final List<AttachmentRegistrationListener<E, B>> listeners = new ArrayList<>();
 
 	@Override
-	public <T> Attachment<E, T> registerAttachment(B... behaviors) {
-		Set<B> behaviorList = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(behaviors)));
+	public <T> Attachment<E, T> registerAttachment(B... behavior) {
+		Set<B> behaviorList = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(behavior)));
 		Attachment<E, T> impl = this.createAttachment(behaviorList);
 		this.attachments.add(new AttachmentPair<>(impl, behaviorList));
 		for(AttachmentRegistrationListener<E, B> listener : listeners) {

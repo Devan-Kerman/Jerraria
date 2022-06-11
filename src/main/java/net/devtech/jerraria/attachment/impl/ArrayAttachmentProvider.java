@@ -1,5 +1,7 @@
 package net.devtech.jerraria.attachment.impl;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -7,9 +9,9 @@ import java.util.function.Function;
 
 import net.devtech.jerraria.attachment.Attachment;
 import net.devtech.jerraria.attachment.AttachmentProvider;
-import net.devtech.jerraria.attachment.AttachmentSettings;
+import net.devtech.jerraria.attachment.AttachmentSetting;
 
-public class ArrayAttachmentProvider<E, B extends AttachmentSettings>
+public class ArrayAttachmentProvider<E, B extends AttachmentSetting>
 	extends AbstractAttachmentProvider<E, B> {
 	final Function<E, Object[]> arrayGetter;
 	final BiConsumer<E, Object[]> arraySetter;
@@ -29,10 +31,18 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSettings>
 
 	@Override
 	protected <T> Attachment<E, T> createAttachment(Set<B> list) {
-		if(this.concurrent) {
-			return new ConcurrentAttachmentImpl<>(this.attachments.size());
+		if(list.contains(AttachmentSetting.Concurrency.VOLATILE)) {
+			if(this.concurrent) {
+				return new ConcurrentAttachmentImpl<>(this.attachments.size());
+			} else {
+				throw new UnsupportedOperationException("AttachmentProvider must be Concurrent to use Volatile Attachments!");
+			}
 		} else {
-			return new AttachmentImpl<>(this.attachments.size());
+			if(this.concurrent) {
+				return new CASAttachmentImpl<>(this.attachments.size());
+			} else {
+				return new AttachmentImpl<>(this.attachments.size());
+			}
 		}
 	}
 
@@ -65,8 +75,8 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSettings>
 		}
 	}
 
-	public class ConcurrentAttachmentImpl<T> extends AttachmentImpl<T> {
-		public ConcurrentAttachmentImpl(int index) {
+	public class CASAttachmentImpl<T> extends AttachmentImpl<T> {
+		public CASAttachmentImpl(int index) {
 			super(index);
 		}
 
@@ -86,6 +96,34 @@ public class ArrayAttachmentProvider<E, B extends AttachmentSettings>
 					ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
 				}
 				arr[index] = value;
+			} while(arr != ArrayAttachmentProvider.this.arrayGetter.apply(object));
+		}
+	}
+
+	private static final VarHandle ARRAY_ELEMENT_VAR_HANDLE = MethodHandles.arrayElementVarHandle(Object[].class);
+
+	public class ConcurrentAttachmentImpl<T> extends AttachmentImpl<T> {
+		public ConcurrentAttachmentImpl(int index) {
+			super(index);
+		}
+
+		@Override
+		public T getValue(E object) {
+			return (T) ARRAY_ELEMENT_VAR_HANDLE.getVolatile(ArrayAttachmentProvider.this.arrayGetter.apply(object));
+		}
+
+		@Override
+		public void setValue(E object, T value) {
+			int index = this.index;
+			Object[] arr;
+			do {
+				arr = ArrayAttachmentProvider.this.arrayGetter.apply(object);
+				if(index >= arr.length) {
+					arr = Arrays.copyOf(arr, index + 1);
+					ArrayAttachmentProvider.this.arraySetter.accept(object, arr);
+				}
+
+				ARRAY_ELEMENT_VAR_HANDLE.setVolatile(arr, index, value);
 			} while(arr != ArrayAttachmentProvider.this.arrayGetter.apply(object));
 		}
 	}

@@ -14,27 +14,26 @@ import net.devtech.jerraria.util.math.Pos2d;
 import net.devtech.jerraria.util.math.Vec2d;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.attach.EntityAttachmentSettings;
+import net.devtech.jerraria.world.entity.attach.EntityAttachSetting;
 import net.devtech.jerraria.world.entity.render.EntityRenderer;
 import net.devtech.jerraria.world.internal.AbstractWorld;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 
 public abstract class Entity implements Pos2d {
-	public static final AttachmentProvider<Entity, EntityAttachmentSettings> PROVIDER = AttachmentProvider.concurrent(
-		e -> e.attachedData,
-		(e, o) -> e.attachedData = o
-	);
-
-	static {
-		Objects.requireNonNull(EntityInternal.SERIALIZABLE_ATTACHMENTS); // run static initializer
-	}
+	public static final AttachmentProvider<Entity, EntityAttachSetting> PROVIDER =
+		AttachmentProvider.concurrent(e -> e.attachedData, (e, o) -> e.attachedData = o);
 
 	/**
 	 * this states the entity does not belong to a chunk
 	 */
 	public static final int HOBO_CHUNK_POS = Integer.MIN_VALUE;
+
+	static {
+		Objects.requireNonNull(EntityInternal.SERIALIZABLE_ATTACHMENTS); // run static initializer
+	}
+
 	int oldChunkX = HOBO_CHUNK_POS, oldChunkY, oldWorldId;
-	volatile Object[] attachedData; // todo saving
+	volatile Object[] attachedData;
 	Type<?> type;
 	double x, y;
 	World world;
@@ -49,6 +48,10 @@ public abstract class Entity implements Pos2d {
 		this.world = world;
 		this.x = x;
 		this.y = y;
+	}
+
+	public static <T> Type<T> createType(Function<Entity, JCElement<T>> serializer, Deserializer<T> deserializer) {
+		return new Type<>(serializer, deserializer);
 	}
 
 	public Type<?> getType() {
@@ -85,10 +88,6 @@ public abstract class Entity implements Pos2d {
 	 * @return true if the entity contacts the given bounding box
 	 */
 	public abstract boolean doesIntersect(EntitySearchType type, double fromX, double fromY, double toX, double toY);
-
-	public static <T> Type<T> createType(Function<Entity, JCElement<T>> serializer, Deserializer<T> deserializer) {
-		return new Type<>(serializer, deserializer);
-	}
 
 	public Vec2d getPos() {
 		return new Vec2d(this.x, this.y);

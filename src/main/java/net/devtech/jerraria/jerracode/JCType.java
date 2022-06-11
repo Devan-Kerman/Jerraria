@@ -9,6 +9,8 @@ import net.devtech.jerraria.jerracode.internal.ListJCType;
 import net.devtech.jerraria.jerracode.internal.PairJCType;
 
 public interface JCType<T, N> {
+	// todo maybe a "can cache" type method to prevent JCTagBuilder from storing the non-native representation
+
 	static <T, N> JCType<T, N> create(NativeJCType<N> nativeType, Function<T, N> convertToNative, Function<N, T> convertFromNative) {
 		return new CustomJCType<>(nativeType, convertToNative, convertFromNative);
 	}

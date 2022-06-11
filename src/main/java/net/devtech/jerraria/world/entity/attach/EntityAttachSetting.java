@@ -1,14 +1,14 @@
 package net.devtech.jerraria.world.entity.attach;
 
 import net.devtech.jerraria.attachment.Attachment;
-import net.devtech.jerraria.attachment.AttachmentSettings;
+import net.devtech.jerraria.attachment.AttachmentSetting;
 import net.devtech.jerraria.jerracode.JCType;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
-public interface EntityAttachmentSettings extends AttachmentSettings {
+public interface EntityAttachSetting extends AttachmentSetting.HasConcurrent {
 
 	static <T, N> Serializer<Entity, T, N> serializer(Id uniqueName, JCType<T, N> type) {
 		return serializer(uniqueName, type, false);
@@ -50,7 +50,7 @@ public interface EntityAttachmentSettings extends AttachmentSettings {
 		};
 	}
 
-	interface Serializer<E, T, N> extends EntityAttachmentSettings {
+	interface Serializer<E, T, N> extends EntityAttachSetting {
 		/**
 		 * A unique id for this attachment
 		 */
@@ -62,5 +62,10 @@ public interface EntityAttachmentSettings extends AttachmentSettings {
 		JCElement<N> serialize(Attachment<E, T> attachment, E entity);
 
 		void deserialize(Attachment<E, T> attachment, E entity, JCElement<N> data);
+	}
+
+	enum PlayerDeath implements EntityAttachSetting {
+		COPY_ON_DEATH,
+		COPY_IF_KEEP_INVENTORY
 	}
 }

@@ -7,23 +7,23 @@ import java.util.function.Function;
 
 import net.devtech.jerraria.attachment.impl.ArrayAttachmentProvider;
 
-public interface AttachmentProvider<O, B extends AttachmentSettings> {
-	static <E, B extends AttachmentSettings> AttachmentProvider<E, B> simple(
-		Function<E, Object[]> arrayGetter,
-		BiConsumer<E, Object[]> arraySetter) {
+public interface AttachmentProvider<O, B extends AttachmentSetting> {
+	static <E, B extends AttachmentSetting> AttachmentProvider<E, B> simple(Function<E, Object[]> arrayGetter, BiConsumer<E, Object[]> arraySetter) {
 		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter, false);
 	}
 
 	/**
-	 * The array field must be marked `volatile`
+	 * Creates an attachment provider that can be accessed from multiple threads. This however does not allow for CAS
+	 * operations on attached data. For that your AttachmentSetting generic must implement {@link
+	 * AttachmentSetting.HasConcurrent} and your attachment must have {@link AttachmentSetting.Concurrency#VOLATILE}.
+	 * <br>
+	 * <b>The array field must be marked `volatile`!</b>
 	 */
-	static <E, B extends AttachmentSettings> AttachmentProvider<E, B> concurrent(
-		Function<E, Object[]> arrayGetter,
-		BiConsumer<E, Object[]> arraySetter) {
+	static <E, B extends AttachmentSetting> AttachmentProvider<E, B> concurrent(Function<E, Object[]> arrayGetter, BiConsumer<E, Object[]> arraySetter) {
 		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter, true);
 	}
 
-	<T> Attachment<O, T> registerAttachment(B... behaviors);
+	<T> Attachment<O, T> registerAttachment(B... behavior);
 
 	List<AttachmentPair<O, B>> getAttachments();
 
@@ -38,16 +38,16 @@ public interface AttachmentProvider<O, B extends AttachmentSettings> {
 		}
 	}
 
-	/**
-	 * @param behavior the passed set does preserve the order of the original array
-	 */
-	record AttachmentPair<E, B extends AttachmentSettings>(Attachment<E, ?> attachment, Set<B> behavior) {}
-
-	interface AttachmentRegistrationListener<E, B extends AttachmentSettings> {
+	interface AttachmentRegistrationListener<E, B extends AttachmentSetting> {
 		/**
 		 * @param attachment the attachment being registered
 		 * @param behavior the passed set does preserve the order of the original array
 		 */
 		void accept(Attachment<E, ?> attachment, Set<B> behavior);
 	}
+
+	/**
+	 * @param behavior the passed set does preserve the order of the original array
+	 */
+	record AttachmentPair<E, B extends AttachmentSetting>(Attachment<E, ?> attachment, Set<B> behavior) {}
 }

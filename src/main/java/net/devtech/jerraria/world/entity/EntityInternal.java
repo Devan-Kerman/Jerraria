@@ -14,7 +14,7 @@ import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerraria.Entities;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.world.World;
-import net.devtech.jerraria.world.entity.attach.EntityAttachmentSettings;
+import net.devtech.jerraria.world.entity.attach.EntityAttachSetting;
 import net.devtech.jerraria.world.internal.chunk.Chunk;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -25,8 +25,8 @@ public class EntityInternal {
 	static {
 		Entity.PROVIDER.registerListener((attachment, behavior) -> {
 			boolean first = true;
-			for(EntityAttachmentSettings settings : behavior) {
-				if(settings instanceof EntityAttachmentSettings.Serializer s) {
+			for(EntityAttachSetting settings : behavior) {
+				if(settings instanceof EntityAttachSetting.Serializer s) {
 					if(first) {
 						SERIALIZABLE_ATTACHMENTS.put(s.getKey(), new SerializableAttachment<>(attachment, s));
 						first = false;
@@ -103,7 +103,7 @@ public class EntityInternal {
 
 	record SerializableAttachment<T>(
 		Attachment<Entity, T> attachment,
-		EntityAttachmentSettings.Serializer<Entity, T, ?> serializer
+		EntityAttachSetting.Serializer<Entity, T, ?> serializer
 	) {
 		public JCElement<?> serialize(Entity entity) {
 			return this.serializer.serialize(this.attachment, entity);
