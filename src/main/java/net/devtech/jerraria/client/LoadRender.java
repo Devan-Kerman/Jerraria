@@ -27,15 +27,15 @@ public class LoadRender {
 	public static final int[] RAINBOW = {0xFF0000, 0xFF8800, 0xFFFF00, 0x88FF00, 0x00FF00, 0x00FF88, 0x00FFFF, 0x0088FF, 0x0000FF};
 
 	public void render(Matrix3f mat, SolidColorShader box, ColoredTextureShader text, float width, float offX, float offY) {
-		box.drawRect(mat, offX + .05f, offY + .05f, width-.1f, .9f, 0xFFAAAAAA);
+		box.rect(mat, offX + .05f, offY + .05f, width - .1f, .9f, 0xFFAAAAAA);
 
 		float ratio = this.completed / (float) this.taskSize;
 		float realWidth = width - .2f;
 		float barWidth = ratio * realWidth;
 
-		box.drawRect(mat, offX + .1f, offY + .1f, width - .2f, .8f, 0xFFAABBBB);
+		box.rect(mat, offX + .1f, offY + .1f, width - .2f, .8f, 0xFFAABBBB);
 		int hashCode = this.hashCode();
-		box.drawRect(mat, offX + .1f, offY + .1f, barWidth, .8f, 0xFF000000 | RAINBOW[hashCode % RAINBOW.length]);
+		box.rect(mat, offX + .1f, offY + .1f, barWidth, .8f, 0xFF000000 | RAINBOW[hashCode % RAINBOW.length]);
 
 		try(var mov = mat.copy().offset(offX+.1f, offY+.1f).scale(.5f, .5f)) {
 			renderText(

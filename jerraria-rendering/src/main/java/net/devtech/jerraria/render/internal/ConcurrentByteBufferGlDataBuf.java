@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import net.devtech.jerraria.render.api.base.GlData;
 
-public abstract class CASByteBufferGlDataBuf extends ByteBufferGlDataBuf {
+public abstract class ConcurrentByteBufferGlDataBuf extends ByteBufferGlDataBuf {
 	protected int pos;
 
 	@Override

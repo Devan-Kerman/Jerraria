@@ -38,7 +38,7 @@ public class BasicTile extends Tile {
 			int x,
 			int y) {
 			ColoredTextureShader shader = source.computeIfAbsent(ColoredTextureShader.MAIN_ATLAS);
-			shader.square(tileMatrix, BasicTile.this.texture, 0, 0, 1, 1, 0xFFFFFFFF);
+			shader.rect(tileMatrix, BasicTile.this.texture, 0, 0, 1, 1, 0xFFFFFFFF);
 		}
 	}
 }

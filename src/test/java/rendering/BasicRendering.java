@@ -17,7 +17,7 @@ public class BasicRendering {
 		Bootstrap.startClient(args, () -> {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
 			Matrix3f mat = ClientMain.cartesianToAWTIndexGrid(1);
-			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
+			shader.rect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
 
 			RenderThread.addRenderStage(() -> {
 				try(SolidColorShader copy = Shader.copy(shader, SCopy.PRESERVE_BOTH)) {

@@ -1,5 +1,6 @@
 package net.devtech.jerraria.render.shaders;
 
+import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
@@ -20,26 +21,12 @@ public class SolidColorShader extends Shader<Color.ARGB<Vec3.F<End>>> {
 		super(shader, copy);
 	}
 
-	/**
-	 * draws a rectangle using triangles
-	 */
-	public void drawRect(Matrix3f mat, float x, float y, float width, float height, int rgb) {
+	public void rect(Matrix3f mat, float x, float y, float width, float height, int rgb) {
 		final float depth = 1f;
+		this.strategy(AutoStrat.QUADS);
 		this.vert().argb(rgb).vec3f(mat, x, y, depth);
-		this.vert().argb(rgb).vec3f(mat, x+width, y, depth);
 		this.vert().argb(rgb).vec3f(mat, x, y+height, depth);
-
 		this.vert().argb(rgb).vec3f(mat, x+width, y+height, depth);
 		this.vert().argb(rgb).vec3f(mat, x+width, y, depth);
-		this.vert().argb(rgb).vec3f(mat, x, y+height, depth);
-	}
-
-	public void square(Matrix3f mat, float offX, float offY, float width, float height, float z, int argb) {
-		this.vert().argb(argb).vec3f(mat, offX, offY, z);
-		this.vert().argb(argb).vec3f(mat, offX, offY + height, z);
-		this.vert().argb(argb).vec3f(mat, offX + width, offY, z);
-		this.vert().argb(argb).vec3f(mat, offX + width, offY + height, z);
-		this.vert().argb(argb).vec3f(mat, offX, offY + height, z);
-		this.vert().argb(argb).vec3f(mat, offX + width, offY, z);
 	}
 }

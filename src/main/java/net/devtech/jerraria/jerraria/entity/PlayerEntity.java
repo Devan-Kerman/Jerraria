@@ -70,7 +70,7 @@ public class PlayerEntity extends BaseEntity {
 			int windowToX,
 			int windowToY) {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
-			shader.drawRect(matrix, 10, 10, 10, 10, 0xFFFFFFFF);
+			shader.rect(matrix, 10, 10, 10, 10, 0xFFFFFFFF);
 			shader.draw();
 		}
 	}

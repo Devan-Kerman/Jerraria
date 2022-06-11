@@ -242,6 +242,7 @@ public class Atlas {
 		this.animated = animated;
 		this.atlasWidth = atlasWidth;
 		this.atlasHeight = atlasHeight;
+		images.join();
 		CompletableFuture.allOf(animations.toArray(CompletableFuture[]::new)).join();
 		uploading.setToComplete();
 		render.setToComplete();

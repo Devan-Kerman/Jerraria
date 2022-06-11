@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.devtech.jerraria.render.internal.CASByteBufferGlDataBuf;
+import net.devtech.jerraria.render.internal.ConcurrentByteBufferGlDataBuf;
 
 public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 	final Lock bufferCacheLock = new ReentrantLock();
-	List<CASBuf> instances = new ArrayList<>();
+	List<ConcurrentBuf> instances = new ArrayList<>();
 
 	public SharedUBOBuilder(
 		int unpaddedLen,
@@ -35,7 +35,7 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 	@Override
 	public BufferObjectBuilderAccess struct(int structIndex) {
 		super.struct(structIndex);
-		final List<CASBuf> buffers = this.instances;
+		final List<ConcurrentBuf> buffers = this.instances;
 		if(structIndex < buffers.size()) {
 			return buffers.get(structIndex);
 		} else {
@@ -47,10 +47,10 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 					return buffers.get(structIndex);
 				}
 
-				List<CASBuf> copy = new ArrayList<>(this.instances);
+				List<ConcurrentBuf> copy = new ArrayList<>(this.instances);
 				int size;
 				while(structIndex >= (size = copy.size())) {
-					copy.add(new CASBuf(size));
+					copy.add(new ConcurrentBuf(size));
 				}
 				this.instances = copy;
 				return copy.get(structIndex);
@@ -70,11 +70,11 @@ public abstract class SharedUBOBuilder extends AbstractUBOBuilder {
 		return SharedUBOBuilder.this;
 	}
 
-	public class CASBuf extends CASByteBufferGlDataBuf implements BufferObjectBuilderAccess {
+	public class ConcurrentBuf extends ConcurrentByteBufferGlDataBuf implements BufferObjectBuilderAccess {
 		final int structIndex;
 		int varIndex;
 
-		public CASBuf(int index) {
+		public ConcurrentBuf(int index) {
 			this.structIndex = index;
 		}
 

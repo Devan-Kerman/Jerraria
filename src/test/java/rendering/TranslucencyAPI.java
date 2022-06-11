@@ -1,24 +1,10 @@
 package rendering;
 
-import static org.lwjgl.opengl.GL11.GL_ALWAYS;
-import static org.lwjgl.opengl.GL11.GL_GEQUAL;
-import static org.lwjgl.opengl.GL11.GL_GREATER;
-import static org.lwjgl.opengl.GL11.GL_LEQUAL;
-import static org.lwjgl.opengl.GL11.GL_LESS;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.render.api.GLStateBuilder;
-import net.devtech.jerraria.render.api.translucency.TranslucentShader;
-import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.util.func.TRunnable;
 import net.devtech.jerraria.util.math.Matrix3f;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL46;
-import org.lwjgl.opengl.GLUtil;
 
 public class TranslucencyAPI {
 	static {
@@ -44,7 +30,7 @@ public class TranslucencyAPI {
 				Matrix3f idt = new Matrix3f();
 
 				SolidColorShader background = SolidColorShader.INSTANCE;
-				background.drawRect(idt, -1, -1, 2, 2, 0xFFFFFFFF);
+				background.rect(idt, -1, -1, 2, 2, 0xFFFFFFFF);
 				background.draw();
 
 				var rendering = TestTranslucentShader.INSTANCE;

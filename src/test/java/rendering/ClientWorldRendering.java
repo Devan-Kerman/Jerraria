@@ -78,12 +78,12 @@ public class ClientWorldRendering {
 				}
 			});
 
+			WorldRenderer renderer = new OverworldWorldRenderer(world);
 			RenderThread.addRenderStage(() -> {
 				Matrix3f mat = new Matrix3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(JerrariaClient.windowHeight() / ((float) JerrariaClient.windowWidth()), 1);
-				WorldRenderer renderer = new OverworldWorldRenderer(world);
 				renderer.render(mat, player, scale[0], scale[0]);
 			}, 10);
 			return null;
