@@ -85,6 +85,17 @@ public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extend
 		}
 
 		@Override
+		public T getValue(E object) {
+			Object[] apply = getVolatile.apply(object);
+			if(apply == null) {
+				return null;
+			} else {
+				//noinspection unchecked
+				return (T) ARRAY_ELEMENT_VAR_HANDLE.getVolatile(apply, this.index);
+			}
+		}
+
+		@Override
 		public void setValue(E object, T value) {
 			int index = this.index;
 			Object[] arr, new_;
