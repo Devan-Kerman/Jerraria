@@ -37,7 +37,7 @@ public interface Attachment<O, T> {
 			do {
 				val = this.getValue(object);
 				new_ = operator.apply(val);
-			} while(this.weakCompareAndSet(object, val, new_));
+			} while(!this.weakCompareAndSet(object, val, new_));
 			return new_;
 		}
 
@@ -45,7 +45,7 @@ public interface Attachment<O, T> {
 			T val;
 			do {
 				val = this.getValue(object);
-			} while(this.weakCompareAndSet(object, val, operator.apply(val)));
+			} while(!this.weakCompareAndSet(object, val, operator.apply(val)));
 			return val;
 		}
 
@@ -58,7 +58,7 @@ public interface Attachment<O, T> {
 				} else {
 					value = default_;
 				}
-			} while(this.weakCompareAndSet(object, val, operator.apply(value)));
+			} while(!this.weakCompareAndSet(object, val, operator.apply(value)));
 			return value;
 		}
 
@@ -67,7 +67,7 @@ public interface Attachment<O, T> {
 			do {
 				val = this.getValue(object);
 				new_ = operator.apply(val);
-			} while(this.strongCompareAndSet(object, val, new_));
+			} while(!this.strongCompareAndSet(object, val, new_));
 			return new_;
 		}
 
@@ -75,7 +75,7 @@ public interface Attachment<O, T> {
 			T val;
 			do {
 				val = this.getValue(object);
-			} while(this.strongCompareAndSet(object, val, operator.apply(val)));
+			} while(!this.strongCompareAndSet(object, val, operator.apply(val)));
 			return val;
 		}
 
@@ -92,7 +92,7 @@ public interface Attachment<O, T> {
 				} else {
 					value = default_;
 				}
-			} while(this.strongCompareAndSet(object, val, operator.apply(value)));
+			} while(!this.strongCompareAndSet(object, val, operator.apply(value)));
 			return value;
 		}
 

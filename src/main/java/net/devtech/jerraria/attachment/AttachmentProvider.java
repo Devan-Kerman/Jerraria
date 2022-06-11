@@ -16,6 +16,10 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 		return new ArrayAttachmentProvider<>(arrayGetter, arraySetter);
 	}
 
+	static <E extends AttachableObject, B extends AttachmentSetting> AttachmentProvider<E, B> simple() {
+		return new ArrayAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::setVolatile);
+	}
+
 	/**
 	 * Creates an attachment provider that can be accessed from multiple threads.
 	 * <br>
@@ -25,6 +29,10 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 		Function<E, Object[]> getVolatile,
 		CompareAndSet<E> compareAndSet) {
 		return new ConcurrentAttachmentProvider<>(getVolatile, compareAndSet);
+	}
+
+	static <E extends AttachableObject, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic() {
+		return new ConcurrentAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::compareAndSet);
 	}
 
 	/**
