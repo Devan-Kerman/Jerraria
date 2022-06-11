@@ -9,6 +9,7 @@ import net.devtech.jerraria.util.math.Rectangle;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.BaseEntity;
+import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.entity.render.AbstractEntityRenderer;
 import net.devtech.jerraria.world.entity.render.EntityRenderer;
 
@@ -61,7 +62,13 @@ public class PlayerEntity extends BaseEntity {
 		}
 
 		@Override
-		public void renderEntity(Matrix3f matrix) {
+		public void renderEntity(
+			Entity entity,
+			Matrix3f matrix,
+			int windowFromX,
+			int windowFromY,
+			int windowToX,
+			int windowToY) {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
 			shader.drawRect(matrix, 10, 10, 10, 10, 0xFFFFFFFF);
 			shader.draw();

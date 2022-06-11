@@ -214,7 +214,7 @@ public class BareShader implements AutoCloseable {
 	public void hotswapStrategy(AutoStrat strategy, boolean force) {
 		this.validateState();
 		AutoStrat current = this.strategy;
-		if(current != strategy || force) {
+		if(current != strategy || force || strategy.forceRestart()) {
 			if(this.vao.last.getBuilder().getVertexCount() == this.lastCopiedVertex) {
 				this.strategy = strategy;
 				return;

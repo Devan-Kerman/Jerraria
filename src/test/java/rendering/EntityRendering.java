@@ -14,6 +14,10 @@ import net.devtech.jerraria.world.internal.client.ClientWorldServer;
 import world.ChunkTests;
 
 public class EntityRendering {
+	static {
+		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
+	}
+
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
 			SynchronousWorld world = ChunkTests.setupServer(true);

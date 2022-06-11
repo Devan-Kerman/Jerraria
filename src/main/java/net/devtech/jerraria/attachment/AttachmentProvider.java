@@ -17,7 +17,7 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 	}
 
 	static <E extends AttachableObject, B extends AttachmentSetting> AttachmentProvider<E, B> simple() {
-		return new ArrayAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::setVolatile);
+		return new ArrayAttachmentProvider<>(a -> a.attachedData, (e, a) -> e.attachedData = a);
 	}
 
 	/**
@@ -32,7 +32,7 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 	}
 
 	static <E extends AttachableObject, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic() {
-		return new ConcurrentAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::compareAndSet);
+		return new ConcurrentAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::weakCompareAndSet);
 	}
 
 	/**

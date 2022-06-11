@@ -15,6 +15,8 @@ public class WorldRenderer {
 		this.world = world;
 	}
 
+	//protected abstract void renderBackground(Matrix3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight);
+
 	public void render(Matrix3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
 		Matrix3f rel = cartToAwt.copy().scale(1f/blockScreenWidth, 1f/blockScreenHeight);
 
@@ -39,11 +41,17 @@ public class WorldRenderer {
 		}
 
 		Matrix3f entityMatrix = rel.copy();
+		// multithreaded entity rendering could be a possibility?
 		this.world.entityLayer().getEntitiesIntersect(EntitySearchType.Standard.RENDERING, fromBlockX, fromBlockY, toBlockX, toBlockY, 10).forEach(entity -> {
 			EntityRenderer renderer = entity.getRenderer();
 			float offX = (float) (entity.x() - fromBlockXScreen), offY = (float) (fromBlockYScreen - entity.y());
 			entityMatrix.load(rel).offset(offX, offY);
-			renderer.renderEntity(entityMatrix);
+			renderer.renderEntity(entity, entityMatrix, fromBlockX, fromBlockY, toBlockX, toBlockY);
+			EntityRenderer extra = EntityRenderer.EXTRA_ENTITY_RENDERER.get().apply(entity);
+			if(extra != null) {
+				extra.renderEntity(entity, entityMatrix, fromBlockX, fromBlockY, toBlockX, toBlockY);
+			}
 		});
+
 	}
 }

@@ -119,7 +119,7 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 			return false;
 		}
 
-		this.ensureNioBufferCapacity(from, to);
+		this.ensureNioBufferCapacity(to, to);
 		if(!this.ensureBufferObjectCapacity(from, to)) {
 			this.bindBuffer(this.glId);
 		}
@@ -251,7 +251,7 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 	}
 
 	public void bake() {
-		// todo remember to current data from GPU if adding weird vertex shit
+		this.flush();
 		this.evaluateDeferredCopies();
 		this.buffer = null;
 	}

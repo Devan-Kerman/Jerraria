@@ -31,7 +31,8 @@ public sealed interface AutoStrat permits AutoElementFamily {
 		TriStrip.SHORT_,
 		TriStrip.INT_,
 		DrawMethod.TRIANGLE,
-		"TRIANGLE_STRIP"
+		"TRIANGLE_STRIP",
+		true
 	);
 
 	/**
@@ -41,7 +42,8 @@ public sealed interface AutoStrat permits AutoElementFamily {
 		LineStrip.SHORT_,
 		LineStrip.INT_,
 		DrawMethod.LINES,
-		"LINE_STRIP"
+		"LINE_STRIP",
+		true
 	);
 
 	/**
@@ -61,4 +63,6 @@ public sealed interface AutoStrat permits AutoElementFamily {
 	int minimumVertices();
 
 	int elementsForVertexData(int count);
+
+	boolean forceRestart();
 }

@@ -172,6 +172,13 @@ public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implement
 		this.delegate.bake();
 	}
 
+	public boolean isValid() {
+		return this.delegate.isValid();
+	}
+
+	/**
+	 * Closes the shader and releases all gl resources, a closing an already {@link #isValid()} shader has no effect
+	 */
 	@Override
 	public void close() {
 		try {

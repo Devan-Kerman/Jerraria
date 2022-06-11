@@ -7,14 +7,21 @@ public final class AutoElementFamily implements AutoStrat {
 	public final ShapeStrat byte_, short_, int_;
 	public final DrawMethod method;
 	public final String name;
+	public final boolean forceRestart;
 
 	public AutoElementFamily(
-		ShapeStrat byte_, ShapeStrat short_, ShapeStrat int_, DrawMethod method, String name) {
+		ShapeStrat byte_, ShapeStrat short_, ShapeStrat int_, DrawMethod method, String name, boolean forceRestart) {
 		this.byte_ = byte_;
 		this.short_ = short_;
 		this.int_ = int_;
 		this.method = method;
 		this.name = name;
+		this.forceRestart = forceRestart;
+	}
+
+	public AutoElementFamily(
+		ShapeStrat byte_, ShapeStrat short_, ShapeStrat int_, DrawMethod method, String name) {
+		this(byte_, short_, int_, method, name, false);
 	}
 
 	@Override
@@ -35,6 +42,11 @@ public final class AutoElementFamily implements AutoStrat {
 	@Override
 	public int elementsForVertexData(int count) {
 		return this.byte_.elementsForVertexData(count);
+	}
+
+	@Override
+	public boolean forceRestart() {
+		return this.forceRestart;
 	}
 
 	public ShapeStrat forCount(int count) {

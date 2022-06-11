@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.BuiltGlState;
+import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
@@ -57,7 +59,12 @@ public class ClientChunkBakedTileQuadrantRenderer {
 				return null;
 			}
 			var value = entry.getKey();
-			entry.getValue().bake();
+			RenderThread.queueRenderTask(() -> {
+				Shader<?> value1 = entry.getValue();
+				if(value1.isValid()) {
+					value1.bake();
+				}
+			});
 			opaque
 				.computeIfAbsent(value.state(), s -> new ArrayList<>())
 				.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(),

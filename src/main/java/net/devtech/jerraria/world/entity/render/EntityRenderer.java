@@ -1,27 +1,44 @@
 package net.devtech.jerraria.world.entity.render;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import net.devtech.jerraria.access.Access;
+import net.devtech.jerraria.client.WorldRenderer;
 import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.world.entity.Entity;
 
 public interface EntityRenderer {
-	EntityRenderer UNRENDERED = new EntityRenderer() {
-		@Override
-		public boolean canCull(double minX, double minY, double maxX, double maxY) {
-			return true;
-		}
-
-		@Override
-		public void renderEntity(Matrix3f matrix) {
-		}
-	};
+	EntityRenderer UNRENDERED = (entity, matrix, windowMinX, windowMinY, windowMaxX, windowMaxY) -> {};
 
 	/**
-	 * @param minX world x coordinate of the left of the screen
-	 * @param minY world y coordinate of the top of the screen
-	 * @param maxX world x coordinate of the right of the screen
-	 * @param maxY world y coordinate of the bottom of the screen
-	 * @return how to cull the entity
+	 * A registry for adding additional
 	 */
-	boolean canCull(double minX, double minY, double maxX, double maxY);
+	Access<Function<Entity, EntityRenderer>> EXTRA_ENTITY_RENDERER = Access.create(array -> entity -> {
+		CombinedEntityRenderer renderer = null;
+		for(Function<Entity, EntityRenderer> function : array) {
+			EntityRenderer apply = function.apply(entity);
+			if(apply != null) {
+				if(renderer == null) {
+					renderer = new CombinedEntityRenderer();
+				}
+				renderer.renderers.add(apply);
+			}
+		}
+		return renderer;
+	});
 
-	void renderEntity(Matrix3f matrix);
+	void renderEntity(Entity entity, Matrix3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY);
+
+	class CombinedEntityRenderer implements EntityRenderer {
+		final List<EntityRenderer> renderers = new ArrayList<>();
+
+		@Override
+		public void renderEntity(Entity entity, Matrix3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY) {
+			for(EntityRenderer renderer : this.renderers) {
+				renderer.renderEntity(entity, matrix, windowFromX, windowFromY, windowToX, windowToY);
+			}
+		}
+	}
 }

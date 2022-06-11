@@ -10,6 +10,7 @@ import net.devtech.jerraria.attachment.Attachment;
 import net.devtech.jerraria.attachment.AttachmentProvider;
 import net.devtech.jerraria.attachment.AttachmentSetting;
 
+// maybe make custom provider for AttachableObject
 public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extends AbstractAttachmentProvider<E, B>
 	implements AttachmentProvider.Atomic<E, B> {
 	private static final VarHandle ARRAY_ELEMENT_VAR_HANDLE = MethodHandles.arrayElementVarHandle(Object[].class);
@@ -17,7 +18,7 @@ public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extend
 	final CompareAndSet<E> cas;
 
 	public ConcurrentAttachmentProvider(VarHandle handle) {
-		this(e -> (Object[]) handle.getVolatile(e), handle::compareAndSet);
+		this(e -> (Object[]) handle.getVolatile(e), handle::weakCompareAndSet);
 	}
 
 	public ConcurrentAttachmentProvider(
@@ -67,7 +68,7 @@ public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extend
 				if(arr == null) {
 					new_ = new Object[index + 1];
 				} else if(index >= arr.length) {
-					new_ = Arrays.copyOf(arr, index + 1);
+					new_ = copyOfVolatile(arr, index + 1);
 				}
 				new_[index] = value;
 			} while(!cas.compareAndSet(object, arr, new_));
@@ -77,6 +78,14 @@ public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extend
 		public AttachmentProvider<E, ?> getProvider() {
 			return ConcurrentAttachmentProvider.this;
 		}
+	}
+
+	static Object[] copyOfVolatile(Object[] arr, int newLen) {
+		Object[] new_ = new Object[newLen];
+		for(int i = 0; i < arr.length; i++) {
+			new_[i] = ARRAY_ELEMENT_VAR_HANDLE.getVolatile(arr, newLen);
+		}
+		return new_;
 	}
 
 	public class AtomicAttachmentImpl<T> extends CASAttachmentImpl<T> implements Attachment.Atomic<E, T> {
@@ -104,7 +113,7 @@ public class ConcurrentAttachmentProvider<E, B extends AttachmentSetting> extend
 				if(arr == null) {
 					new_ = new Object[index + 1];
 				} else if(index >= arr.length) {
-					new_ = Arrays.copyOf(arr, index + 1);
+					new_ = copyOfVolatile(arr, index + 1);
 				}
 
 				ARRAY_ELEMENT_VAR_HANDLE.setVolatile(new_, index, value);

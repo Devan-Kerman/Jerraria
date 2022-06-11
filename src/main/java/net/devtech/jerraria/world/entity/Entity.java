@@ -34,30 +34,6 @@ import net.devtech.jerraria.world.internal.chunk.Chunk;
 public abstract class Entity extends AttachableObject implements Pos2d {
 	public static final AttachmentProvider.Atomic<Entity, EntityAttachSetting> PROVIDER = AttachmentProvider.atomic();
 
-	public static final Attachment.Atomic<Entity, Integer> TIME = PROVIDER.registerAtomicAttachment(
-		EntityAttachSetting.serializer(Id.create("jerraria", "time"), NativeJCType.INT),
-		EntityAttachSetting.PlayerDeath.COPY_IF_KEEP_INVENTORY
-	);
-
-	public static Object incrementTime(Entity entity) {
-		return TIME.strongGetOrDefaultAndUpdate(entity, 0, v -> v+1);
-	}
-
-	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		ExecutorService executor = Executors.newFixedThreadPool(16);
-		Collection<Callable<Object>> futures = new ArrayList<>();
-		Entity entity = new PlayerEntity(null);
-		for(int i = 0; i < 16384; i++) {
-			futures.add(() -> incrementTime(entity));
-		}
-		System.out.println("Yes");
-		for(Future<Object> future : executor.invokeAll(futures)) {
-			future.get();
-		}
-		System.out.println(executor.shutdownNow());
-		System.out.println(TIME.getValue(entity));
-	}
-
 	/**
 	 * this states the entity does not belong to a chunk
 	 */

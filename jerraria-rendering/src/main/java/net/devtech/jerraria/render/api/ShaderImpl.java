@@ -90,7 +90,12 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 	}
 
 	public void bake() {
+		RenderingEnvironment.validateRenderThread("bake");
 		this.getShader().vao.bake();
+	}
+
+	public boolean isValid() {
+		return !this.shader.manager.isInvalid;
 	}
 
 	static void copyUniform_(GlValue<?> from, GlValue<?> to) {

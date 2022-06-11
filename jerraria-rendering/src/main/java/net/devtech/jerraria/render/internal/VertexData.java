@@ -178,6 +178,7 @@ public class VertexData extends GlData {
 	}
 
 	public void bake() {
+		this.validate();
 		for(VertexBufferObject group : this.groups) {
 			group.getBuilder().bake();
 		}

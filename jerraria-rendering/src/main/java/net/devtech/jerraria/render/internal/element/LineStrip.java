@@ -1,6 +1,5 @@
 package net.devtech.jerraria.render.internal.element;
 
-import static java.lang.Math.min;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_SHORT;
