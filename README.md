@@ -1,6 +1,8 @@
 # Jerraria
 Terraria clone in Java
 
+![Latest Progress](https://cdn.discordapp.com/attachments/907782618899169313/985308757112262696/unknown.png)
+
 ## Open Source Modules
 Parts of the Jerraria codebase are opensource and can be freely used. These include:
 
