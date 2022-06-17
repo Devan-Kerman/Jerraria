@@ -7,11 +7,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import com.google.common.collect.Iterables;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.jerracode.JCTagView;
 import net.devtech.jerraria.render.api.BuiltGlState;
-import net.devtech.jerraria.render.api.DrawMethod;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
@@ -24,7 +22,7 @@ import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.tile.VariantConvertable;
 import net.devtech.jerraria.world.tile.render.AutoBlockLayerInvalidation;
-import net.devtech.jerraria.world.tile.render.ShaderSource;
+import net.devtech.jerraria.world.tile.render.ChunkShaderConfigurator;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -32,14 +30,13 @@ import org.jetbrains.annotations.Nullable;
  * Terminology: shader layer refers to a specific gl shader with specific uniforms (and not a TileLayer)
  */
 public class ClientChunk extends Chunk {
-	public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors(),
-		4
-	));
-
-	boolean delayUpdates;
+	public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime
+		.getRuntime()
+		.availableProcessors(), 4));
 	final AtomicReferenceArray<@Nullable BakedClientChunkQuadrant> quadrants = new AtomicReferenceArray<>(4);
 	final @Nullable Future<?>[] futures = new Future[4];
 	final boolean isSnapshot;
+	boolean delayUpdates;
 
 	public ClientChunk(AbstractWorld world, int chunkX, int chunkY) {
 		super(world, chunkX, chunkY);
@@ -108,8 +105,8 @@ public class ClientChunk extends Chunk {
 			int x = i / 2, y = i % 2;
 			Matrix3f copy = chunkMatrix
 				.copy()
-				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1-y) << World.LOG2_CHUNK_QUADRANT_SIZE);
-			for(BakedClientChunkQuadrantData layer : quadrant.opaqueLayers) {
+				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1 - y) << World.LOG2_CHUNK_QUADRANT_SIZE);
+			for(BakedClientChunkQuadrantData layer : quadrant.layers) {
 				layer.configurator.configureUniforms(copy, layer.vertexData);
 				layer.vertexData.drawKeep(layer.state);
 			}
@@ -137,8 +134,7 @@ public class ClientChunk extends Chunk {
 							if(loaded) {
 								Chunk chunk = this.world.getChunk(ucx, ucy);
 								cache[(ucx - cacheX) * 2 + (ucy - cacheY)] = (ClientChunk) chunk;
-								((ClientChunk) chunk).scheduleQuadrantRender(
-									ucqx & 1,
+								((ClientChunk) chunk).scheduleQuadrantRender(ucqx & 1,
 									ucqy & 1,
 									AutoBlockLayerInvalidation.ON_NEIGHBOR_BLOCK_UPDATE
 								);
@@ -162,7 +158,8 @@ public class ClientChunk extends Chunk {
 			Future<?> future = this.futures[quadrantIndex];
 			if(future != null) {
 				future.cancel(true);
-				while(!(future.isCancelled() || future.isDone()));
+				while(!(future.isCancelled() || future.isDone()))
+					;
 			}
 
 			this.futures[quadrantIndex] = EXECUTOR.submit(() -> {
@@ -191,11 +188,9 @@ public class ClientChunk extends Chunk {
 		}
 	}
 
-	record BakedClientChunkQuadrantData<T extends Shader<?>>(AutoBlockLayerInvalidation invalidation,
-	                                                         T vertexData,
-	                                                         ShaderSource.ShaderConfigurator<T> configurator,
-	                                                         DrawMethod primitive,
-	                                                         BuiltGlState state) {}
+	record BakedClientChunkQuadrantData<T extends Shader<?>>(
+		T vertexData, ChunkShaderConfigurator<T> configurator, BuiltGlState state
+	) {}
 
 	@SuppressWarnings("rawtypes")
 	static final class BakedClientChunkQuadrant {
@@ -204,34 +199,16 @@ public class ClientChunk extends Chunk {
 		 * The vertex & uniforms of a single shader layer. The shader must be used to render opaque objects because
 		 * these are "sorted" per-layer rather than per-vertex.
 		 */
-		final List<BakedClientChunkQuadrantData> opaqueLayers;
+		final List<BakedClientChunkQuadrantData> layers;
 
-		/**
-		 * A primitive or multiple primitives of a translucent object in one quadrant of a ClientChunk's baked model .
-		 * If multiple primitives of the same shader are all rendered in succession they can be condensed down into a
-		 * common primitive set. This class represents that set.
-		 */
-		final List<BakedClientChunkQuadrantData> sortedTranslucentCommonPrimitiveSets;
-
-		BakedClientChunkQuadrant(List<BakedClientChunkQuadrantData> layers, List<BakedClientChunkQuadrantData> sets) {
-			this.opaqueLayers = layers;
-			this.sortedTranslucentCommonPrimitiveSets = sets;
-			int minInvalidation = AutoBlockLayerInvalidation.NONE.ordinal();
-			for(BakedClientChunkQuadrantData data : Iterables.concat(layers, sets)) {
-				int ordinal = data.invalidation.ordinal();
-				if(ordinal < minInvalidation) {
-					minInvalidation = ordinal;
-				}
-				if(ordinal == 0) {
-					break;
-				}
-			}
-			this.minInvalidation = AutoBlockLayerInvalidation.VALUES[minInvalidation];
+		BakedClientChunkQuadrant(List<BakedClientChunkQuadrantData> layers, AutoBlockLayerInvalidation minInvalidation) {
+			this.layers = layers;
+			this.minInvalidation = minInvalidation;
 		}
 
 		public void close() {
 			RenderThread.queueRenderTask(() -> {
-				for(BakedClientChunkQuadrantData layer : this.opaqueLayers) {
+				for(BakedClientChunkQuadrantData layer : this.layers) {
 					layer.vertexData.close();
 				}
 			});

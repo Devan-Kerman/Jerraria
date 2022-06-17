@@ -4,15 +4,16 @@ import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 /**
  * A 3xn matrix value.
  * @see AbstractGlValue
  */
-public abstract class Mat3<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
-	protected Mat3(GlData data, GlValue next, String name) {
-		super(data, next, name);
+public abstract class Mat3<N extends GlValue<?>> extends MatN<N> implements GlValue.Attribute, GlValue.Uniform {
+	protected Mat3(GlData data, GlValue next, String name, DataType matType) {
+		super(data, next, name, matType);
 	}
 
 	/**
@@ -32,11 +33,17 @@ public abstract class Mat3<N extends GlValue<?>> extends AbstractGlValue<N> impl
 
 	public static class x3<N extends GlValue<?>> extends Mat3<N> {
 		protected x3(GlData data, GlValue next, String name) {
-			super(data, next, name);
+			super(data, next, name, DataType.MAT3);
 		}
 
 		public N mat(Matrix3f mat) {
-			mat.upload(this.data.element(this.element));
+			mat.upload3x3(this.data.element(this.element));
+			return this.getNext();
+		}
+
+		@Override
+		public N matN(Mat mat) {
+			mat.upload3x3(this.data.element(this.element));
 			return this.getNext();
 		}
 

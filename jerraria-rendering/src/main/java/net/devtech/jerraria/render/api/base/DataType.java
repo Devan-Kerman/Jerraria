@@ -314,6 +314,7 @@ public enum DataType {
 	public final boolean normalized;
 	public final int byteCount, elementCount, elementType, glslType;
 	public final boolean isMatrix, isSampler, uniformOnly, isImage;
+	public final int m, n;
 
 	DataType(int elementType, int byteCount, boolean normalized, String name, boolean uniformOnly, int glslType) {
 		this(name, normalized, byteCount, 1, elementType, uniformOnly, glslType);
@@ -357,6 +358,18 @@ public enum DataType {
 		this.elementCount = elementCount;
 		this.elementType = elementType;
 		this.isMatrix = this.name().contains("MAT");
+		if(this.isMatrix) {
+			int index = this.name().lastIndexOf("MAT")+3;
+			String str = this.name().substring(index);
+			this.m = Character.digit(str.charAt(0), 10);
+			if(str.length() == 1) {
+				this.n = this.m;
+			} else {
+				this.n = Character.digit(str.charAt(2), 10);
+			}
+		} else {
+			this.m = this.n = 1;
+		}
 		this.isSampler = name.contains("sampler");
 		this.isImage = name.contains("image");
 		this.uniformOnly = uniformOnly;

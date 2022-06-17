@@ -13,6 +13,7 @@ import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.tile.TileVariant;
+import net.devtech.jerraria.world.tile.render.AutoBlockLayerInvalidation;
 import net.devtech.jerraria.world.tile.render.ShaderSource;
 import net.devtech.jerraria.world.tile.render.TileRenderer;
 
@@ -26,6 +27,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 
 		Thread current = Thread.currentThread();
 		Matrix3f mat = new Matrix3f();
+		AutoBlockLayerInvalidation minInvalidation = AutoBlockLayerInvalidation.NONE;
 		for(int x = startX; x < endX; x++) {
 			for(int y = startY; y < endY; y++) {
 				for(TileLayers layer : TileLayers.LAYERS) {
@@ -45,6 +47,10 @@ public class ClientChunkBakedTileQuadrantRenderer {
 						x,
 						y
 					);
+					AutoBlockLayerInvalidation inv = renderer.whenInvalid();
+					if(inv.ordinal() < minInvalidation.ordinal()) {
+						minInvalidation = inv;
+					}
 				}
 			}
 		}
@@ -67,18 +73,11 @@ public class ClientChunkBakedTileQuadrantRenderer {
 			});
 			opaque
 				.computeIfAbsent(value.state(), s -> new ArrayList<>())
-				.add(new ClientChunk.BakedClientChunkQuadrantData(value.invalidation(),
-					entry.getValue(),
-					value.config(),
-					value.primitive(),
-					value.state()
-				));
+				.add(new ClientChunk.BakedClientChunkQuadrantData(entry.getValue(), value.config(), value.state()));
 		}
 
 		// todo order independent translucency
 
-		return new ClientChunk.BakedClientChunkQuadrant(opaque.values().stream().flatMap(List::stream).toList(),
-			List.of()
-		);
+		return new ClientChunk.BakedClientChunkQuadrant(opaque.values().stream().flatMap(List::stream).toList(), minInvalidation);
 	}
 }

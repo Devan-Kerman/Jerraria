@@ -4,14 +4,15 @@ import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
+import net.devtech.jerraria.util.math.Mat;
 
 /**
  * A 4xn matrix value.
  * @see AbstractGlValue
  */
-public abstract class Mat4<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
-	protected Mat4(GlData data, GlValue next, String name) {
-		super(data, next, name);
+public abstract class Mat4<N extends GlValue<?>> extends MatN<N> implements GlValue.Attribute, GlValue.Uniform {
+	protected Mat4(GlData data, GlValue next, String name, DataType matType) {
+		super(data, next, name, matType);
 	}
 
 	/**
@@ -31,13 +32,14 @@ public abstract class Mat4<N extends GlValue<?>> extends AbstractGlValue<N> impl
 
 	public static class x4<N extends GlValue<?>> extends Mat4<N> {
 		protected x4(GlData data, GlValue next, String name) {
-			super(data, next, name);
+			super(data, next, name, DataType.MAT4);
 		}
 
-		/*public N mat(Matrix4f mat) {
-			// todo matrix4f
+		@Override
+		public N matN(Mat mat) {
+			mat.upload4x4(this.data.element(this.element));
 			return this.getNext();
-		}*/
+		}
 
 		public N identity() {
 			this.data.element(this.element)

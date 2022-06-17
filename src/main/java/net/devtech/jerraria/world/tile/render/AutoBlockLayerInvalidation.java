@@ -1,6 +1,6 @@
 package net.devtech.jerraria.world.tile.render;
 
-public enum AutoBlockLayerInvalidation {
+public enum AutoBlockLayerInvalidation implements Comparable<AutoBlockLayerInvalidation> {
 	/**
 	 * Rebuilds the block layer when a neighboring block is updated. Since we don't plan on per-block rebuilds atm,
 	 *  this in practice means the block layer quadrant is rebuilt when a neighboring chunk is loaded or

@@ -5,21 +5,18 @@ import java.util.Map;
 import java.util.Set;
 
 import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Matrix3f;
 import org.jetbrains.annotations.ApiStatus;
 
 @SuppressWarnings("unchecked")
 public class ShaderSource {
-	final Map<ShaderKey<?>, Shader<?>> shaderMap = new HashMap<>();
+	final Map<ChunkShaderKey<?>, Shader<?>> shaderMap = new HashMap<>();
 
 	public ShaderSource() {
 	}
 
-	public <T extends Shader<?>> T computeIfAbsent(ShaderKey<T> key) {
+	public <T extends Shader<?>> T computeIfAbsent(ChunkShaderKey<T> key) {
 		return (T) this.shaderMap.computeIfAbsent(
 			key,
 			k -> Shader.copy(key.shader(), key.copy())
@@ -27,7 +24,7 @@ public class ShaderSource {
 	}
 
 	@ApiStatus.Internal
-	public Set<Map.Entry<ShaderKey<?>, Shader<?>>> entries() {
+	public Set<Map.Entry<ChunkShaderKey<?>, Shader<?>>> entries() {
 		return this.shaderMap.entrySet();
 	}
 
@@ -37,12 +34,5 @@ public class ShaderSource {
 				value.close();
 			}
 		});
-	}
-
-	public interface ShaderConfigurator<T extends Shader<?>> {
-		/**
-		 * sets the offset matrix of the chunk and other misc uniforms prior to rendering
-		 */
-		void configureUniforms(Matrix3f chunkRenderMatrix, T shader);
 	}
 }
