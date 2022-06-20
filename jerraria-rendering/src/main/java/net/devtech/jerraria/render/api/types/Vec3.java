@@ -4,6 +4,7 @@ import net.devtech.jerraria.render.api.AbstractGlValue;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
+import net.devtech.jerraria.util.math.MatView;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 /**
@@ -50,7 +51,7 @@ public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> impl
 			return this.getNext();
 		}
 
-		public N vec3f(Matrix3f mat, float a, float b, float c) {
+		public N vec3f(MatView mat, float a, float b, float c) {
 			return this.vec3f(mat.mulX(a, b, c), mat.mulY(a, b, c), mat.mulZ(a, b, c));
 		}
 	}

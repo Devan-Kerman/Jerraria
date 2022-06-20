@@ -5,6 +5,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.util.math.Mat;
+import net.devtech.jerraria.util.math.MatView;
 
 public abstract class MatN<N extends GlValue<?>> extends AbstractGlValue<N> implements GlValue.Attribute, GlValue.Uniform {
 	final DataType matType;
@@ -14,7 +15,7 @@ public abstract class MatN<N extends GlValue<?>> extends AbstractGlValue<N> impl
 		this.matType = matType;
 	}
 
-	public N matN(Mat mat) {
+	public N matN(MatView mat) {
 		mat.upload(this.data.element(this.element), this.matType.m, this.matType.n);
 		return this.getNext();
 	}

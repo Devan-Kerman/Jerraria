@@ -27,10 +27,7 @@ public class AtomicCounterRendering {
 			shader.imgListHead.tex(alloc);
 			Matrix3f mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
-			RenderThread.addRenderStage(() -> {
-				shader.drawKeep();
-				//glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-			}, 10);
+			RenderThread.addRenderStage(shader::drawKeep, 10);
 			return null;
 		});
 	}

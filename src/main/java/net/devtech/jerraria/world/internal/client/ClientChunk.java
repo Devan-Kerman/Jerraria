@@ -1,16 +1,12 @@
 package net.devtech.jerraria.world.internal.client;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.jerracode.JCTagView;
-import net.devtech.jerraria.render.api.BuiltGlState;
-import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
@@ -22,7 +18,9 @@ import net.devtech.jerraria.world.tile.TileData;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.tile.VariantConvertable;
 import net.devtech.jerraria.world.tile.render.AutoBlockLayerInvalidation;
-import net.devtech.jerraria.world.tile.render.ChunkShaderConfigurator;
+import net.devtech.jerraria.world.tile.render.BakingChunk;
+import net.devtech.jerraria.world.tile.render.ChunkRenderableShader;
+import net.devtech.jerraria.world.tile.render.TileRenderingInternal;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -33,7 +31,7 @@ public class ClientChunk extends Chunk {
 	public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Math.min(Runtime
 		.getRuntime()
 		.availableProcessors(), 4));
-	final AtomicReferenceArray<@Nullable BakedClientChunkQuadrant> quadrants = new AtomicReferenceArray<>(4);
+	final AtomicReferenceArray<@Nullable BakingChunk> quadrants = new AtomicReferenceArray<>(4);
 	final @Nullable Future<?>[] futures = new Future[4];
 	final boolean isSnapshot;
 	boolean delayUpdates;
@@ -98,7 +96,7 @@ public class ClientChunk extends Chunk {
 	})
 	public void render(Matrix3f chunkMatrix) {
 		for(int i = 0, length = this.quadrants.length(); i < length; i++) {
-			BakedClientChunkQuadrant quadrant = this.quadrants.get(i);
+			BakingChunk quadrant = this.quadrants.get(i);
 			if(quadrant == null) {
 				continue;
 			}
@@ -106,10 +104,8 @@ public class ClientChunk extends Chunk {
 			Matrix3f copy = chunkMatrix
 				.copy()
 				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1 - y) << World.LOG2_CHUNK_QUADRANT_SIZE);
-			for(BakedClientChunkQuadrantData layer : quadrant.layers) {
-				layer.configurator.configureUniforms(copy, layer.vertexData);
-				layer.vertexData.drawKeep(layer.state);
-			}
+
+			TileRenderingInternal.impl(quadrant).drawKeep(shader -> ((ChunkRenderableShader)shader).setChunkMatrix(copy));
 		}
 	}
 
@@ -119,9 +115,9 @@ public class ClientChunk extends Chunk {
 		}
 
 		int quadrantIndex = quadrantX * 2 + quadrantY;
-		BakedClientChunkQuadrant quadrant = this.quadrants.get(quadrantIndex);
+		BakingChunk quadrant = this.quadrants.get(quadrantIndex);
 		int absQuadX = quadrantX + this.chunkX * 2, absQuadY = quadrantY + this.chunkY * 2;
-		if(quadrant == null || quadrant.minInvalidation.ordinal() <= reason.ordinal()) {
+		if(quadrant == null || quadrant.getMinInvalidation().ordinal() <= reason.ordinal()) {
 			ClientChunk[] cache = new ClientChunk[4];
 			int cacheX = (absQuadX - 1) >> 1, cacheY = (absQuadY - 1) >> 1;
 			if(reason == AutoBlockLayerInvalidation.ON_BLOCK_UPDATE) {
@@ -173,43 +169,16 @@ public class ClientChunk extends Chunk {
 					var baked = ClientChunkBakedTileQuadrantRenderer.bake(snapshot, absQuadX, absQuadY);
 					if(Thread.currentThread().isInterrupted()) {
 						if(baked != null) {
-							baked.close();
+							TileRenderingInternal.impl(baked).close();
 						}
 						return;
 					}
-					BakedClientChunkQuadrant set = this.quadrants.getAndSet(quadrantIndex, baked);
+					BakingChunk set = this.quadrants.getAndSet(quadrantIndex, baked);
 					if(set != null) {
-						set.close();
+						TileRenderingInternal.impl(set).close();
 					}
 				} catch(Exception e) {
 					new IllegalStateException("Error when baking chunk", e).printStackTrace();
-				}
-			});
-		}
-	}
-
-	record BakedClientChunkQuadrantData<T extends Shader<?>>(
-		T vertexData, ChunkShaderConfigurator<T> configurator, BuiltGlState state
-	) {}
-
-	@SuppressWarnings("rawtypes")
-	static final class BakedClientChunkQuadrant {
-		final AutoBlockLayerInvalidation minInvalidation;
-		/**
-		 * The vertex & uniforms of a single shader layer. The shader must be used to render opaque objects because
-		 * these are "sorted" per-layer rather than per-vertex.
-		 */
-		final List<BakedClientChunkQuadrantData> layers;
-
-		BakedClientChunkQuadrant(List<BakedClientChunkQuadrantData> layers, AutoBlockLayerInvalidation minInvalidation) {
-			this.layers = layers;
-			this.minInvalidation = minInvalidation;
-		}
-
-		public void close() {
-			RenderThread.queueRenderTask(() -> {
-				for(BakedClientChunkQuadrantData layer : this.layers) {
-					layer.vertexData.close();
 				}
 			});
 		}

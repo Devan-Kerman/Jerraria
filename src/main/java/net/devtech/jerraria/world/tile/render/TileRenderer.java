@@ -1,5 +1,6 @@
 package net.devtech.jerraria.world.tile.render;
 
+import net.devtech.jerraria.render.api.batch.BatchedRenderer;
 import net.devtech.jerraria.util.math.Matrix3f;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.tile.TileData;
@@ -26,7 +27,7 @@ public interface TileRenderer {
 	 * @param x absolute x of the tile in the world
 	 * @param y absolute y of the tile in the world
 	 */
-	void renderTile(ShaderSource source, Matrix3f tileMatrix, World localWorld, TileVariant variant, @Nullable TileData clientTileData, int x, int y);
+	void renderTile(BakingChunk source, Matrix3f tileMatrix, World localWorld, TileVariant variant, @Nullable TileData clientTileData, int x, int y);
 
 	default AutoBlockLayerInvalidation whenInvalid() {
 		return AutoBlockLayerInvalidation.ON_BLOCK_UPDATE;

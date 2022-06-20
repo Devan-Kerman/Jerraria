@@ -40,14 +40,16 @@ dependencies {
 	testImplementation 'com.google.jimfs:jimfs:1.2'
 }
 
-java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
-}
+allprojects {
+	java {
+		sourceCompatibility = JavaVersion.VERSION_18
+		targetCompatibility = JavaVersion.VERSION_18
+	}
 
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
-	options.release.set(17)
+	tasks.withType(JavaCompile) {
+		options.encoding = "UTF-8"
+		options.release.set(18)
+	}
 }
 
 test {

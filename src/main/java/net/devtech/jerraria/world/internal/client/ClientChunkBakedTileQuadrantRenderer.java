@@ -14,12 +14,13 @@ import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.tile.TileVariant;
 import net.devtech.jerraria.world.tile.render.AutoBlockLayerInvalidation;
-import net.devtech.jerraria.world.tile.render.ShaderSource;
+import net.devtech.jerraria.world.tile.render.BakingChunk;
 import net.devtech.jerraria.world.tile.render.TileRenderer;
+import net.devtech.jerraria.world.tile.render.TileRenderingInternal;
 
 public class ClientChunkBakedTileQuadrantRenderer {
-	public static ClientChunk.BakedClientChunkQuadrant bake(World localWorld, int absQuadrantX, int absQuadrantY) {
-		ShaderSource source = new ShaderSource();
+	public static BakingChunk bake(World localWorld, int absQuadrantX, int absQuadrantY) {
+		BakingChunk source = new BakingChunk();
 		int startX = absQuadrantX << World.LOG2_CHUNK_QUADRANT_SIZE;
 		int startY = absQuadrantY << World.LOG2_CHUNK_QUADRANT_SIZE;
 		int endX = (absQuadrantX + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
@@ -32,7 +33,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 			for(int y = startY; y < endY; y++) {
 				for(TileLayers layer : TileLayers.LAYERS) {
 					if(current.isInterrupted()) {
-						source.close();
+						TileRenderingInternal.impl(source).close();
 						return null;
 					}
 					TileLayer tileLayer = localWorld.layerFor(layer);
@@ -55,29 +56,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 			}
 		}
 
-
-		// group identical BuiltGlStates together to avoid context switching
-		// maybe sorting to minimize changes at some point?
-		Map<BuiltGlState, List<ClientChunk.BakedClientChunkQuadrantData>> opaque = new HashMap<>();
-		for(var entry : source.entries()) {
-			if(current.isInterrupted()) {
-				source.close();
-				return null;
-			}
-			var value = entry.getKey();
-			RenderThread.queueRenderTask(() -> {
-				Shader<?> value1 = entry.getValue();
-				if(value1.isValid()) {
-					value1.bake();
-				}
-			});
-			opaque
-				.computeIfAbsent(value.state(), s -> new ArrayList<>())
-				.add(new ClientChunk.BakedClientChunkQuadrantData(entry.getValue(), value.config(), value.state()));
-		}
-
-		// todo order independent translucency
-
-		return new ClientChunk.BakedClientChunkQuadrant(opaque.values().stream().flatMap(List::stream).toList(), minInvalidation);
+		RenderThread.queueRenderTask(() -> TileRenderingInternal.impl(source).bake());
+		return source;
 	}
 }

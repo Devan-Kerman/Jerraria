@@ -5,6 +5,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.util.math.Mat;
+import net.devtech.jerraria.util.math.MatView;
 import net.devtech.jerraria.util.math.Matrix3f;
 
 /**
@@ -42,7 +43,7 @@ public abstract class Mat3<N extends GlValue<?>> extends MatN<N> implements GlVa
 		}
 
 		@Override
-		public N matN(Mat mat) {
+		public N matN(MatView mat) {
 			mat.upload3x3(this.data.element(this.element));
 			return this.getNext();
 		}
