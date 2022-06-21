@@ -12,6 +12,7 @@ public class TranslucencyAPI {
 	}
 
 	public static void main(String[] args) {
+
 		Bootstrap.startClient(args, () -> {
 			RenderThread.RESIZE.andThen(TestTranslucentShader.HANDLER::frameSize);
 			RenderThread.addRenderStage(TRunnable.of(() -> {

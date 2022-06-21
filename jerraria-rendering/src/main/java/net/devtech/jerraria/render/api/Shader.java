@@ -24,6 +24,9 @@ import org.jetbrains.annotations.Contract;
  * An object of this class represents a reference to an opengl shader, it's uniform's values, and it's vertex data.
  */
 public abstract class Shader<T extends GlValue<?> & GlValue.Attribute> implements AutoCloseable {
+
+	// todo support gl primitive restart
+
 	final ShaderImpl<T> delegate;
 
 	/**

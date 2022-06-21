@@ -25,7 +25,6 @@ public class BatchRendererImpl implements BatchedRenderer {
 		}
 	}
 
-	@Override
 	public void close() {
 		for(Shader<?> value : this.batches.values()) {
 			value.close();

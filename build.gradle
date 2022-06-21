@@ -16,6 +16,9 @@ allprojects {
 	group 'net.devtech'
 	repositories {
 		mavenCentral()
+		maven {
+			url 'https://dist.wso2.org/maven2/'
+		}
 		/*maven {
 			url 'https://oss.sonatype.org/content/repositories/snapshots/'
 		}*/
@@ -38,6 +41,12 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'com.google.jimfs:jimfs:1.2'
+	// https://mvnrepository.com/artifact/org.apache.xmlgraphics/org.apache.batik.ext.awt
+	testImplementation 'org.apache.xmlgraphics:org.apache.batik.ext.awt:1.6.0.v201011041432'
+	// https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-svggen
+	implementation 'org.apache.xmlgraphics:batik-svggen:1.14'
+
+
 }
 
 allprojects {
