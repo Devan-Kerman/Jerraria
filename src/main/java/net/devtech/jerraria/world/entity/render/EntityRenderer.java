@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import net.devtech.jerraria.access.Access;
-import net.devtech.jerraria.client.WorldRenderer;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.util.math.Mat3f;
 import net.devtech.jerraria.world.entity.Entity;
 
 public interface EntityRenderer {
@@ -29,13 +28,13 @@ public interface EntityRenderer {
 		return renderer;
 	});
 
-	void renderEntity(Entity entity, Matrix3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY);
+	void renderEntity(Entity entity, Mat3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY);
 
 	class CombinedEntityRenderer implements EntityRenderer {
 		final List<EntityRenderer> renderers = new ArrayList<>();
 
 		@Override
-		public void renderEntity(Entity entity, Matrix3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY) {
+		public void renderEntity(Entity entity, Mat3f matrix, int windowFromX, int windowFromY, int windowToX, int windowToY) {
 			for(EntityRenderer renderer : this.renderers) {
 				renderer.renderEntity(entity, matrix, windowFromX, windowFromY, windowToX, windowToY);
 			}

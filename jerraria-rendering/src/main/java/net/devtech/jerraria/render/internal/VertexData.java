@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -141,6 +142,31 @@ public class VertexData extends GlData {
 			group.getBuilder().vert();
 		}
 		return this;
+	}
+
+	public interface PositionDataModifier {
+		void modifier(ByteBuffer input, Buf buf);
+	}
+
+	public int modifyPosData(int fromVertex, int toVertex, GlData.Element elem, PositionDataModifier fixer) {
+		ElementImpl element = (ElementImpl) elem;
+		VBOBuilder buffer = this.groups.get(element.groupIndex()).getBuilder();
+		if(toVertex == -65) {
+			toVertex = buffer.getVertexCount();
+		}
+		buffer.assertElementRange(fromVertex, toVertex);
+		int start = buffer.getVertexCount();
+		try {
+			for(int vertex = fromVertex; vertex < toVertex; vertex++) {
+				buffer.struct(vertex);
+				ByteBuffer offset = buffer.offset(element.offsetIndex());
+				ByteBuffer slice = offset.slice(offset.position(), element.type().byteCount);
+				fixer.modifier(slice, buffer);
+			}
+		} finally {
+			buffer.struct(start);
+		}
+		return toVertex;
 	}
 
 	public VertexData bind() {

@@ -7,7 +7,7 @@ import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.shaders.LLTransResolveShader;
+import net.devtech.jerraria.render.internal.shaders.LLTransResolveShader;
 import net.devtech.jerraria.util.math.JMath;
 
 public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer {

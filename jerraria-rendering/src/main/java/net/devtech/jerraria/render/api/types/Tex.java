@@ -5,7 +5,7 @@ import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.base.ImageFormat;
-import net.devtech.jerraria.render.textures.Texture;
+import net.devtech.jerraria.render.api.textures.Texture;
 
 /**
  * A gl texture value, these can only be used as uniforms. They are attached as a sampler2d

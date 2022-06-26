@@ -1,21 +1,21 @@
 package net.devtech.jerraria.render.internal.buffers;
 
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public final class VBOBuilder extends AbstractBOBuilder {
-	int element = 0;
+	int size = 0;
 
 	public VBOBuilder(VBOBuilder builder) {
 		super(builder);
-		this.element = builder.element;
+		this.size = builder.size;
 	}
 
 	public VBOBuilder(AbstractBOBuilder buffer, int copyCount) {
 		super(buffer, copyCount);
-		this.element = copyCount;
+		this.size = copyCount;
 	}
 
 	public VBOBuilder(int[] offsets, int vertexLen) {
@@ -31,7 +31,7 @@ public final class VBOBuilder extends AbstractBOBuilder {
 	}
 
 	public int getVertexCount() {
-		return this.element;
+		return this.size;
 	}
 
 	public ByteBuffer offset(int index) {
@@ -40,11 +40,15 @@ public final class VBOBuilder extends AbstractBOBuilder {
 	}
 
 	public void vert() {
-		this.struct(this.element++);
+		this.struct(this.size++);
+	}
+
+	public void assertElementRange(int from, int to) {
+		Objects.checkFromToIndex(from, to, this.size);
 	}
 
 	public void reset() {
-		this.element = 0;
+		this.size = 0;
 	}
 
 	@Override

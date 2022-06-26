@@ -12,4 +12,10 @@ public interface Transformable {
 	}
 
 	Transformable scale(float x, float y, float z);
+
+	Transformable rotate(float radX, float radY, float radZ);
+
+	default Transformable rotate(float rad) {
+		return this.rotate(0, 0, rad);
+	}
 }

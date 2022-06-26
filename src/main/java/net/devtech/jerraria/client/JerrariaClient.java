@@ -2,7 +2,6 @@ package net.devtech.jerraria.client;
 
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.resource.VirtualFile;
-import net.devtech.jerraria.util.math.Matrix3f;
 
 public class JerrariaClient {
 	public static final long MAIN_WINDOW_GL_ID = ClientInit.glMainWindow;

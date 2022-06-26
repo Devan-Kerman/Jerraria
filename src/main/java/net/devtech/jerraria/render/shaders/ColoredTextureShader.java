@@ -16,9 +16,9 @@ import net.devtech.jerraria.render.api.types.Tex;
 import net.devtech.jerraria.render.api.types.Vec2;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.textures.Atlas;
-import net.devtech.jerraria.render.textures.Texture;
+import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.util.math.Mat3f;
 import net.devtech.jerraria.world.tile.render.ChunkRenderableShader;
 
 public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>> implements ChunkRenderableShader { // vertex attributes
@@ -58,7 +58,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	}
 
 	public ColoredTextureShader rect(
-		Matrix3f mat,
+		Mat3f mat,
 		Texture texture,
 		float offX,
 		float offY,
@@ -74,7 +74,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	}
 
 	@Override
-	public void setChunkMatrix(Matrix3f chunkRenderMatrix) {
+	public void setChunkMatrix(Mat3f chunkRenderMatrix) {
 		this.mat.mat(chunkRenderMatrix);
 	}
 }

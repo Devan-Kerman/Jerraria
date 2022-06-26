@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.textures;
+package net.devtech.jerraria.render.api.textures;
 
 /**
  * A texture or fraction of a gl texture
@@ -7,7 +7,7 @@ public final class Texture {
 	final int glId;
 	final float offX, offY, width, height;
 
-	Texture(int id, float x, float y, float width, float height) {
+	public Texture(int id, float x, float y, float width, float height) {
 		this.glId = id;
 		this.offX = x;
 		this.offY = y;

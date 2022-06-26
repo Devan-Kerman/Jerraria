@@ -4,21 +4,24 @@ import static org.lwjgl.opengl.GL33.*;
 
 import java.nio.ByteBuffer;
 
-import net.devtech.jerraria.client.JerrariaClient;
+import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.shaders.BlurShader;
+import net.devtech.jerraria.render.internal.shaders.BlurResolveShader;
 
 public class BloomRenderer {
 	static final int framebufferId = glGenFramebuffers();
 	static final int framebufferAttachmentId = glGenTextures();
 	static {
-		GLContextState.bindFrameBuffer(framebufferId); // idk if this has a RenderSystem call for it, u should use that one
+		// replace GLContextState with RenderSystem or whatever mc has for this (or glBindFrameBuffer if it doesn't)
+		GLContextState.bindFrameBuffer(framebufferId);
 		int[] dims = new int[4];
 		glGetIntegerv(GL_VIEWPORT, dims);
 		int width = dims[2], height = dims[3];
 		screenSize(width, height);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferAttachmentId, 0);
+		GLContextState.bindFrameBuffer(0);
+		RenderThread.RESIZE.andThen(BloomRenderer::screenSize);
 	}
 
 	static void screenSize(int width, int height) { // u will also have to call this every time the screen is resized
@@ -34,7 +37,6 @@ public class BloomRenderer {
 			(ByteBuffer) null);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		GLContextState.drawBuffers(1);
 	}
 
 	static void renderBloom(Runnable bloomRenderer) {
@@ -48,7 +50,7 @@ public class BloomRenderer {
 
 	static void drawBloomToMain() {
 		GLContextState.bindDefaultFrameBuffer();
-		BlurShader shader = BlurShader.INSTANCE;
+		BlurResolveShader shader = BlurResolveShader.INSTANCE;
 		shader.tex.tex(framebufferAttachmentId);
 		shader.strategy(AutoStrat.QUADS);
 		shader.vert().vec3f(-1, -1, 0);

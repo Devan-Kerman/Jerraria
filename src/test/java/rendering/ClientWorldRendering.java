@@ -8,7 +8,7 @@ import net.devtech.jerraria.client.overworld.OverworldWorldRenderer;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.util.math.JMath;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.util.math.Mat3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
@@ -80,7 +80,7 @@ public class ClientWorldRendering {
 
 			WorldRenderer renderer = new OverworldWorldRenderer(world);
 			RenderThread.addRenderStage(() -> {
-				Matrix3f mat = new Matrix3f();
+				Mat3f mat = new Mat3f();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(JerrariaClient.windowHeight() / ((float) JerrariaClient.windowWidth()), 1);

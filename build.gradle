@@ -33,6 +33,7 @@ ext.lwjglNatives = 'natives-windows'
 dependencies {
 	api project(":jerraria-rendering")
 	api project(":jerraria-access")
+	api project(":jerraria-gui")
 	implementation 'io.netty:netty-handler:4.1.76.Final'
 	implementation 'io.netty:netty-codec-http:4.1.76.Final'
 	implementation 'io.netty:netty-transport-native-epoll:4.1.76.Final'
@@ -41,11 +42,6 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'com.google.jimfs:jimfs:1.2'
-	// https://mvnrepository.com/artifact/org.apache.xmlgraphics/org.apache.batik.ext.awt
-	testImplementation 'org.apache.xmlgraphics:org.apache.batik.ext.awt:1.6.0.v201011041432'
-	// https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-svggen
-	implementation 'org.apache.xmlgraphics:batik-svggen:1.14'
-
 
 }
 
@@ -83,15 +79,20 @@ task startServer(type: JavaExec) {
 ext.genOutputDir = file("$buildDir/generated-resources")
 def resources = file("$projectDir/src/main/resources")
 def renderingResources = file("${project(":jerraria-rendering").projectDir}/src/main/resources")
+def guiResources = file("${project(":jerraria-gui").projectDir}/src/main/resources")
+
+def allResources = [resources, renderingResources]
 task generateFileIndex {
-	inputs.dir(resources)
-	inputs.dir(renderingResources)
+	allResources.forEach {
+		inputs.dir(it)
+	}
+
 	def outputFile = file("$genOutputDir/index.txt")
 	outputs.file(outputFile)
 
 	doLast {
 		def files = [], dirs = []
-		[resources, renderingResources].each { dir ->
+		allResources.each { dir ->
 			dir.traverse { file ->
 				def relative = dir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
 				if (file.isDirectory()) {

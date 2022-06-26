@@ -4,7 +4,7 @@ import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.shaders.SolidColorShader;
 import net.devtech.jerraria.util.func.TRunnable;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.util.math.Mat3f;
 
 public class TranslucencyAPI {
 	static {
@@ -28,7 +28,7 @@ public class TranslucencyAPI {
 					0x80AAAAAA
 				};
 
-				Matrix3f idt = new Matrix3f();
+				Mat3f idt = new Mat3f();
 
 				SolidColorShader background = SolidColorShader.INSTANCE;
 				background.rect(idt, -1, -1, 2, 2, 0xFFFFFFFF);

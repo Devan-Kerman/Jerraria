@@ -23,12 +23,11 @@ import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.collect.RandomCollection;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.util.math.Mat3f;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryUtil;
@@ -150,7 +149,7 @@ class ClientInit {
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			Matrix3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
+			Mat3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.draw();
 			text.draw();

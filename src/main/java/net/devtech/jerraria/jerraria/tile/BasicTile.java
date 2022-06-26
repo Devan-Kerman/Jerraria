@@ -2,8 +2,8 @@ package net.devtech.jerraria.jerraria.tile;
 
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.textures.Texture;
-import net.devtech.jerraria.util.math.Matrix3f;
+import net.devtech.jerraria.render.api.textures.Texture;
+import net.devtech.jerraria.util.math.Mat3f;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.tile.Tile;
 import net.devtech.jerraria.world.tile.TileData;
@@ -31,7 +31,7 @@ public class BasicTile extends Tile {
 		@Override
 		public void renderTile(
 			BakingChunk source,
-			Matrix3f tileMatrix,
+			Mat3f tileMatrix,
 			World localWorld,
 			TileVariant variant,
 			@Nullable TileData clientTileData,

@@ -2,6 +2,9 @@ package net.devtech.jerraria.render.api.batch;
 
 import net.devtech.jerraria.render.api.Shader;
 
+/**
+ * @see BasicShaderKey
+ */
 public abstract class ShaderKey<T extends Shader<?>> {
 	/**
 	 * Draw the shader and preserve the vertex data
