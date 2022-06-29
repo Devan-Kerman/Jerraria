@@ -8,7 +8,7 @@ import net.devtech.jerraria.world.entity.Entity;
 
 public abstract class AttachableObject {
 	static final VarHandle HANDLE = TSupplier
-		.of(() -> MethodHandles.lookup().findVarHandle(Entity.class, "attachedData", Object[].class)).get();
+		.of(() -> MethodHandles.lookup().findVarHandle(AttachableObject.class, "attachedData", Object[].class)).get();
 
 	Object[] attachedData;
 }

@@ -1,6 +1,6 @@
 package net.devtech.jerraria.client;
 
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientChunk;
@@ -13,10 +13,10 @@ public abstract class WorldRenderer {
 		this.world = world;
 	}
 
-	protected abstract void renderBackground(Mat3f cartToAwt, Entity player, int windowFromX, int windowFromY, int windowToX, int windowToY);
+	protected abstract void renderBackground(Mat2x3f cartToAwt, Entity player, int windowFromX, int windowFromY, int windowToX, int windowToY);
 
-	public void render(Mat3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
-		Mat3f rel = cartToAwt.copy().scale(1f / blockScreenWidth, 1f / blockScreenHeight);
+	public void render(Mat2x3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
+		Mat2x3f rel = cartToAwt.copy().scale(1f / blockScreenWidth, 1f / blockScreenHeight);
 
 		int extendedOffX = blockScreenWidth / 2 + 10, extendedOffY = blockScreenHeight / 2 + 10;
 		int blockX = player.getBlockX(), blockY = player.getBlockY();
@@ -25,7 +25,7 @@ public abstract class WorldRenderer {
 		int toBlockX   = blockX + extendedOffX,   toBlockY = blockY + extendedOffY;
 
 		this.renderBackground(cartToAwt, player, fromBlockX, fromBlockY, toBlockX, toBlockY);
-		Mat3f chunkMatrix = new Mat3f();
+		Mat2x3f chunkMatrix = new Mat2x3f();
 		// block coordinate of top left corner
 		double fromBlockXScreen = player.x() - blockScreenWidth / 2f, fromBlockYScreen = player.y() + blockScreenHeight / 2f;
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
@@ -40,7 +40,7 @@ public abstract class WorldRenderer {
 			}
 		}
 
-		Mat3f entityMatrix = new Mat3f();
+		Mat2x3f entityMatrix = new Mat2x3f();
 		// multithreaded entity rendering could be a possibility?
 		// todo batch entities
 		//this.world.entityLayer().getEntitiesIntersect(EntitySearchType.Standard.RENDERING, fromBlockX, fromBlockY, toBlockX, toBlockY, 10).forEach(entity -> {

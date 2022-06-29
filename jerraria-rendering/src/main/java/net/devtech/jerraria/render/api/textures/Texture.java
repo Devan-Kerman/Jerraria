@@ -66,4 +66,8 @@ public final class Texture {
 	public float getHeight() {
 		return this.height;
 	}
+
+	public float aspectRatio() {
+		return this.getWidth() / this.getHeight();
+	}
 }

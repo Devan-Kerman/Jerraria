@@ -75,7 +75,7 @@ public abstract class BaseEntity extends Entity {
 	}
 
 	/**
-	 * TODO vector-sorted iterator:
+	 * TODO shape-sorted iterator:
 	 *  0) once for top left corner once for bottom right
 	 *  1) sort into clockwise order from 0, 0 (pre-baked)
 	 *  2) iterator stores left and right index, every time next is called

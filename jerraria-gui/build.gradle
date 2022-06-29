@@ -2,5 +2,5 @@ version '1.0.0'
 
 dependencies {
 	api project(":jerraria-rendering")
-	api 'org.locationtech.jts:jts-core:1.18.2'
+
 }

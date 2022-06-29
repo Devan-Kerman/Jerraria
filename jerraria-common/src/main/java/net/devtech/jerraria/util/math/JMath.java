@@ -13,6 +13,10 @@ public class JMath {
 		return (int) Math.ceil(val);
 	}
 
+	public static int iceil(float val) {
+		return (int) Math.ceil(val);
+	}
+
 	public static int ceilDiv(int numerator, int denominator) {
 		return (numerator + denominator - 1) / denominator;
 	}
@@ -73,5 +77,25 @@ public class JMath {
 
 	public static long combineInts(int a, int b) {
 		return (long) a << 32 | b & 0xFFFFFFFFL;
+	}
+
+	public static int clamp(int index, int min, int max) {
+		if(index < min) {
+			return min;
+		} else if(index >= max) {
+			return max;
+		} else {
+			return index;
+		}
+	}
+
+	public static float clamp(float value, float min, float max) {
+		if(value < min) {
+			return min;
+		} else if(value >= max) {
+			return max;
+		} else {
+			return value;
+		}
 	}
 }

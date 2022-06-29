@@ -7,7 +7,7 @@ import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.ClientMain;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.base.DataType;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import org.lwjgl.system.MemoryUtil;
 
 public class AtomicCounterRendering {
@@ -25,7 +25,7 @@ public class AtomicCounterRendering {
 			int alloc = allocateImageListHead(100, 100);
 			TestSolidColorShader shader = TestSolidColorShader.INSTANCE;
 			shader.imgListHead.tex(alloc);
-			Mat3f mat = ClientMain.cartesianToAWTIndexGrid(1);
+			Mat2x3f mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.drawRect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
 			RenderThread.addRenderStage(shader::drawKeep, 10);
 			return null;

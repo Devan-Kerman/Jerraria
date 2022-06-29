@@ -43,15 +43,13 @@ record BuiltGlStateImpl(GLStateBuilder state) implements BuiltGlState {
 					}
 					state.set(src, dst);
 				}
-			} else {
-				if(!blendAll) {
-					if(GLContextState.BLEND_STATE_IS != null) {
-						for(GLContextState.BlendStateI state : GLContextState.BLEND_STATE_IS) {
-							state.set(state.defaultSrc, state.defaultDst);
-						}
-					} else {
-						GLContextState.blendFunc(GLContextState.BLEND_ALL_INTERNAL.defaultSrc, GLContextState.BLEND_ALL_INTERNAL.defaultDst);
+			} else if(!GLContextState.defaultBlendAll && !blendAll){
+				if(GLContextState.BLEND_STATE_IS != null) {
+					for(GLContextState.BlendStateI state : GLContextState.BLEND_STATE_IS) {
+						state.set(state.defaultSrc, state.defaultDst);
 					}
+				} else {
+					GLContextState.blendFunc(GLContextState.BLEND_ALL_INTERNAL.defaultSrc, GLContextState.BLEND_ALL_INTERNAL.defaultDst);
 				}
 			}
 			//endregion

@@ -2,11 +2,18 @@ package net.devtech.jerraria.render.api;
 
 import static net.devtech.jerraria.render.api.GLStateBuilder.*;
 
+import java.util.Objects;
+
 import net.devtech.jerraria.render.internal.state.GLContextState;
 
-record GlStateStackImpl(GLStateBuilder original, GLStateBuilder current) implements GlStateStack {
-	GlStateStackImpl {
+final class GlStateStackImpl extends GlStateStack {
+	private final GLStateBuilder original;
+	private final GLStateBuilder current;
+
+	GlStateStackImpl(GLStateBuilder original, GLStateBuilder current) {
 		applyDefaults(current);
+		this.original = original;
+		this.current = current;
 	}
 
 	GlStateStackImpl(GLStateBuilder current) {
@@ -22,7 +29,9 @@ record GlStateStackImpl(GLStateBuilder original, GLStateBuilder current) impleme
 			GLContextState.BLEND_EQUATION.setAndDefault(current.blendEquation);
 		}
 
-		if(current.isEnabled(BLEND_ALL_SET)) {
+		boolean enabled = current.isEnabled(BLEND_ALL_SET);
+		GLContextState.defaultBlendAll = enabled;
+		if(enabled) {
 			GLContextState.blendFunc(current.blendSrc, current.blendDst);
 			GLContextState.BLEND_ALL_INTERNAL.defaultSrc = current.blendSrc;
 			GLContextState.BLEND_ALL_INTERNAL.defaultDst = current.blendDst;
@@ -155,4 +164,27 @@ record GlStateStackImpl(GLStateBuilder original, GLStateBuilder current) impleme
 	public GlStateStack copy() {
 		return this; // immutable
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj == null || obj.getClass() != this.getClass()) {
+			return false;
+		}
+		var that = (GlStateStackImpl) obj;
+		return Objects.equals(this.original, that.original) && Objects.equals(this.current, that.current);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(original, current);
+	}
+
+	@Override
+	public String toString() {
+		return "GlStateStackImpl[" + "original=" + original + ", " + "current=" + current + ']';
+	}
+
 }

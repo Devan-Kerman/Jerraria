@@ -1,7 +1,7 @@
 package net.devtech.jerraria.world.internal.client;
 
 import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.TileLayer;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
@@ -20,7 +20,7 @@ public class ClientChunkBakedTileQuadrantRenderer {
 		int endY = (absQuadrantY + 1) << World.LOG2_CHUNK_QUADRANT_SIZE;
 
 		Thread current = Thread.currentThread();
-		Mat3f mat = new Mat3f();
+		Mat2x3f mat = new Mat2x3f();
 		AutoBlockLayerInvalidation minInvalidation = AutoBlockLayerInvalidation.NONE;
 		for(int x = startX; x < endX; x++) {
 			for(int y = startY; y < endY; y++) {

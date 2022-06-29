@@ -3,6 +3,8 @@ package net.devtech.jerraria.util.math;
 import net.devtech.jerraria.render.api.base.GlData;
 
 public abstract sealed class MatView permits Mat {
+	public abstract MatType getType();
+
 	public float mulX(float x, float y) {
 		return this.mulX(x, y, 1, 1);
 	}
@@ -24,6 +26,8 @@ public abstract sealed class MatView permits Mat {
 	}
 
 	public abstract Mat copy();
+
+	public abstract Mat inverse(Mat mat);
 
 	public abstract float mulX(float x, float y, float z, float w);
 

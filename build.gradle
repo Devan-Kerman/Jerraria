@@ -42,7 +42,7 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'com.google.jimfs:jimfs:1.2'
-
+	implementation 'org.orbisgis:poly2tri-core:0.1.2'
 }
 
 allprojects {

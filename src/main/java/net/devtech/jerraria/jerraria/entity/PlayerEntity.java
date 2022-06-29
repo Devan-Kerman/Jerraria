@@ -2,9 +2,9 @@ package net.devtech.jerraria.jerraria.entity;
 
 import java.util.List;
 
-import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.jerracode.element.JCElement;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.util.math.Rectangle;
 import net.devtech.jerraria.world.EntitySearchType;
 import net.devtech.jerraria.world.World;
@@ -64,7 +64,7 @@ public class PlayerEntity extends BaseEntity {
 		@Override
 		public void renderEntity(
 			Entity entity,
-			Mat3f matrix,
+			Mat2x3f matrix,
 			int windowFromX,
 			int windowFromY,
 			int windowToX,

@@ -3,9 +3,9 @@ package net.devtech.jerraria.client;
 import java.util.List;
 import java.util.Vector;
 
-import net.devtech.jerraria.util.math.Mat3f;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
+import net.devtech.jerraria.util.math.Mat2x3f;
+import net.devtech.jerraria.render.shaders.ChunkTextureShader;
 
 public class LoadRender {
 	final LoadRender parent;
@@ -26,7 +26,7 @@ public class LoadRender {
 
 	public static final int[] RAINBOW = {0xFF0000, 0xFF8800, 0xFFFF00, 0x88FF00, 0x00FF00, 0x00FF88, 0x00FFFF, 0x0088FF, 0x0000FF};
 
-	public void render(Mat3f mat, SolidColorShader box, ColoredTextureShader text, float width, float offX, float offY) {
+	public void render(Mat2x3f mat, SolidColorShader box, ChunkTextureShader text, float width, float offX, float offY) {
 		box.rect(mat, offX + .05f, offY + .05f, width - .1f, .9f, 0xFFAAAAAA);
 
 		float ratio = this.completed / (float) this.taskSize;
@@ -101,7 +101,7 @@ public class LoadRender {
 	 * this code is terrible, cope
 	 * loading screen text is rendered on an 8 line grid
 	 */
-	public static void renderText(Mat3f mat, ColoredTextureShader instance, String text, int rgb, float offX, float offY) {
+	public static void renderText(Mat2x3f mat, ChunkTextureShader instance, String text, int rgb, float offX, float offY) {
 		for(int i = 0; i < text.length(); i++) {
 			int index = text.charAt(i) - ' ';
 			int x = index % 16, y = index / 16;

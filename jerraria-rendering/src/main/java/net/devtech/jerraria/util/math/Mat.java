@@ -1,6 +1,6 @@
 package net.devtech.jerraria.util.math;
 
-public abstract sealed class Mat extends MatView implements Transformable permits Mat3f {
+public abstract sealed class Mat extends MatView implements Transformable permits Mat2x3f {
 	Mat() {}
 
 	@Override
@@ -27,5 +27,7 @@ public abstract sealed class Mat extends MatView implements Transformable permit
 	@Override
 	public abstract Mat rotate(float radX, float radY, float radZ);
 
-	public abstract Mat load(Mat from);
+	public abstract Mat load(MatView from);
+
+	public abstract Mat identity();
 }

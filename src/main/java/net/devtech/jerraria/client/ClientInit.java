@@ -13,17 +13,17 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.shaders.ColoredTextureShader;
-import net.devtech.jerraria.render.shaders.SolidColorShader;
+import net.devtech.jerraria.render.shaders.ChunkTextureShader;
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.render.textures.Textures;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.collect.RandomCollection;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -132,7 +132,7 @@ class ClientInit {
 		}
 
 		SolidColorShader box = SolidColorShader.INSTANCE;
-		ColoredTextureShader text = ColoredTextureShader.INSTANCE;
+		ChunkTextureShader text = ChunkTextureShader.INSTANCE;
 		text.mat.identity();
 		text.texture.tex(ClientInit.asciiAtlasId);
 
@@ -149,7 +149,7 @@ class ClientInit {
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			Mat3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
+			Mat2x3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.draw();
 			text.draw();

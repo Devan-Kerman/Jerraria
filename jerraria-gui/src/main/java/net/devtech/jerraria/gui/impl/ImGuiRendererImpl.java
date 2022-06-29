@@ -1,6 +1,6 @@
 package net.devtech.jerraria.gui.impl;
 
-import java.awt.geom.Rectangle2D;
+import java.util.function.Consumer;
 
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -8,32 +8,33 @@ import net.devtech.jerraria.gui.api.ImGuiRenderer;
 import net.devtech.jerraria.gui.api.TopState;
 import net.devtech.jerraria.gui.api.SubdivisionStack;
 import net.devtech.jerraria.gui.api.SubdivisionState;
+import net.devtech.jerraria.gui.api.input.InputState;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.batch.BatchedRenderer;
 import net.devtech.jerraria.render.api.batch.ShaderKey;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.MatView;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class ImGuiRendererImpl extends ImGuiRenderer {
-	final Mat3f mat = new Mat3f();
+	final Mat base;
+	final Mat2x3f mat = new Mat2x3f(); // todo fix this matrix
 	int zOffsetCounter = 1;
-
 	final Stack<SubdivisionEntry> entryStack = new ObjectArrayList<>();
 	final SubdivisionStack stack = new SubdivisionStackImpl();
 	final TopStateImpl topState = new TopStateImpl();
 	final BatchedRenderer renderer = BatchedRenderer.newInstance();
-	final float width, height;
-	float drawSpaceOffsetX;
-	float drawSpaceOffsetY;
+	final InputState inputState;
 	float drawSpaceWidth;
 	float drawSpaceHeight;
 
-	public ImGuiRendererImpl(float width, float height) {
-		this.width = width;
-		this.height = height;
+	public ImGuiRendererImpl(Mat mat) {
+		this.inputState = ImGuiController.CONTROLLER.createInputState(this);
 		SubdivisionEntry vertical = new SubdivisionEntry();
 		vertical.isVertical = true;
 		this.entryStack.push(vertical);
+		this.base = mat;
+		this.mat.load(this.base);
 	}
 
 	final class SubdivisionEntry extends SubdivisionState {
@@ -111,10 +112,12 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 	@Override
 	public void drawSpace(float width, float height) {
 		SubdivisionEntry peek = this.entryStack.peek(0);
-		this.mat.identity();
+		this.mat.load(this.base);
 		this.mat.offset(peek.offsetX, peek.offsetY);
 		this.mat.setZ(this.incZ());
 		// todo lazy/deferred drawSpace
+		this.drawSpaceWidth = width;
+		this.drawSpaceHeight = height;
 		if(peek.isVertical) {
 			peek.offsetY += height;
 			peek.height += height;
@@ -122,8 +125,28 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 		} else {
 			peek.offsetX += width;
 			peek.width += width;
-			peek.height = Math.max(peek.height, width);
+			peek.height = Math.max(peek.height, height);
 		}
+	}
+
+	@Override
+	public float drawSpaceWidth() {
+		return this.drawSpaceWidth;
+	}
+
+	@Override
+	public float drawSpaceHeight() {
+		return this.drawSpaceHeight;
+	}
+
+	@Override
+	public InputState inputState() {
+		return this.inputState;
+	}
+
+	@Override
+	public void raise() {
+		this.mat.setZ(this.incZ());
 	}
 
 	public float incZ() {
@@ -144,18 +167,18 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 	}
 
 	@Override
-	public float screenWidth() {
-		return this.width;
-	}
-
-	@Override
-	public float screenHeight() {
-		return this.height;
-	}
-
-	@Override
 	public <T extends Shader<?>> T getBatch(ShaderKey<T> key) {
 		return this.renderer.getBatch(key);
+	}
+
+	@Override
+	public void drawKeep(Consumer<Shader<?>> configurator) {
+		this.renderer.drawKeep(configurator);
+	}
+
+	@Override
+	public void draw(Consumer<Shader<?>> consumer) {
+		this.renderer.draw(consumer);
 	}
 
 	protected void pop() {

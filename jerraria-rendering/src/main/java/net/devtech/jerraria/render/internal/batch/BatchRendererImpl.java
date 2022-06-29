@@ -17,12 +17,19 @@ public class BatchRendererImpl implements BatchedRenderer {
 		return (T) this.batches.computeIfAbsent(key, ShaderKey::createInstance);
 	}
 
+	@Override
 	public void drawKeep(Consumer<Shader<?>> configurator) {
 		for(var entry : this.batches.entrySet()) {
 			Shader<?> value = entry.getValue();
 			configurator.accept(value);
 			((ShaderKey) entry.getKey()).drawKeep(value);
 		}
+	}
+
+	@Override
+	public void draw(Consumer<Shader<?>> consumer) {
+		this.drawKeep(consumer);
+		this.close();
 	}
 
 	public void close() {

@@ -18,16 +18,16 @@ import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.textures.Atlas;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.tile.render.ChunkRenderableShader;
 
-public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>> implements ChunkRenderableShader { // vertex attributes
-	public static final ColoredTextureShader INSTANCE = create(Id.create("jerraria", "colored_texture"),
-		ColoredTextureShader::new,
-		ColoredTextureShader::new
+public class ChunkTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>> implements ChunkRenderableShader { // vertex attributes
+	public static final ChunkTextureShader INSTANCE = create(Id.create("jerraria", "colored_texture"),
+		ChunkTextureShader::new,
+		ChunkTextureShader::new
 	);
 
-	public static final ShaderKey<ColoredTextureShader> MAIN_ATLAS = keyFor(() -> JerrariaClient.MAIN_ATLAS);
+	public static final ShaderKey<ChunkTextureShader> MAIN_ATLAS = keyFor(() -> JerrariaClient.MAIN_ATLAS);
 
 	static {
 		INSTANCE.mat.identity();
@@ -40,25 +40,25 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	 */
 	public final Mat3.x3<?> mat = this.uni(Mat3.mat3("mat_"));
 
-	protected ColoredTextureShader(VFBuilder<End> builder, Object function) {
+	protected ChunkTextureShader(VFBuilder<End> builder, Object function) {
 		super(builder.add(Color.argb("color")).add(Vec2.f("uv")).add(Vec3.f("pos")), function); // vertex
 		// attributes
 	}
 
-	protected ColoredTextureShader(ColoredTextureShader shader, SCopy copy) {
+	protected ChunkTextureShader(ChunkTextureShader shader, SCopy copy) {
 		super(shader, copy);
 	}
 
-	public static ShaderKey<ColoredTextureShader> keyFor(Texture texture) {
+	public static ShaderKey<ChunkTextureShader> keyFor(Texture texture) {
 		return BasicShaderKey.key(INSTANCE).withConfig(shader -> shader.texture.atlas(texture));
 	}
 
-	public static ShaderKey<ColoredTextureShader> keyFor(Supplier<Atlas> atlasSupplier) {
+	public static ShaderKey<ChunkTextureShader> keyFor(Supplier<Atlas> atlasSupplier) {
 		return BasicShaderKey.key(INSTANCE).withConfig(shader -> shader.texture.atlas(atlasSupplier.get().asTexture()));
 	}
 
-	public ColoredTextureShader rect(
-		Mat3f mat,
+	public ChunkTextureShader rect(
+		Mat2x3f mat,
 		Texture texture,
 		float offX,
 		float offY,
@@ -74,7 +74,7 @@ public class ColoredTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>
 	}
 
 	@Override
-	public void setChunkMatrix(Mat3f chunkRenderMatrix) {
+	public void setChunkMatrix(Mat2x3f chunkRenderMatrix) {
 		this.mat.mat(chunkRenderMatrix);
 	}
 }

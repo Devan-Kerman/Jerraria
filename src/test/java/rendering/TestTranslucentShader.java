@@ -11,7 +11,7 @@ import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.renderhandler.InternalTranslucencyRenderer;
 import net.devtech.jerraria.render.internal.renderhandler.TranslucencyStrategy;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class TestTranslucentShader extends TranslucentShader<Vec3.F<Color.ARGB<End>>> {
 	public static final InternalTranslucencyRenderer HANDLER = TranslucencyStrategy.createTranslucentRenderer(TranslucencyStrategy.RECOMMENDED);
@@ -29,7 +29,7 @@ public class TestTranslucentShader extends TranslucentShader<Vec3.F<Color.ARGB<E
 		super(shader, method, type);
 	}
 
-	public void square(Mat3f mat, float offX, float offY, float width, float height, float z, int argb) {
+	public void square(Mat2x3f mat, float offX, float offY, float width, float height, float z, int argb) {
 		this.vert().vec3f(mat, offX, offY, z).argb(argb);
 		this.vert().vec3f(mat, offX, offY + height, z).argb(argb);
 		this.vert().vec3f(mat, offX + width, offY, z).argb(argb);

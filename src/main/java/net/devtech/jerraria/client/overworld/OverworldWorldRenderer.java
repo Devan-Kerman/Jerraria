@@ -2,9 +2,9 @@ package net.devtech.jerraria.client.overworld;
 
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.client.WorldRenderer;
+import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.api.element.AutoStrat;
-import net.devtech.jerraria.render.shaders.SolidColorShader;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
 
@@ -19,7 +19,7 @@ public class OverworldWorldRenderer extends WorldRenderer {
 
 	@Override
 	protected void renderBackground(
-		Mat3f cartToAwt,
+		Mat2x3f cartToAwt,
 		Entity player,
 		int windowFromX,
 		int windowFromY,
@@ -31,11 +31,8 @@ public class OverworldWorldRenderer extends WorldRenderer {
 		float inc = 1f/COLORS.length;
 		for(int i = 0; i < COLORS.length; i++) {
 			float off = i * inc;
-			int start = COLORS[i];
-			shader.vert().argb(start).vec3f(cartToAwt,0, off, 1);
-			shader.vert().argb(start).vec3f(cartToAwt,0, off+inc, 1);
-			shader.vert().argb(start).vec3f(cartToAwt, width, off+inc, 1);
-			shader.vert().argb(start).vec3f(cartToAwt, width, off, 1);
+			int color = COLORS[i];
+			shader.rect(cartToAwt, 0, 0, inc, inc, color);
 		}
 		//shader.vert().argb(0xFFAACCFF).vec3f(cartToAwt,0, 0, 1);
 		//shader.vert().argb(0xFFEEEEFF).vec3f(cartToAwt,0, 1, 1);
@@ -43,7 +40,7 @@ public class OverworldWorldRenderer extends WorldRenderer {
 		//shader.vert().argb(0xFFAADDFF).vec3f(cartToAwt, width, 0, 1);
 
 		int off = player.getBlockX()/32;
-		Mat3f cloud = cartToAwt.copy().scale(1 / 100f, 1 / 100f);
+		Mat2x3f cloud = cartToAwt.copy().scale(1 / 100f, 1 / 100f);
 		for(int x = 0; x < 100*width; x++) {
 			for(int y = 0; y < 50; y++) {
 				if(y%10 < 5) {

@@ -1,16 +1,26 @@
 package net.devtech.jerraria.render.api;
 
-public interface GlStateStack extends AutoCloseable {
-	static GLStateBuilder builder() {
+import net.devtech.jerraria.util.SafeClosable;
+
+public abstract class GlStateStack {
+	/**
+	 * <pre>{@code
+	 * try(GlStateStack.builder().blend(true).apply().self) {
+	 *     // do whatever
+	 * }
+	 * }</pre>
+	 */
+	public final SafeClosable self = this::close;
+
+	public static GLStateBuilder builder() {
 		return GLStateBuilder.builder();
 	}
 
-	void forceReapply();
+	public abstract void forceReapply();
 
-	GLStateBuilder copyToBuilder();
+	public abstract GLStateBuilder copyToBuilder();
 
-	@Override
-	void close();
+	public abstract void close();
 
-	GlStateStack copy();
+	public abstract GlStateStack copy();
 }

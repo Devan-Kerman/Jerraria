@@ -1,5 +1,6 @@
 package net.devtech.jerraria.util;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiFunction;

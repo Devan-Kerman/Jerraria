@@ -25,6 +25,7 @@ public final class GLContextState {
 	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
 	public static final BlendStateI[] BLEND_STATE_IS;
 	public static final BlendStateI BLEND_ALL_INTERNAL;
+	public static boolean defaultBlendAll;
 
 	static int currentGlId, currentVAO, readFBO, writeFBO, defaultFBO;
 

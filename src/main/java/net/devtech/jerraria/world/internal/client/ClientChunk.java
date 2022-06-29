@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import net.devtech.jerraria.jerracode.JCTagView;
-import net.devtech.jerraria.util.math.Mat3f;
+import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.TileLayers;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
@@ -94,14 +94,14 @@ public class ClientChunk extends Chunk {
 		"unchecked",
 		"rawtypes"
 	})
-	public void render(Mat3f chunkMatrix) {
+	public void render(Mat2x3f chunkMatrix) {
 		for(int i = 0, length = this.quadrants.length(); i < length; i++) {
 			BakingChunk quadrant = this.quadrants.get(i);
 			if(quadrant == null) {
 				continue;
 			}
 			int x = i / 2, y = i % 2;
-			Mat3f copy = chunkMatrix
+			Mat2x3f copy = chunkMatrix
 				.copy()
 				.offset(x << World.LOG2_CHUNK_QUADRANT_SIZE, (1 - y) << World.LOG2_CHUNK_QUADRANT_SIZE);
 

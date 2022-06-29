@@ -25,13 +25,13 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 	 * <br>
 	 * <b>The array field must be marked `volatile`!</b>
 	 */
-	static <E, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic(
+	static <E, B extends AttachmentSetting> Atomic<E, B> atomic(
 		Function<E, Object[]> getVolatile,
 		CompareAndSet<E> compareAndSet) {
 		return new ConcurrentAttachmentProvider<>(getVolatile, compareAndSet);
 	}
 
-	static <E extends AttachableObject, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic() {
+	static <E extends AttachableObject, B extends AttachmentSetting> Atomic<E, B> atomic() {
 		return new ConcurrentAttachmentProvider<>(a -> (Object[]) AttachableObject.HANDLE.getVolatile(a), AttachableObject.HANDLE::weakCompareAndSet);
 	}
 
@@ -39,7 +39,7 @@ public interface AttachmentProvider<O, B extends AttachmentSetting> {
 	 * This method is similar to {@link #atomic(Function, CompareAndSet)} however it <b>may</b> be slower as the jvm might have a harder time inlining it
 	 * @param handle the varhandle of an Object[] field in E
 	 */
-	static <E, B extends AttachmentSetting> AttachmentProvider.Atomic<E, B> atomic(VarHandle handle) {
+	static <E, B extends AttachmentSetting> Atomic<E, B> atomic(VarHandle handle) {
 		return new ConcurrentAttachmentProvider<>(handle);
 	}
 

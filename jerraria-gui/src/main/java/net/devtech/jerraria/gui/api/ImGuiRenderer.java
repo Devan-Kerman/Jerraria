@@ -114,12 +114,4 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	 * @return An object that stores the current offset in the current subdivision
 	 */
 	public abstract SubdivisionState createReference();
-
-	/**
-	 * @return Like all other sizes/positions in this class, this number does not necessarily represent pixels and
-	 * 	rather represents a unit in terms of the provided dimensions of the GUI.
-	 */
-	public abstract float screenWidth();
-
-	public abstract float screenHeight();
 }

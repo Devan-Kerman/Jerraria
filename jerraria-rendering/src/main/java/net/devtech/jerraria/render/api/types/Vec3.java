@@ -50,8 +50,12 @@ public abstract class Vec3<N extends GlValue<?>> extends AbstractGlValue<N> impl
 			return this.getNext();
 		}
 
-		public N vec3f(MatView mat, float a, float b, float c) {
-			return this.vec3f(mat.mulX(a, b, c), mat.mulY(a, b, c), mat.mulZ(a, b, c));
+		public N vec3f(MatView mat, float x, float y, float z) {
+			return this.vec3f(mat.mulX(x, y, z), mat.mulY(x, y, z), mat.mulZ(x, y, z));
+		}
+
+		public N vec3fFixedZ(MatView mat, float x, float y, float z) {
+			return this.vec3f(mat.mulX(x, y, 1), mat.mulY(x, y, 1), z);
 		}
 	}
 
