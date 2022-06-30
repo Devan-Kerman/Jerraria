@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.devtech.jerraria.gui.api.ImGuiRenderer;
+import net.devtech.jerraria.gui.api.TextRenderer;
 import net.devtech.jerraria.gui.api.TopState;
 import net.devtech.jerraria.gui.api.SubdivisionStack;
 import net.devtech.jerraria.gui.api.SubdivisionState;

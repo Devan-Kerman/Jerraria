@@ -2,5 +2,9 @@ version '1.0.0'
 
 dependencies {
 	api project(":jerraria-rendering")
-
+	api 'org.orbisgis:poly2tri-core:0.1.2'
 }
+
+// todo minecraft text rendering
+// todo minecraft text icon
+// todo minecraft text label

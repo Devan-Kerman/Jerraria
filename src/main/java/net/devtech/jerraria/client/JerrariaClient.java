@@ -1,6 +1,6 @@
 package net.devtech.jerraria.client;
 
-import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.client.render.textures.Atlas;
 import net.devtech.jerraria.resource.VirtualFile;
 
 public class JerrariaClient {

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.client.overworld;
+package net.devtech.jerraria.client.render.world;
 
 import java.util.Random;
 

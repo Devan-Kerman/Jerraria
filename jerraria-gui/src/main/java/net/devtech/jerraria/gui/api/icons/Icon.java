@@ -1,5 +1,7 @@
 package net.devtech.jerraria.gui.api.icons;
 
+import java.awt.Shape;
+
 import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
 import net.devtech.jerraria.render.api.batch.BatchedRenderer;
 import net.devtech.jerraria.render.api.textures.Texture;
@@ -24,6 +26,17 @@ public interface Icon {
 
 	static Icon color(int argb) {
 		return new ColorIcon(argb);
+	}
+
+	static Icon shape(Shape shape, int argb) {
+		return new ShapeIcon(shape, .1f, argb);
+	}
+
+	/**
+	 * @param flatness the accuracy of the triangulation of this shape, lower values = more accurate & less performance
+	 */
+	static Icon shape(Shape shape, float flatness, int argb) {
+		return new ShapeIcon(shape, flatness, argb);
 	}
 
 	/**

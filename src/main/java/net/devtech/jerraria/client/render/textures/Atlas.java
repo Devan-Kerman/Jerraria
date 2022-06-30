@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.textures;
+package net.devtech.jerraria.client.render.textures;
 
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL31.GL_COLOR_ATTACHMENT0;

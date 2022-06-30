@@ -17,12 +17,7 @@ public record ColorIcon(int argb, ShaderKey<SolidColorShader> key) implements Ic
 
 	@Override
 	public void draw(LayeredBatchedRenderer renderer) {
-		SolidColorShader batch = renderer.getBatch(key);
+		SolidColorShader batch = renderer.getBatch(this.key);
 		batch.rect(renderer.mat(), 0, 0, 1, 1, this.argb);
-	}
-
-	@Override
-	public float aspectRatio() {
-		return 1;
 	}
 }

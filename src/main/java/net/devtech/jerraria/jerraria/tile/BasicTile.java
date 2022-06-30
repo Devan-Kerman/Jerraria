@@ -1,7 +1,7 @@
 package net.devtech.jerraria.jerraria.tile;
 
 import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.render.shaders.ChunkTextureShader;
+import net.devtech.jerraria.client.render.shaders.ChunkTextureShader;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.World;

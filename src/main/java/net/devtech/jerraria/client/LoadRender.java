@@ -5,7 +5,7 @@ import java.util.Vector;
 
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.util.math.Mat2x3f;
-import net.devtech.jerraria.render.shaders.ChunkTextureShader;
+import net.devtech.jerraria.client.render.shaders.ChunkTextureShader;
 
 public class LoadRender {
 	final LoadRender parent;

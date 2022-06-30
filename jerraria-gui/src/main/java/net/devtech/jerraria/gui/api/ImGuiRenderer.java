@@ -1,7 +1,5 @@
 package net.devtech.jerraria.gui.api;
 
-import net.devtech.jerraria.render.api.batch.BatchedRenderer;
-
 /**
  * Immediate Mode Gui Renderer. <br> Inspired by <a href="https://docs.unity3d.com/Manual/gui-Basics.html">Unity</a> &
  * <a href="https://github.com/ocornut/imgui">Dear ImGui</a>

@@ -9,12 +9,10 @@ import java.util.concurrent.Executor;
 
 import net.devtech.jerraria.access.Access;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.client.render.textures.Atlas;
 import net.devtech.jerraria.util.Validate;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL33;
-import org.lwjgl.opengl.GL46;
 
 public class RenderThread {
 	private static final List<Runnable> RENDER_QUEUE = new Vector<>();
@@ -60,6 +58,7 @@ public class RenderThread {
 				RENDER_QUEUE.remove(i).run();
 			}
 
+			GLContextState.DEPTH_MASK.set(true); // idk why I need this but I do so here it is
 			GLFW.glfwSwapBuffers(ClientInit.glMainWindow);
 			GLFW.glfwPollEvents();
 

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.textures;
+package net.devtech.jerraria.client.render.textures;
 
 import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_RGBA;

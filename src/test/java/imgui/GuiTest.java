@@ -14,7 +14,8 @@ import net.devtech.jerraria.gui.api.widgets.Menu;
 import net.devtech.jerraria.gui.impl.ImGuiController;
 import net.devtech.jerraria.gui.impl.ImGuiRendererImpl;
 import net.devtech.jerraria.render.api.GlStateStack;
-import net.devtech.jerraria.text.TriangulatedText;
+import net.devtech.jerraria.client.render.text.TriangulatedText;
+import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class GuiTest {
@@ -40,7 +41,7 @@ public class GuiTest {
 		}
 
 		@Override
-		protected void render0(ImGuiRenderer gui) {
+		protected void render0(ImGuiRenderer gui, float width, float height) {
 			int selected = Menu.tabList(gui, 100/9f, MENU, this.tab);
 			gui.spacer(10);
 			try(gui.horizontal().pop) {
@@ -76,13 +77,8 @@ public class GuiTest {
 				float x = JerrariaClient.windowHeight() / (JerrariaClient.windowWidth() * 1f);
 				cartToIndexMat.scale(x, 1f);
 
-				ImGuiRenderer renderer = new ImGuiRendererImpl(
-					gui.createGuiMatrix(cartToIndexMat, 1/x, 1)
-				);
-				gui.render0(renderer);
-				try(GlStateStack.builder().blend(true).blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA).depthTest(true).apply().self) {
-					renderer.draw(shader -> {});
-				}
+				gui.render(cartToIndexMat, 1 / x, 1);
+				// todo find out why default depth mask isn't working
 
 				ImGuiController.CONTROLLER.startFrame();
 			}, 10);

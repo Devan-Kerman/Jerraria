@@ -1,4 +1,4 @@
-package net.devtech.jerraria.render.shaders;
+package net.devtech.jerraria.client.render.shaders;
 
 import java.util.function.Supplier;
 
@@ -15,7 +15,7 @@ import net.devtech.jerraria.render.api.types.Mat3;
 import net.devtech.jerraria.render.api.types.Tex;
 import net.devtech.jerraria.render.api.types.Vec2;
 import net.devtech.jerraria.render.api.types.Vec3;
-import net.devtech.jerraria.render.textures.Atlas;
+import net.devtech.jerraria.client.render.textures.Atlas;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.math.Mat2x3f;

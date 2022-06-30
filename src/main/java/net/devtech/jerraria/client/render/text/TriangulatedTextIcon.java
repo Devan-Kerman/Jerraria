@@ -1,4 +1,4 @@
-package net.devtech.jerraria.text;
+package net.devtech.jerraria.client.render.text;
 
 import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
 import net.devtech.jerraria.gui.api.icons.Icon;

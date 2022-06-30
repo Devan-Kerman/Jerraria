@@ -1,25 +1,14 @@
 package net.devtech.jerraria.world.entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import net.devtech.jerraria.attachment.AttachableObject;
-import net.devtech.jerraria.attachment.Attachment;
 import net.devtech.jerraria.attachment.AttachmentProvider;
-import net.devtech.jerraria.jerracode.NativeJCType;
 import net.devtech.jerraria.jerracode.element.JCElement;
 import net.devtech.jerraria.jerraria.Items;
-import net.devtech.jerraria.jerraria.entity.PlayerEntity;
 import net.devtech.jerraria.registry.DefaultIdentifiedObject;
 import net.devtech.jerraria.registry.Registry;
-import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.math.JMath;
 import net.devtech.jerraria.util.math.Pos2d;

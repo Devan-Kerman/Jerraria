@@ -1,4 +1,4 @@
-package net.devtech.jerraria.client.overworld;
+package net.devtech.jerraria.client.render.world;
 
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.client.WorldRenderer;

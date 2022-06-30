@@ -1,4 +1,4 @@
-package net.devtech.jerraria.text;
+package net.devtech.jerraria.client.render.text;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -6,9 +6,14 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentSkipListMap;
 
+import net.devtech.jerraria.gui.api.shape.ShapeTriangulator;
+import net.devtech.jerraria.gui.api.shape.Triangulation;
+import net.devtech.jerraria.gui.api.shape.VertexConsumer;
 import net.devtech.jerraria.util.math.JMath;
 
 /**
@@ -20,6 +25,22 @@ public final class TriangulatedText {
 	static final Graphics2D IMAGE = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
 	static final Font DEFAULT_FONT = IMAGE.getFont();
 	static final FontMetrics DEFAULT_METRICS = metrics(DEFAULT_FONT);
+
+	static final ConcurrentSkipListMap<String, TriangulatedText> TEXT_CACHE = new ConcurrentSkipListMap<>();
+
+	public static TriangulatedText cached(String text) {
+		if(TEXT_CACHE.size() > 1000) { // if cache grows too big, start nuking entries
+			TEXT_CACHE.remove(TEXT_CACHE.firstKey());
+		}
+
+		TriangulatedText remove = TEXT_CACHE.remove(text);
+		if(remove == null) {
+			remove = TriangulatedText.text(text);
+		}
+		TEXT_CACHE.put(text, remove); // promote to top of cache
+		return remove;
+	}
+
 
 	public static TriangulatedText text(String string) {
 		return new TriangulatedText(string, 0xFFFFFFFF, DEFAULT_FONT, DEFAULT_METRICS);
@@ -91,18 +112,13 @@ public final class TriangulatedText {
 
 
 	public float aspectRatio() {
-		Triangulation triangulate = this.getTriangulation(1);
-		return triangulate.width / triangulate.height;
+		Rectangle2D bounds = this.font.getStringBounds(this.text, this.metrics.getFontRenderContext());
+		return (float) (bounds.getWidth() / bounds.getHeight());
 	}
 
 	public void forEach(VertexConsumer consumer, float flatness) {
 		Triangulation triangulation = this.getTriangulation(flatness);
-		float offX = triangulation.offX, offY = triangulation.offY, width = triangulation.width, height =
-			                                                                                         triangulation.height;
-		float[] triangles = triangulation.triangles;
-		for(int i = 0; i < triangles.length; i += 2) {
-			consumer.accept((triangles[i] + offX) / width, (triangles[i + 1] + offY) / height, this.color);
-		}
+		triangulation.forEach(consumer, this.color);
 	}
 
 	private Triangulation getTriangulation(float flatness) {

@@ -1,4 +1,4 @@
-package net.devtech.jerraria.text;
+package net.devtech.jerraria.gui.api.shape;
 
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
