@@ -13,13 +13,13 @@ public class SubdivisionTest {
 			System.out.println((i/(8388608f)) - 1);
 		}
 
-		ImGuiRenderer renderer = new ImGuiRendererImpl(new Mat2x3f());
+		ImGuiRenderer renderer = new ImGuiRendererImpl(new Mat2x3f(), null);
 
 		renderer.drawSpace(10, 10);
 		printStart(renderer);
 
 		SubdivisionState state;
-		try(renderer.horizontal().pop) {
+		try(renderer.horizontal().self) {
 			renderer.drawSpace(10, 10);
 			printStart(renderer);
 			renderer.drawSpace(10, 10);
@@ -30,7 +30,7 @@ public class SubdivisionTest {
 		renderer.drawSpace(10, 10);
 		printStart(renderer);
 
-		try(renderer.gotoReference(state).pop) {
+		try(renderer.gotoReference(state).self) {
 			renderer.drawSpace(10, 10);
 			printStart(renderer);
 		}

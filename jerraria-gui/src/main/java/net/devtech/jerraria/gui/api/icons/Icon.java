@@ -2,11 +2,9 @@ package net.devtech.jerraria.gui.api.icons;
 
 import java.awt.Shape;
 
-import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
-import net.devtech.jerraria.render.api.batch.BatchedRenderer;
+import net.devtech.jerraria.gui.api.MatrixBatchedRenderer;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.math.Mat;
-import net.devtech.jerraria.util.math.MatView;
 import net.devtech.jerraria.util.math.MatrixCache;
 
 public interface Icon {
@@ -42,7 +40,7 @@ public interface Icon {
 	/**
 	 * Render the icon with width and height 1 and at offset 0. The matrix will do the relevant transforms for you.
 	 */
-	void draw(LayeredBatchedRenderer renderer);
+	void draw(MatrixBatchedRenderer renderer);
 
 	/**
 	 * @return If this icon was to be rendered with a height of one, return the width in pixels of said hypothetical
@@ -53,13 +51,13 @@ public interface Icon {
 		return 1;
 	}
 
-	default void draw(LayeredBatchedRenderer renderer, float dimX, float dimY) {
+	default void draw(MatrixBatchedRenderer renderer, float dimX, float dimY) {
 		Mat mat = CACHE.copy(renderer.mat());
 		mat.scale(dimX, dimY);
 		this.draw(renderer.withMat(mat));
 	}
 
-	default void draw(LayeredBatchedRenderer renderer, float height) {
+	default void draw(MatrixBatchedRenderer renderer, float height) {
 		this.draw(renderer, this.aspectRatio() * height, height);
 	}
 
@@ -79,7 +77,7 @@ public interface Icon {
 	 * @param scale how big relative to the current component to draw this in the center [0-1]
 	 */
 	default Icon centered(Icon icon, float scale) {
-		return this.centered(icon, scale, scale);
+		return this.centered(icon, scale, scale/icon.aspectRatio());
 	}
 
 	/**
@@ -88,7 +86,7 @@ public interface Icon {
 	default Icon centered(Icon icon, float width, float height) {
 		return new Icon() {
 			@Override
-			public void draw(LayeredBatchedRenderer renderer) {
+			public void draw(MatrixBatchedRenderer renderer) {
 				Icon.this.draw(renderer);
 				renderer.raise();
 				Mat copy = renderer.mat().copy().offset((1-width)/2, (1-height)/2).scale(width, height);
@@ -105,7 +103,7 @@ public interface Icon {
 	default Icon overlay(Icon icon) {
 		return new Icon() {
 			@Override
-			public void draw(LayeredBatchedRenderer renderer) {
+			public void draw(MatrixBatchedRenderer renderer) {
 				Icon.this.draw(renderer);
 				renderer.raise();
 				icon.draw(renderer);

@@ -1,6 +1,6 @@
 package net.devtech.jerraria.gui.api.icons;
 
-import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
+import net.devtech.jerraria.gui.api.MatrixBatchedRenderer;
 import net.devtech.jerraria.gui.api.shaders.ColorTextureShader;
 import net.devtech.jerraria.render.api.batch.ShaderKey;
 import net.devtech.jerraria.render.api.textures.Texture;
@@ -15,7 +15,7 @@ public record TextureIcon(Texture texture, int color, ShaderKey<ColorTextureShad
 	}
 
 	@Override
-	public void draw(LayeredBatchedRenderer renderer) {
+	public void draw(MatrixBatchedRenderer renderer) {
 		ColorTextureShader batch = renderer.getBatch(this.key);
 		batch.rect(renderer.mat(), this.texture, 0, 0, 1, 1, this.color);
 	}

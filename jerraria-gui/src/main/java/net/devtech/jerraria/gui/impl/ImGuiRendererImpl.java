@@ -12,6 +12,7 @@ import net.devtech.jerraria.gui.api.SubdivisionState;
 import net.devtech.jerraria.gui.api.input.InputState;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.batch.BatchedRenderer;
+import net.devtech.jerraria.render.api.batch.RenderListBatchedRenderer;
 import net.devtech.jerraria.render.api.batch.ShaderKey;
 import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.MatView;
@@ -20,16 +21,20 @@ import net.devtech.jerraria.util.math.Mat2x3f;
 public class ImGuiRendererImpl extends ImGuiRenderer {
 	final Mat base;
 	final Mat2x3f mat = new Mat2x3f(); // todo fix this matrix
-	int zOffsetCounter = 1;
 	final Stack<SubdivisionEntry> entryStack = new ObjectArrayList<>();
 	final SubdivisionStack stack = new SubdivisionStackImpl();
 	final TopStateImpl topState = new TopStateImpl();
-	final BatchedRenderer renderer = BatchedRenderer.newInstance();
+	final RenderListBatchedRenderer tooltipRenderer = new RenderListBatchedRenderer();
+	final BatchedRenderer immediateRenderer;
+	BatchedRenderer renderer;
+	final TextRenderer<?> textRenderer;
 	final InputState inputState;
 	float drawSpaceWidth;
 	float drawSpaceHeight;
 
-	public ImGuiRendererImpl(Mat mat) {
+	public ImGuiRendererImpl(Mat mat, TextRenderer<?> renderer) {
+		this.textRenderer = renderer;
+		this.renderer = this.immediateRenderer = BatchedRenderer.immediate();
 		this.inputState = ImGuiController.CONTROLLER.createInputState(this);
 		SubdivisionEntry vertical = new SubdivisionEntry();
 		vertical.isVertical = true;
@@ -68,6 +73,11 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 	}
 
 	@Override
+	public TextRenderer<?> getTextRenderer() {
+		return this.textRenderer;
+	}
+
+	@Override
 	public boolean isVertical() {
 		return this.entryStack.top().isVertical;
 	}
@@ -77,8 +87,8 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 		SubdivisionEntry entry = new SubdivisionEntry();
 		SubdivisionEntry top = this.entryStack.top();
 		entry.isVertical = top.isVertical;
-		entry.offsetX = x;
-		entry.offsetY = y;
+		entry.offsetX = top.offsetX + x;
+		entry.offsetY = top.offsetY + y;
 		entry.absolute = true;
 		this.entryStack.push(entry);
 		return this.stack;
@@ -115,7 +125,6 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 		SubdivisionEntry peek = this.entryStack.peek(0);
 		this.mat.load(this.base);
 		this.mat.offset(peek.offsetX, peek.offsetY);
-		this.mat.setZ(this.incZ());
 		// todo lazy/deferred drawSpace
 		this.drawSpaceWidth = width;
 		this.drawSpaceHeight = height;
@@ -147,12 +156,6 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 
 	@Override
 	public void raise() {
-		this.mat.setZ(this.incZ());
-	}
-
-	public float incZ() {
-		// floats have 24 significant bits
-		return Math.min(this.zOffsetCounter++ / -8388608f, 0);
 	}
 
 	@Override
@@ -179,7 +182,8 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 
 	@Override
 	public void draw(Consumer<Shader<?>> consumer) {
-		this.renderer.draw(consumer);
+		this.immediateRenderer.flush();
+		this.tooltipRenderer.draw(consumer);
 	}
 
 	protected void pop() {
@@ -211,12 +215,10 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 
 	final class TopStateImpl extends TopState {
 		int refCounter = 0;
-		int state = 0;
 
 		public TopState push() {
 			if(this.refCounter++ == 0) {
-				this.state = ImGuiRendererImpl.this.zOffsetCounter;
-				ImGuiRendererImpl.this.zOffsetCounter = 8000000;
+				ImGuiRendererImpl.this.renderer = ImGuiRendererImpl.this.tooltipRenderer;
 			}
 			return this;
 		}
@@ -224,7 +226,7 @@ public class ImGuiRendererImpl extends ImGuiRenderer {
 		@Override
 		protected void pop() {
 			if(--this.refCounter <= 0) {
-				ImGuiRendererImpl.this.zOffsetCounter = this.state;
+				ImGuiRendererImpl.this.renderer = ImGuiRendererImpl.this.immediateRenderer;
 				this.refCounter = 0;
 			}
 		}

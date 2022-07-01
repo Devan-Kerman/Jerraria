@@ -13,7 +13,7 @@ public interface BatchedRenderer {
 	}
 
 	static BatchedRenderer immediate() {
-		return new Immediate();
+		return new ImmediateBatchedRenderer();
 	}
 
 	default void flush() {}
@@ -22,40 +22,4 @@ public interface BatchedRenderer {
 
 	void draw(Consumer<Shader<?>> consumer);
 
-	final class Immediate implements BatchedRenderer {
-		Shader<?> last;
-		ShaderKey key;
-
-		@Override
-		public <T extends Shader<?>> T getBatch(ShaderKey<T> key) {
-			T instance = key.createInstance();
-			if(this.last != null) {
-				this.key.drawKeep(this.last);
-				this.last.deleteVertexData();
-			}
-			this.last = instance;
-			this.key = key;
-			return instance;
-		}
-
-		@Override
-		public void flush() {
-			if(this.last != null) {
-				this.key.drawKeep(this.last);
-				this.last.deleteVertexData();
-				this.last = null;
-				this.key = null;
-			}
-		}
-
-		@Override
-		public void drawKeep(Consumer<Shader<?>> configurator) {
-			throw new UnsupportedOperationException("cannot draw & keep immediate batched renderer!");
-		}
-
-		@Override
-		public void draw(Consumer<Shader<?>> consumer) {
-			this.drawKeep(consumer);
-		}
-	}
 }

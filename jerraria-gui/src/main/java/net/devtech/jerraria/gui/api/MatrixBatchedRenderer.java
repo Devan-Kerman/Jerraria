@@ -1,54 +1,22 @@
 package net.devtech.jerraria.gui.api;
 
-import java.util.function.Consumer;
-
-import net.devtech.jerraria.render.api.Shader;
-import net.devtech.jerraria.render.api.batch.ShaderKey;
+import net.devtech.jerraria.render.api.batch.BatchedRenderer;
 import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.MatView;
 
-final class MatrixBatchedRenderer implements LayeredBatchedRenderer {
-	final LayeredBatchedRenderer root;
-	final Mat mat;
+public interface MatrixBatchedRenderer extends BatchedRenderer {
+	/**
+	 * Raise the drawing matrix by one layer. By default, the widget renderer uses the depth buffer to order gui components,
+	 * so by calling the raise method you can increase the current rendering priority. There is no way to set it back
+	 * down, in order to maintain the illusion of sequential rendering.
+	 *
+	 * This does nothing when using an ImmediateBatchedRenderer which the default implementation of this gui does.
+	 */
+	void raise();
 
-	MatrixBatchedRenderer(LayeredBatchedRenderer root, Mat view) {
-		this.root = root;
-		this.mat = view;
-	}
+	MatView mat();
 
-	@Override
-	public void raise() {
-		this.root.raise();
-		this.mat.offset(0, 0, -1/8388608f);
-	}
-
-	@Override
-	public MatView mat() {
-		return this.mat;
-	}
-
-	@Override
-	public <T extends Shader<?>> T getBatch(ShaderKey<T> key) {
-		return this.root.getBatch(key);
-	}
-
-	@Override
-	public void drawKeep(Consumer<Shader<?>> configurator) {
-		this.root.drawKeep(configurator);
-	}
-
-	@Override
-	public void draw(Consumer<Shader<?>> consumer) {
-		this.root.draw(consumer);
-	}
-
-	@Override
-	public void flush() {
-		root.flush();
-	}
-
-	@Override
-	public LayeredBatchedRenderer withMat(Mat view) {
-		return new MatrixBatchedRenderer(this.root, view);
+	default MatrixBatchedRenderer withMat(Mat view) {
+		return new CustomMatrixBatchedRenderer(this, view);
 	}
 }

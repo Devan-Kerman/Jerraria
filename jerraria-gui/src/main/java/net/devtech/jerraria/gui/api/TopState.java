@@ -5,10 +5,10 @@ public abstract class TopState {
 	/**
 	 * An AutoClosable that when closed, disables the top-ness state of the builder
 	 */
-	public final PopStack pop;
+	public final PopStack self;
 
 	protected TopState() {
-		this.pop = this::pop;
+		this.self = this::pop;
 	}
 
 	protected abstract void pop();

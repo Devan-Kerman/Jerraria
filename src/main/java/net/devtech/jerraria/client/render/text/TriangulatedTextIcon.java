@@ -1,6 +1,6 @@
 package net.devtech.jerraria.client.render.text;
 
-import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
+import net.devtech.jerraria.gui.api.MatrixBatchedRenderer;
 import net.devtech.jerraria.gui.api.icons.Icon;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.api.element.AutoStrat;
@@ -8,7 +8,7 @@ import net.devtech.jerraria.util.math.MatView;
 
 public record TriangulatedTextIcon(TriangulatedText text) implements Icon {
 	@Override
-	public void draw(LayeredBatchedRenderer renderer) {
+	public void draw(MatrixBatchedRenderer renderer) {
 		MatView mat = renderer.mat();
 		float size = (mat.mulX(0, 0) - mat.mulX(1, 1)) * 4;
 		SolidColorShader batch = SolidColorShader.KEYS.getBatch(renderer, AutoStrat.TRIANGLE);

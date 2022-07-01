@@ -1,5 +1,7 @@
 package net.devtech.jerraria.gui.api;
 
+import net.devtech.jerraria.gui.api.themes.Theme;
+
 /**
  * Immediate Mode Gui Renderer. <br> Inspired by <a href="https://docs.unity3d.com/Manual/gui-Basics.html">Unity</a> &
  * <a href="https://github.com/ocornut/imgui">Dear ImGui</a>
@@ -24,15 +26,9 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	/**
 	 * Creates a new subdivision that does not influence the parent subdivision's dimensions. The {@link #isVertical()}
 	 * state is inherited from the parent subdivision.
-	 *
-	 * @param x the x offset relative to the window's top left corner
+	 * @param x the x offset from the current subdivision's position.
 	 */
 	public abstract SubdivisionStack absolute(float x, float y);
-
-	public SubdivisionStack centered(
-		float panelWidth, float panelHeight, float subdivisionWidth, float subdivisionHeight) {
-		return this.absolute((panelWidth - subdivisionWidth) / 2, (panelHeight - subdivisionHeight) / 2);
-	}
 
 	/**
 	 * Creates a subdivision of the current rendering space. A vertical subdivision will add subsequent components
@@ -40,7 +36,7 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	 *
 	 * <pre>{@code
 	 * // start building a vertical list
-	 * try(renderer.vertical().pop) {
+	 * try(renderer.vertical().self) {
 	 *      // add one button to the list
 	 *      if(renderer.button(10, 10, "Hi!")) System.out.println("Hello!");
 	 *      // add another
@@ -72,7 +68,7 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	 * <pre>{@code
 	 * // ensure the bounds never go past 20x10
 	 * // and start building the dropdown
-	 * try(renderer.fixedSize(20, 10).pop; renderer.vertical().pop;) {
+	 * try(renderer.fixedSize(20, 10).self; renderer.vertical().self;) {
 	 *      // create the menu button
 	 *      if(renderer.focusButton(20, 10, "files")) {
 	 *          // build the dropdown menu
@@ -95,7 +91,7 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	 *
 	 * <pre>{@code
 	 * try(renderer.elevated().pop) {
-	 *     renderer.button(40, 10, "");
+	 *     // render a tooltip
 	 * }
 	 * }</pre>
 	 */
@@ -112,4 +108,8 @@ public abstract class ImGuiRenderer extends WidgetRenderer {
 	 * @return An object that stores the current offset in the current subdivision
 	 */
 	public abstract SubdivisionState createReference();
+
+	public void setCurrentTheme(Theme currentTheme) {
+		this.currentTheme = currentTheme;
+	}
 }

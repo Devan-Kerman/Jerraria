@@ -2,7 +2,7 @@ package net.devtech.jerraria.gui.api.icons;
 
 import java.awt.Shape;
 
-import net.devtech.jerraria.gui.api.LayeredBatchedRenderer;
+import net.devtech.jerraria.gui.api.MatrixBatchedRenderer;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.gui.api.shape.ShapeTriangulator;
 import net.devtech.jerraria.gui.api.shape.Triangulation;
@@ -15,7 +15,7 @@ public record ShapeIcon(Triangulation triangulation, int color) implements Icon 
 	}
 
 	@Override
-	public void draw(LayeredBatchedRenderer renderer) {
+	public void draw(MatrixBatchedRenderer renderer) {
 		SolidColorShader batch = SolidColorShader.KEYS.getBatch(renderer, AutoStrat.TRIANGLE);
 		this.triangulation.forEach((x, y, color) -> batch.vert().vec3f(renderer.mat(), x, y, 1).argb(color), this.color);
 	}

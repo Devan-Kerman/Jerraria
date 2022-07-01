@@ -55,6 +55,11 @@ public class Button {
 		return oldState;
 	}
 
+	public static boolean button(WidgetRenderer renderer, float width, float height, String text) {
+		Settings background = renderer.getCurrentTheme().button(renderer, width, height, text);
+		return button(renderer, width, height, background);
+	}
+
 	public static final class Settings {
 		final Icon defaultState;
 		final Icon hover;
@@ -64,6 +69,14 @@ public class Button {
 			this.defaultState = state;
 			this.hover = hover;
 			this.pressedState = pressed;
+		}
+
+		public Settings withCenter(Icon icon, float ratio) {
+			return new Settings(
+				this.defaultState.centered(icon, ratio),
+				this.hover.centered(icon, ratio),
+				this.pressedState.centered(icon, ratio)
+			);
 		}
 	}
 }

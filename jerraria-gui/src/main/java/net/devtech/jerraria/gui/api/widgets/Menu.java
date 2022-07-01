@@ -1,6 +1,7 @@
 package net.devtech.jerraria.gui.api.widgets;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.devtech.jerraria.gui.api.ImGuiRenderer;
@@ -16,12 +17,13 @@ public class Menu {
 		return new Builder(height, false);
 	}
 
-	record Setting(Button.Settings settings, float width, float height) {}
+	public record Settings(Button.Settings settings, float width, float height) {}
 
 	public static final class Builder {
-		final List<Setting> settings = new ArrayList<>();
+		final List<Settings> settings = new ArrayList<>();
 		final float baseDimension;
 		final boolean isVertical;
+		float currentDimension;
 
 		Builder(float baseDimension, boolean vertical) {
 			this.baseDimension = baseDimension;
@@ -34,10 +36,11 @@ public class Menu {
 		 */
 		public Builder tab(Button.Settings settings, float size) {
 			if(this.isVertical) {
-				this.settings.add(new Setting(settings, this.baseDimension, size));
+				this.settings.add(new Settings(settings, this.baseDimension, size));
 			} else {
-				this.settings.add(new Setting(settings, size, this.baseDimension));
+				this.settings.add(new Settings(settings, size, this.baseDimension));
 			}
+			this.currentDimension += size;
 			return this;
 		}
 
@@ -46,21 +49,43 @@ public class Menu {
 		 */
 		public Builder tab(Button.Settings settings) {
 			if(this.isVertical) {
-				this.settings.add(new Setting(settings,
-					this.baseDimension,
-					this.baseDimension / settings.defaultState.aspectRatio()
+				float height = this.baseDimension / settings.defaultState.aspectRatio();
+				this.settings.add(new Settings(settings,
+					this.baseDimension, height
 				));
+				this.currentDimension += height;
 			} else {
-				this.settings.add(new Setting(settings,
-					this.baseDimension * settings.defaultState.aspectRatio(),
+				float width = this.baseDimension * settings.defaultState.aspectRatio();
+				this.settings.add(new Settings(settings, width,
 					this.baseDimension
 				));
+				this.currentDimension += width;
 			}
 			return this;
 		}
 
-		public void removeButton(int index) {
-			this.settings.remove(index);
+		public Menu.Settings removeButton(int index) {
+			Settings remove = this.settings.remove(index);
+			this.currentDimension -= this.isVertical ? remove.height : remove.width;
+			return remove;
+		}
+
+		public List<Menu.Settings> settings() {
+			return Collections.unmodifiableList(this.settings);
+		}
+
+		/**
+		 * @return The current width of the builder in whatever scale you chose
+		 */
+		public float width() {
+			return this.isVertical ? this.baseDimension : this.currentDimension;
+		}
+
+		/**
+		 * @return The current height of the builder in whatever scale you chose
+		 */
+		public float height() {
+			return this.isVertical ? this.currentDimension : this.baseDimension;
 		}
 	}
 
@@ -96,10 +121,10 @@ public class Menu {
 	 */
 	public static int tabList(ImGuiRenderer gui, float scale, Builder builder, int currentIndex) {
 		currentIndex = JMath.clamp(currentIndex, 0, builder.settings.size());
-		try((builder.isVertical ? gui.vertical() : gui.horizontal()).pop) {
-			List<Setting> list = builder.settings;
+		try((builder.isVertical ? gui.vertical() : gui.horizontal()).self) {
+			List<Settings> list = builder.settings;
 			for(int i = 0; i < list.size(); i++) {
-				Setting setting = list.get(i);
+				Settings setting = list.get(i);
 				if(Button.toggleButton(gui,
 					setting.width * scale,
 					setting.height * scale,

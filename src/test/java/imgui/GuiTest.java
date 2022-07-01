@@ -1,30 +1,26 @@
 package imgui;
 
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.client.RenderThread;
+import net.devtech.jerraria.gui.JerrarianTextRenderer;
 import net.devtech.jerraria.gui.api.ImGui;
 import net.devtech.jerraria.gui.api.ImGuiRenderer;
 import net.devtech.jerraria.gui.api.icons.Icon;
 import net.devtech.jerraria.gui.api.widgets.Button;
 import net.devtech.jerraria.gui.api.widgets.Menu;
 import net.devtech.jerraria.gui.impl.ImGuiController;
-import net.devtech.jerraria.gui.impl.ImGuiRendererImpl;
-import net.devtech.jerraria.render.api.GlStateStack;
 import net.devtech.jerraria.client.render.text.TriangulatedText;
-import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.math.Mat2x3f;
+import org.jetbrains.annotations.Nullable;
 
 public class GuiTest {
 	static {
 		System.load("C:\\Program Files\\RenderDoc\\renderdoc.dll");
 	}
 
-	public static final TriangulatedText TAB_1 = TriangulatedText.text("Tab 1");
-	public static final TriangulatedText TAB_2 = TriangulatedText.text("Tab 2");
+	public static final TriangulatedText TAB_1 = TriangulatedText.text("\uD83D\uDD74"); // man in a suit levitating
+	public static final TriangulatedText TAB_2 = TriangulatedText.text("\uD83D\uDE33"); // flushed
 	public static final TriangulatedText TAB_3 = TriangulatedText.text("Tab 3").withBold();
 
 	public static class MyGui extends ImGui {
@@ -42,13 +38,13 @@ public class GuiTest {
 
 		@Override
 		protected void render0(ImGuiRenderer gui, float width, float height) {
-			int selected = Menu.tabList(gui, 100/9f, MENU, this.tab);
+			int selected = Menu.tabList(gui, 100/MENU.width(), MENU, this.tab);
 			gui.spacer(10);
-			try(gui.horizontal().pop) {
+			try(gui.horizontal().self) {
 				gui.spacer(10);
 				switch(this.tab = selected) {
 					case 0 -> {
-						if(Button.button(gui, 80, 70, CONFIG2)) {
+						if(Button.button(gui, 80, 70, "CONFIG2")) {
 							System.out.println("Tab 1");
 						}
 					}
@@ -65,6 +61,11 @@ public class GuiTest {
 				}
 			}
 		}
+
+		@Override
+		public @Nullable AutoCentering centering(float width, float height) {
+			return this.defaultCentering();
+		}
 	}
 
 	public static void main(String[] args) {
@@ -76,10 +77,7 @@ public class GuiTest {
 				cartToIndexMat.scale(2, -2);
 				float x = JerrariaClient.windowHeight() / (JerrariaClient.windowWidth() * 1f);
 				cartToIndexMat.scale(x, 1f);
-
-				gui.render(cartToIndexMat, 1 / x, 1);
-				// todo find out why default depth mask isn't working
-
+				gui.render(JerrarianTextRenderer.TEXT_RENDERER, cartToIndexMat, 1 / x, 1);
 				ImGuiController.CONTROLLER.startFrame();
 			}, 10);
 			return null;
