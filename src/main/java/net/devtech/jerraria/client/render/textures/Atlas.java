@@ -29,10 +29,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,13 +44,30 @@ import java.util.concurrent.Executor;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.LoadRender;
+import net.devtech.jerraria.render.api.batch.BatchedRenderer;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Validate;
+import net.devtech.jerraria.util.math.Mat;
+import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class Atlas {
+	static final ServiceLoader<DynamicAtlasTextureProvider> DYNAMIC_ATLAS_TEXTURE_PROVIDERS = ServiceLoader.load(
+		DynamicAtlasTextureProvider.class);
+
+	static List<DynamicAtlasTexture> textures(Atlas atlas, Id atlasId) {
+		List<DynamicAtlasTexture> textures = new ArrayList<>();
+		for(DynamicAtlasTextureProvider provider : DYNAMIC_ATLAS_TEXTURE_PROVIDERS) {
+			provider.provideTextures(atlasId, texture -> {
+				textures.add(texture);
+				return () -> atlas.redrawQueue.add(texture);
+			});
+		}
+		return textures;
+	}
+
 	private static final Executor RENDER_THREAD_EXECUTOR = Runnable::run;
 	static int copyFrameBufferId = -1;
 	static final Map<Id, Atlas> ATLASES = new ConcurrentHashMap<>();
@@ -56,6 +76,7 @@ public class Atlas {
 	final List<AnimatedTexture> animated;
 	final int atlasWidth, atlasHeight;
 	final Texture texture;
+	final Set<DynamicAtlasTexture> redrawQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	protected Atlas(LoadRender render, Executor executor, VirtualFile.Directory source, Id atlasId) throws IOException {
 		Map<String, RawImageSprite> imageSprites = new HashMap<>();
@@ -63,14 +84,18 @@ public class Atlas {
 		render.setTitleText("Building atlas " + atlasId + "[%d/%d]");
 		render.setTaskSize(4);
 
+		List<DynamicAtlasTexture> textures = textures(this, atlasId); // todo implement for button noise
 		this.pullFromResources(render, source, atlasId, imageSprites, animatedSprites);
 
 		Comparator<RawSprite> comp = Comparator
-			.<RawSprite>comparingInt(s -> -s.width())
-			.thenComparingInt(s -> -s.height());
+			                             .<RawSprite>comparingInt(s -> -s.width())
+			                             .thenComparingInt(s -> -s.height());
 		LoadRender sorting = render.substage("Sorting sprites", 1);
-		List<RawSprite> sprites = new ArrayList<>(imageSprites.values());
+		List<RawSprite> sprites = new ArrayList<>(imageSprites.size() + animatedSprites.size() + textures.size());
+		sprites.addAll(imageSprites.values());
 		sprites.addAll(animatedSprites);
+		sprites.addAll(textures);
+
 		sprites.sort(comp);
 		sorting.setToComplete();
 		render.complete(1);
@@ -97,14 +122,16 @@ public class Atlas {
 						Rect spaceA = new Rect(rect.offX + sprite.width(),
 							rect.offY,
 							rect.width - sprite.width(),
-							sprite.height());
+							sprite.height()
+						);
 						space.add(i, spaceA);
 					}
 					if(rect.height > sprite.height()) {
 						Rect spaceB = new Rect(rect.offX,
 							rect.offY + sprite.height(),
 							rect.width,
-							rect.height - sprite.height());
+							rect.height - sprite.height()
+						);
 						space.add(i, spaceB);
 					}
 
@@ -119,7 +146,8 @@ public class Atlas {
 						Rect bottomSpace = new Rect(sprite.width(),
 							atlasHeight,
 							atlasWidth - sprite.width(),
-							sprite.height());
+							sprite.height()
+						);
 						space.add(0, bottomSpace);
 					} else if(atlasWidth < sprite.width()) {
 						Rect sideSpace = new Rect(atlasWidth, 0, sprite.width() - atlasWidth, atlasHeight);
@@ -134,7 +162,8 @@ public class Atlas {
 						Rect sideSpace = new Rect(atlasWidth,
 							sprite.height(),
 							sprite.width(),
-							atlasHeight - sprite.height());
+							atlasHeight - sprite.height()
+						);
 						space.add(0, sideSpace);
 					} else if(atlasHeight < sprite.height()) {
 						Rect bottomSpace = new Rect(0, atlasHeight, atlasWidth, sprite.height() - atlasHeight);
@@ -168,7 +197,8 @@ public class Atlas {
 				0,
 				GL_RGBA,
 				GL_UNSIGNED_BYTE,
-				(ByteBuffer) null);
+				(ByteBuffer) null
+			);
 			return glId;
 		}, executor);
 
@@ -181,11 +211,9 @@ public class Atlas {
 		spriteMap.forEach((sprite, rect) -> {
 			if(sprite instanceof RawImageSprite s) {
 				CompletableFuture<Void> after = atlasFuture.thenAcceptAsync(glId -> {
-					Texture texture = new Texture(glId,
-						rect.offX / fwidth, // it just works:tm:
-						rect.offY / fheight,
-						rect.width / fwidth,
-						rect.height / fheight);
+					Texture texture = new Texture(glId, rect.offX / fwidth, // it just works:tm:
+						rect.offY / fheight, rect.width / fwidth, rect.height / fheight
+					);
 					textureMap.put(s.name, new ExactTexture(texture, rect.offX, rect.offY, rect.width, rect.height));
 					glBindTexture(GL_TEXTURE_2D, glId);
 					glTexSubImage2D(GL_TEXTURE_2D,
@@ -196,55 +224,65 @@ public class Atlas {
 						rect.height,
 						GL_RGBA,
 						GL_UNSIGNED_BYTE,
-						s.buffer);
+						s.buffer
+					);
 					uploading.complete(1);
 				}, executor);
 				imageList.add(after);
 			}
 		});
 
-		CompletableFuture<Void> images = CompletableFuture.allOf(imageList.toArray(CompletableFuture[]::new));
-		List<CompletableFuture<Void>> animations = new Vector<>();
+		CompletableFuture<Void> staticImages = CompletableFuture.allOf(imageList.toArray(CompletableFuture[]::new));
 		spriteMap.forEach((sprite, rect) -> {
 			if(sprite instanceof RawAnimatedSprite s) {
-				animations.add(images.thenRunAsync(() -> {
-					int glId = atlasFuture.join();
-					Texture texture = new Texture(glId,
-						rect.offX / fwidth,
-						rect.offY / fheight,
-						rect.width / fwidth,
-						rect.height / fheight);
-					ExactTexture exact = new ExactTexture(texture, rect.offX, rect.offY, rect.width, rect.height);
-					ExactTexture put = textureMap.put(s.originalImage.name, exact);
-					if(put != null) {
-						textureMap.put(s.originalImage.name + "_atlas", put);
-					} else {
-						throw new IllegalStateException("Animated Sprite with no animation atlas image? " + s.originalImage.name);
-					}
+				int glId = atlasFuture.join();
+				Texture texture = new Texture(glId,
+					rect.offX / fwidth,
+					rect.offY / fheight,
+					rect.width / fwidth,
+					rect.height / fheight
+				);
+				ExactTexture exact = new ExactTexture(texture, rect.offX, rect.offY, rect.width, rect.height);
+				ExactTexture unanimated = textureMap.put(s.originalImage.name, exact);
+				if(unanimated != null) {
+					textureMap.put(s.originalImage.name + "_atlas", unanimated);
+				} else {
+					throw new IllegalStateException("Animated Sprite with no animation atlas image? "
+					                                + s.originalImage.name);
+				}
 
-					AnimatedTexture animatedTexture = new AnimatedTexture(put,
-						exact,
-						s.frames,
-						s.msPerFrame,
-						Arrays.stream(s.msPerFrame).sum());
-					glBindTexture(GL_TEXTURE_2D, glId);
-					animatedTexture.update(glId, 0, true);
-					animated.add(animatedTexture);
-					uploading.complete(1);
-				}, executor));
+				AnimatedTexture animatedTexture = new AnimatedTexture(unanimated,
+					exact,
+					s.frames,
+					s.msPerFrame,
+					Arrays.stream(s.msPerFrame).sum()
+				);
+				animated.add(animatedTexture);
+				uploading.complete(1);
+			} else if(sprite instanceof DynamicAtlasTexture s) {
+				int glId = atlasFuture.join();
+				Texture texture = new Texture(glId,
+					rect.offX / fwidth,
+					rect.offY / fheight,
+					rect.width / fwidth,
+					rect.height / fheight
+				);
+				ExactTexture exact = new ExactTexture(texture, rect.offX, rect.offY, rect.width, rect.height);
+				textureMap.put(s.id(), exact);
+				this.redrawQueue.add(s);
+				uploading.complete(1);
 			}
 		});
 
-
 		this.glId = atlasFuture.join();
+		staticImages.join();
+		CompletableFuture.runAsync(() -> this.updateAnimation(0, () -> uploading.complete(1)), executor).join();
+		uploading.setToComplete();
+		render.setToComplete();
 		this.textureMap = textureMap;
 		this.animated = animated;
 		this.atlasWidth = atlasWidth;
 		this.atlasHeight = atlasHeight;
-		images.join();
-		CompletableFuture.allOf(animations.toArray(CompletableFuture[]::new)).join();
-		uploading.setToComplete();
-		render.setToComplete();
 		this.texture = new Texture(this.glId, 0, 0, 1, 1);
 		ATLASES.put(atlasId, this);
 	}
@@ -254,7 +292,8 @@ public class Atlas {
 			return new Atlas(LoadRender.create("Stitching " + atlasId, 1),
 				RENDER_THREAD_EXECUTOR,
 				Bootstrap.clientResources,
-				atlasId);
+				atlasId
+			);
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}
@@ -272,19 +311,42 @@ public class Atlas {
 		return Collections.unmodifiableMap(ATLASES);
 	}
 
-	public void updateAnimation(long timeSrc) {
-		glBindTexture(GL_TEXTURE_2D, this.glId);
-		boolean bind = true;
+	public static Atlas getById(Id atlasId) {
+		return ATLASES.get(atlasId);
+	}
+
+	public void updateAnimation(long timeSrc, Runnable callback) {
+		bindFramebuffer(this.glId);
 		for(AnimatedTexture animatedTexture : this.animated) {
-			animatedTexture.update(this.glId, timeSrc, bind);
-			bind = false;
+			animatedTexture.update(timeSrc);
+			callback.run();
+		}
+
+		int framebuffer = GLContextState.getDefaultFramebuffer();
+		GLContextState.setAndBindDefaultFrameBuffer(copyFrameBufferId);
+		try {
+			Mat mat = new Mat2x3f();
+			BatchedRenderer renderer = BatchedRenderer.immediate();
+			for(DynamicAtlasTexture texture : this.redrawQueue) {
+				Texture tex = this.textureMap.get(texture.id()).texture;
+				mat.identity().offset(tex.getOffX(), tex.getOffY());
+				texture.drawer().draw(renderer, mat);
+				callback.run();
+			}
+			renderer.flush();
+			this.redrawQueue.removeIf(DynamicAtlasTexture::isStatic);
+		} finally {
+			GLContextState.setDefaultFrameBuffer(framebuffer);
 		}
 	}
 
 	public Texture getTexture(String name) {
 		ExactTexture exactTexture = this.textureMap.get(name);
 		if(exactTexture == null) {
-			throw new IllegalArgumentException("Texture with name " + name + " not found, must be one of " + this.textureMap.keySet());
+			throw new IllegalArgumentException("Texture with name "
+			                                   + name
+			                                   + " not found, must be one of "
+			                                   + this.textureMap.keySet());
 		}
 		return exactTexture.texture;
 	}
@@ -306,9 +368,9 @@ public class Atlas {
 		List<VirtualFile.Regular> animations = new ArrayList<>(); // process at end
 		List<VirtualFile> toProcess = new ArrayList<>();
 		List<VirtualFile> atlasDefinitions = source
-			.resolveDirectory(atlasId.mod())
-			.resolveDirectory("atlas")
-			.resolveAll(atlasId.path() + ".txt");
+			                                     .resolveDirectory(atlasId.mod())
+			                                     .resolveDirectory("atlas")
+			                                     .resolveAll(atlasId.path() + ".txt");
 
 		LoadRender definitions = render.substage("Reading definitions [%d/%d]", atlasDefinitions.size());
 		for(VirtualFile definition : atlasDefinitions) {
@@ -361,11 +423,16 @@ public class Atlas {
 				RawImageSprite sprite = imageSprites.get(name);
 				int frames = Integer.parseInt(properties.getProperty("frames"));
 				int[] msPerFrame = Arrays
-					.stream(properties.getProperty("msPerFrame").split(","))
-					.mapToInt(Integer::parseInt)
-					.toArray();
+					                   .stream(properties.getProperty("msPerFrame").split(","))
+					                   .mapToInt(Integer::parseInt)
+					                   .toArray();
 				if(sprite.height % frames != 0) {
-					throw new IllegalStateException(name + "'s height (" + sprite.height + ") is not divisible by the number of frames (" + frames + ")");
+					throw new IllegalStateException(name
+					                                + "'s height ("
+					                                + sprite.height
+					                                + ") is not divisible by the number of frames ("
+					                                + frames
+					                                + ")");
 				}
 				RawAnimatedSprite animated = new RawAnimatedSprite(sprite, frames, msPerFrame);
 				animatedSprites.add(animated);
@@ -375,28 +442,18 @@ public class Atlas {
 	}
 
 	interface RawSprite {
-		default int allocWidth() {
-			return this.width() + 1;
-		}
-
-		default int allocHeight() {
-			return this.height() + 1;
-		}
-
 		int width();
 
 		int height();
 	}
 
-	record AnimatedTexture(ExactTexture source,
-	                       ExactTexture destination,
-	                       int frames,
-	                       int[] msPerFrame,
-	                       int msPerRotation) {
-		public void update(int glId, long timeSrc, boolean bind) {
+	record AnimatedTexture(
+		ExactTexture source, ExactTexture destination, int frames, int[] msPerFrame, int msPerRotation
+	) {
+		public void update(long timeSrc) {
 			long time = timeSrc % this.msPerRotation;
 			int frame = 0;
-			for(int ms : msPerFrame) {
+			for(int ms : this.msPerFrame) {
 				if(ms > time) {
 					break;
 				}
@@ -404,22 +461,25 @@ public class Atlas {
 				frame++;
 			}
 
-			if(bind) {
-				if(copyFrameBufferId == -1) {
-					copyFrameBufferId = glGenFramebuffers();
-				}
-				GLContextState.bindFrameBuffer(copyFrameBufferId);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
-			}
 			glCopyTexSubImage2D(GL_TEXTURE_2D,
 				0,
-				destination.offX,
-				destination.offY,
-				source.offX,
-				source.offY + destination.height * frame,
-				destination.width,
-				destination.height);
+				this.destination.offX,
+				this.destination.offY,
+				this.source.offX,
+				this.source.offY + this.destination.height * frame,
+				this.destination.width,
+				this.destination.height
+			);
 		}
+	}
+
+	static void bindFramebuffer(int glId) {
+		glBindTexture(GL_TEXTURE_2D, glId);
+		if(copyFrameBufferId == -1) {
+			copyFrameBufferId = glGenFramebuffers();
+		}
+		GLContextState.bindFrameBuffer(copyFrameBufferId);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glId, 0);
 	}
 
 	record RawImageSprite(String name, ByteBuffer buffer, int width, int height) implements RawSprite {}

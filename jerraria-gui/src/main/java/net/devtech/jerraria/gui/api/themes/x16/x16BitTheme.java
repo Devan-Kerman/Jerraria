@@ -7,6 +7,7 @@ import net.devtech.jerraria.gui.api.widgets.Button;
 
 public class x16BitTheme implements Theme {
 	public static final Theme INSTANCE = new x16BitTheme();
+
 	@Override
 	public Icon widgetBackground(WidgetRenderer renderer, float width, float height) {
 		return new ButtonBackground(width, height, ButtonBackground.State.INVERTED);

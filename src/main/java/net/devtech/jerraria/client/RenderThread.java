@@ -47,7 +47,7 @@ public class RenderThread {
 
 			long src = System.currentTimeMillis();
 			for(Atlas value : Atlas.getAtlases().values()) {
-				value.updateAnimation(src);
+				value.updateAnimation(src, () -> {});
 			}
 
 			for(RenderStage stage : STAGES) {

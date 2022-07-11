@@ -65,8 +65,7 @@ public final class TriangulatedText {
 		this.triangulation = new Triangulation[5];
 	}
 
-	TriangulatedText(
-		String text, int color, Font font, FontMetrics metrics, Triangulation[] triangulation) {
+	TriangulatedText(String text, int color, Font font, FontMetrics metrics, Triangulation[] triangulation) {
 		this.text = text;
 		this.color = color;
 		this.font = font;
