@@ -30,4 +30,9 @@ public class ForwardingTheme implements Theme {
 	public Button.Settings button(WidgetRenderer renderer, float width, float height) {
 		return this.backing.button(renderer, width, height);
 	}
+
+	@Override
+	public Icon label(WidgetRenderer renderer, float width, float height) {
+		return this.backing.label(renderer, width, height);
+	}
 }

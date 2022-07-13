@@ -6,11 +6,14 @@ import java.util.ConcurrentModificationException;
 
 import net.devtech.jerraria.util.Validate;
 
-public final class MatrixCache {
+public final class MatrixPool {
 	static final VarHandle LOCK;
+
 	static {
 		try {
-			LOCK = MethodHandles.privateLookupIn(MatrixCache.class, MethodHandles.lookup()).findVarHandle(MatrixCache.class, "hasLock", boolean.class);
+			LOCK = MethodHandles
+				       .privateLookupIn(MatrixPool.class, MethodHandles.lookup())
+				       .findVarHandle(MatrixPool.class, "hasLock", boolean.class);
 		} catch(NoSuchFieldException | IllegalAccessException e) {
 			throw Validate.rethrow(e);
 		}
@@ -37,7 +40,7 @@ public final class MatrixCache {
 	}
 
 	public Mat copy(MatView view) {
-		if(LOCK.compareAndSet(this, false, true)) {
+		if(!Validate.IN_DEV || LOCK.compareAndSet(this, false, true)) {
 			MatType type = view.getType();
 			try {
 				Mat mat = this.mats[type.typeId];
@@ -47,7 +50,9 @@ public final class MatrixCache {
 					return mat.load(view);
 				}
 			} finally {
-				LOCK.setVolatile(this, false);
+				if(Validate.IN_DEV) {
+					LOCK.setVolatile(this, false);
+				}
 			}
 		} else {
 			throw new ConcurrentModificationException("Cannot use MatrixCache on multiple threads!");

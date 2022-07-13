@@ -14,7 +14,7 @@ import net.devtech.jerraria.gui.api.input.InputState;
 import net.devtech.jerraria.gui.impl.flags.GuiInternal;
 import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.MatView;
-import net.devtech.jerraria.util.math.MatrixCache;
+import net.devtech.jerraria.util.math.MatrixPool;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -45,7 +45,7 @@ public class ImGuiController {
 	final Int2ObjectMap<Set<Modifier>> pressed = new Int2ObjectOpenHashMap<>(STANDARD_INPUTS);
 	Int2ObjectMap<Set<Modifier>> prev = new Int2ObjectOpenHashMap<>();
 
-	final MatrixCache cache = new MatrixCache();
+	final MatrixPool cache = new MatrixPool();
 
 	public InputState createInputState(WidgetRenderer renderer) {
 		return new InputStateImpl(renderer);

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executor;
 
 import net.devtech.jerraria.access.Access;
+import net.devtech.jerraria.gui.api.icons.Icon;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.client.render.textures.Atlas;
 import net.devtech.jerraria.util.Validate;
@@ -65,6 +66,7 @@ public class RenderThread {
 			if(Validate.IN_DEV) {
 				System.gc();
 			}
+			Icon.POOL.assertEmpty();
 		}
 	}
 

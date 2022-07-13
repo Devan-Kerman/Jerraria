@@ -19,4 +19,8 @@ public interface Theme {
 	default Button.Settings button(WidgetRenderer renderer, float width, float height) {
 		return Button.settings(this.widgetBackground(renderer, width, height));
 	}
+
+	default Icon label(WidgetRenderer renderer, float width, float height) {
+		return this.widgetBackground(renderer, width, height);
+	}
 }

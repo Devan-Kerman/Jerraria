@@ -18,7 +18,7 @@ import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.client.render.shaders.ChunkTextureShader;
 import net.devtech.jerraria.client.render.textures.Atlas;
-import net.devtech.jerraria.client.render.textures.Textures;
+import net.devtech.jerraria.client.render.textures.TextureUtil;
 import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
@@ -126,7 +126,7 @@ class ClientInit {
 		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
 
 		try {
-			asciiAtlasId = Textures.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
+			asciiAtlasId = TextureUtil.loadTexture(directory, "boot/ascii_atlas.png").getGlId();
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
 		}

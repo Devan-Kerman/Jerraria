@@ -18,8 +18,8 @@ final class CustomMatrixBatchedRenderer implements MatrixBatchedRenderer {
 
 	@Override
 	public void raise() {
-		this.root.raise();
-		this.mat.offset(0, 0, -1/8388608f);
+		//this.root.raise();
+		//this.mat.offset(0, 0, -1/8388608f);
 	}
 
 	@Override

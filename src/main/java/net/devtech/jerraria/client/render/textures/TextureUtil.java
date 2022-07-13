@@ -21,7 +21,7 @@ import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.resource.VirtualFile;
 
-public class Textures {
+public class TextureUtil {
 	/**
 	 * @see Atlas
 	 * @see JerrariaClient#MAIN_ATLAS

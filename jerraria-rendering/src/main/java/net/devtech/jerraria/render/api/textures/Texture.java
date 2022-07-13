@@ -19,7 +19,7 @@ public final class Texture {
 		return new Texture(
 			this.glId,
 			this.offX + offX * this.width,
-			this.offY + offY * this.width,
+			this.offY + offY * this.height,
 			width * this.width,
 			height * this.height
 		);
@@ -41,19 +41,19 @@ public final class Texture {
 	}
 
 	public float getFudgedOffX() {
-		return this.offX + .001f;
+		return this.offX + .0001f;
 	}
 
 	public float getFudgedOffY() {
-		return this.offY + .001f;
+		return this.offY + .0001f;
 	}
 
 	public float getFudgedWidth() {
-		return this.width - .002f;
+		return this.width - .0002f;
 	}
 
 	public float getFudgedHeight() {
-		return this.height - .002f;
+		return this.height - .0002f;
 	}
 
 	/**

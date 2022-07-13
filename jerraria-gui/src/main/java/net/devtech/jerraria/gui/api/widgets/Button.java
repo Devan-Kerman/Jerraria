@@ -2,6 +2,7 @@ package net.devtech.jerraria.gui.api.widgets;
 
 import net.devtech.jerraria.gui.api.WidgetRenderer;
 import net.devtech.jerraria.gui.api.icons.Icon;
+import net.devtech.jerraria.gui.api.icons.SolidColorIcon;
 import net.devtech.jerraria.gui.api.input.InputState;
 import net.devtech.jerraria.gui.api.input.MouseButton;
 
@@ -23,6 +24,14 @@ public class Button {
 	 */
 	public static boolean button(WidgetRenderer renderer, float height, Settings settings) {
 		return button(renderer, settings.defaultState.aspectRatio() * height, height, settings);
+	}
+
+	/**
+	 * Not generally recommended as the height and width of an icon is not always useful.
+	 * @see SolidColorIcon#SolidColorIcon(int)
+	 */
+	public static boolean button(WidgetRenderer renderer, Settings settings) {
+		return button(renderer, settings.defaultState.height(), settings.defaultState.width(), settings);
 	}
 
 	public static boolean button(WidgetRenderer renderer, float width, float height, Settings settings) {

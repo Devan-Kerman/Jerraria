@@ -109,10 +109,9 @@ public final class TriangulatedText {
 		return new TriangulatedTextIcon(this);
 	}
 
-
 	public float aspectRatio() {
-		Rectangle2D bounds = this.font.getStringBounds(this.text, this.metrics.getFontRenderContext());
-		return (float) (bounds.getWidth() / bounds.getHeight());
+		Triangulation triangulation = this.getTriangulation(1);
+		return triangulation.width / triangulation.height;
 	}
 
 	public void forEach(VertexConsumer consumer, float flatness) {

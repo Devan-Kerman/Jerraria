@@ -17,11 +17,16 @@ public record ShapeIcon(Triangulation triangulation, int color) implements Icon 
 	@Override
 	public void draw(MatrixBatchedRenderer renderer) {
 		SolidColorShader batch = SolidColorShader.KEYS.getBatch(renderer, AutoStrat.TRIANGLE);
-		this.triangulation.forEach((x, y, color) -> batch.vert().vec3f(renderer.mat(), x, y, 1).argb(color), this.color);
+		this.triangulation.forEach((x, y, color) -> batch.vert().vec3f(renderer.mat(), x*this.width(), y*this.height(), 1).argb(color), this.color);
 	}
 
 	@Override
-	public float aspectRatio() {
-		return this.triangulation.width / this.triangulation.height;
+	public float width() {
+		return this.triangulation.width;
+	}
+
+	@Override
+	public float height() {
+		return this.triangulation.height;
 	}
 }

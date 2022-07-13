@@ -276,11 +276,11 @@ public class Atlas {
 
 		this.glId = atlasFuture.join();
 		staticImages.join();
+		this.animated = animated;
+		this.textureMap = textureMap;
 		CompletableFuture.runAsync(() -> this.updateAnimation(0, () -> uploading.complete(1)), executor).join();
 		uploading.setToComplete();
 		render.setToComplete();
-		this.textureMap = textureMap;
-		this.animated = animated;
 		this.atlasWidth = atlasWidth;
 		this.atlasHeight = atlasHeight;
 		this.texture = new Texture(this.glId, 0, 0, 1, 1);

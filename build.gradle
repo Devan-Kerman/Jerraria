@@ -81,7 +81,7 @@ def resources = file("$projectDir/src/main/resources")
 def renderingResources = file("${project(":jerraria-rendering").projectDir}/src/main/resources")
 def guiResources = file("${project(":jerraria-gui").projectDir}/src/main/resources")
 
-def allResources = [resources, renderingResources]
+def allResources = [resources, renderingResources, guiResources]
 task generateFileIndex {
 	allResources.forEach {
 		inputs.dir(it)
