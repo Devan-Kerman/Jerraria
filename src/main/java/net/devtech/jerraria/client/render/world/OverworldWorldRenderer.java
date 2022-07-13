@@ -4,6 +4,7 @@ import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.client.WorldRenderer;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.api.element.AutoStrat;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.client.ClientWorld;
@@ -19,7 +20,7 @@ public class OverworldWorldRenderer extends WorldRenderer {
 
 	@Override
 	protected void renderBackground(
-		Mat2x3f cartToAwt,
+		Mat cartToAwt,
 		Entity player,
 		int windowFromX,
 		int windowFromY,
@@ -40,7 +41,7 @@ public class OverworldWorldRenderer extends WorldRenderer {
 		//shader.vert().argb(0xFFAADDFF).vec3f(cartToAwt, width, 0, 1);
 
 		int off = player.getBlockX()/32;
-		Mat2x3f cloud = cartToAwt.copy().scale(1 / 100f, 1 / 100f);
+		Mat cloud = cartToAwt.copy().scale(1 / 100f, 1 / 100f);
 		for(int x = 0; x < 100*width; x++) {
 			for(int y = 0; y < 50; y++) {
 				if(y%10 < 5) {

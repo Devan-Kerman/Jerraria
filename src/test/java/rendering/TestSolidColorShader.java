@@ -9,6 +9,7 @@ import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Tex;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class TestSolidColorShader extends Shader<Vec3.F<End>> {
@@ -27,7 +28,7 @@ public class TestSolidColorShader extends Shader<Vec3.F<End>> {
 	/**
 	 * draws a rectangle using triangles
 	 */
-	public void drawRect(Mat2x3f mat, float x, float y, float width, float height, int rgb) {
+	public void drawRect(Mat mat, float x, float y, float width, float height, int rgb) {
 		this.vert().vec3f(mat, x, y, 1);
 		this.vert().vec3f(mat, x+width, y, 1);
 		this.vert().vec3f(mat, x, y+height, 1);

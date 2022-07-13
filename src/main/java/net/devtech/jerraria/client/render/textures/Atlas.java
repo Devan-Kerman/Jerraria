@@ -325,7 +325,7 @@ public class Atlas {
 		int framebuffer = GLContextState.getDefaultFramebuffer();
 		GLContextState.setAndBindDefaultFrameBuffer(copyFrameBufferId);
 		try {
-			Mat mat = new Mat2x3f();
+			Mat mat = Mat.create();
 			BatchedRenderer renderer = BatchedRenderer.immediate();
 			for(DynamicAtlasTexture texture : this.redrawQueue) {
 				Texture tex = this.textureMap.get(texture.id()).texture;

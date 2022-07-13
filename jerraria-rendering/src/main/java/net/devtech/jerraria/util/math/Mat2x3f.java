@@ -258,7 +258,7 @@ public final class Mat2x3f extends Mat implements AutoCloseable {
 	public static final class Type extends MatType {
 		@Override
 		public Mat createIdentity() {
-			return new Mat2x3f();
+			return Mat.create();
 		}
 	}
 }

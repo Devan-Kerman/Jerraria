@@ -23,6 +23,7 @@ import net.devtech.jerraria.resource.VirtualFile;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 import net.devtech.jerraria.util.collect.RandomCollection;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
@@ -149,7 +150,7 @@ class ClientInit {
 		while(!((exit = GLFW.glfwWindowShouldClose(ClientInit.glMainWindow)) || gameInitialization.isDone())) {
 			GLContextState.bindDefaultFrameBuffer();
 			GL11.glClear(GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			Mat2x3f cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
+			Mat cartToIndexMat = ClientMain.cartesianToAWTIndexGrid(8f);
 			initializationProgress.render(cartToIndexMat, box, text, 10, 0, 0);
 			box.draw();
 			text.draw();

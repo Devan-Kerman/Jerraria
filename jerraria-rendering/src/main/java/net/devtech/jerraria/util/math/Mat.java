@@ -1,6 +1,10 @@
 package net.devtech.jerraria.util.math;
 
 public abstract sealed class Mat extends MatView implements Transformable permits Mat2x3f {
+	public static Mat create() {
+		return new Mat2x3f();
+	}
+
 	Mat() {}
 
 	@Override

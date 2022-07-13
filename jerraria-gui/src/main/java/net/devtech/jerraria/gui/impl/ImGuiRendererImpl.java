@@ -20,7 +20,7 @@ import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class ImGuiRendererImpl extends ImGuiRenderer {
 	final Mat base;
-	final Mat2x3f mat = new Mat2x3f(); // todo fix this matrix
+	final Mat mat = Mat.create(); // todo fix this matrix
 	final Stack<SubdivisionEntry> entryStack = new ObjectArrayList<>();
 	final SubdivisionStack stack = new SubdivisionStackImpl();
 	final TopStateImpl topState = new TopStateImpl();

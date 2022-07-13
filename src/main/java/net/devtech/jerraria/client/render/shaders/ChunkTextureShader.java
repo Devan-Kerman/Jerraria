@@ -18,6 +18,7 @@ import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.client.render.textures.Atlas;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.util.Id;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.tile.render.ChunkRenderableShader;
 
@@ -58,7 +59,7 @@ public class ChunkTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>> 
 	}
 
 	public ChunkTextureShader rect(
-		Mat2x3f mat,
+		Mat mat,
 		Texture texture,
 		float offX,
 		float offY,

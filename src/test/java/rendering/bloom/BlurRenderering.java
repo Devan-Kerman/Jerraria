@@ -3,6 +3,7 @@ package rendering.bloom;
 import net.devtech.jerraria.client.Bootstrap;
 import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class BlurRenderering {
@@ -14,7 +15,7 @@ public class BlurRenderering {
 			RenderThread.addRenderStage(() -> {
 				BloomRenderer.renderBloom(() -> {
 					SolidColorShader shader = SolidColorShader.INSTANCE;
-					shader.rect(new Mat2x3f(), 0, 0, 1, 1, 0xFFFFFFFF);
+					shader.rect(Mat.create(), 0, 0, 1, 1, 0xFFFFFFFF);
 					shader.draw();
 				});
 				BloomRenderer.drawBloomToMain();

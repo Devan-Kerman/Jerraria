@@ -1,5 +1,6 @@
 package net.devtech.jerraria.client;
 
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.World;
 import net.devtech.jerraria.world.entity.Entity;
@@ -13,10 +14,10 @@ public abstract class WorldRenderer {
 		this.world = world;
 	}
 
-	protected abstract void renderBackground(Mat2x3f cartToAwt, Entity player, int windowFromX, int windowFromY, int windowToX, int windowToY);
+	protected abstract void renderBackground(Mat cartToAwt, Entity player, int windowFromX, int windowFromY, int windowToX, int windowToY);
 
-	public void render(Mat2x3f cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
-		Mat2x3f rel = cartToAwt.copy().scale(1f / blockScreenWidth, 1f / blockScreenHeight);
+	public void render(Mat cartToAwt, Entity player, int blockScreenWidth, int blockScreenHeight) {
+		Mat rel = cartToAwt.copy().scale(1f / blockScreenWidth, 1f / blockScreenHeight);
 
 		int extendedOffX = blockScreenWidth / 2 + 10, extendedOffY = blockScreenHeight / 2 + 10;
 		int blockX = player.getBlockX(), blockY = player.getBlockY();
@@ -25,7 +26,7 @@ public abstract class WorldRenderer {
 		int toBlockX   = blockX + extendedOffX,   toBlockY = blockY + extendedOffY;
 
 		this.renderBackground(cartToAwt, player, fromBlockX, fromBlockY, toBlockX, toBlockY);
-		Mat2x3f chunkMatrix = new Mat2x3f();
+		Mat chunkMatrix = Mat.create();
 		// block coordinate of top left corner
 		double fromBlockXScreen = player.x() - blockScreenWidth / 2f, fromBlockYScreen = player.y() + blockScreenHeight / 2f;
 		for(int cx = (fromBlockX >> World.LOG2_CHUNK_SIZE); cx <= (toBlockX >> World.LOG2_CHUNK_SIZE); cx++) {
@@ -40,7 +41,7 @@ public abstract class WorldRenderer {
 			}
 		}
 
-		Mat2x3f entityMatrix = new Mat2x3f();
+		Mat entityMatrix = Mat.create();
 		// multithreaded entity rendering could be a possibility?
 		// todo batch entities
 		//this.world.entityLayer().getEntitiesIntersect(EntitySearchType.Standard.RENDERING, fromBlockX, fromBlockY, toBlockX, toBlockY, 10).forEach(entity -> {

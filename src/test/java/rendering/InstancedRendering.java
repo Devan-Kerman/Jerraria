@@ -5,13 +5,14 @@ import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.types.Vec3;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class InstancedRendering {
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
 			RenderThread.addRenderStage(() -> {
-				Mat2x3f mat = new Mat2x3f();
+				Mat mat = Mat.create();
 				InstancedSolidColorShader shader = InstancedSolidColorShader.INSTANCE;
 				shader.drawRect(mat, 0, 0, .1f, .1f);
 				for(Vec3.F<?> offset : shader.offsets) {
