@@ -61,10 +61,10 @@ dependencies {
 	api project(":jerraria-rendering")
 	api project(":jerraria-access")
 	api project(":jerraria-gui")
-	implementation 'io.netty:netty-handler:4.1.76.Final'
-	implementation 'io.netty:netty-codec-http:4.1.76.Final'
-	implementation 'io.netty:netty-transport-native-epoll:4.1.76.Final'
-	implementation 'io.netty:netty-transport-native-kqueue:4.1.76.Final'
+	implementation 'io.netty:netty-handler:4.1.77.Final'
+	implementation 'io.netty:netty-codec-http:4.1.77.Final'
+	implementation 'io.netty:netty-transport-native-epoll:4.1.77.Final'
+	implementation 'io.netty:netty-transport-native-kqueue:4.1.77.Final'
 	implementation 'com.beust:jcommander:1.82'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
@@ -85,7 +85,6 @@ task startClient(type: JavaExec) {
 task startServer(type: JavaExec) {
 	group = 'run'
 	description = 'Starts a dedicated server'
-
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass.set('net.devtech.jerraria.server.dedicated.ServerMain')
 }
