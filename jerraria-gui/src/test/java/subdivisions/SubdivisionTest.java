@@ -13,7 +13,7 @@ public class SubdivisionTest {
 			System.out.println((i/(8388608f)) - 1);
 		}
 
-		ImGuiRenderer renderer = new ImGuiRendererImpl(new Mat2x3f(), null);
+		ImGuiRenderer renderer = new ImGuiRendererImpl(Mat.create(), null);
 
 		renderer.drawSpace(10, 10);
 		printStart(renderer);

@@ -30,7 +30,7 @@ public abstract class ImGui {
 	/**
 	 * @param realWidth the width of the area to render within the `current` matrix's space
 	 */
-	public final void render(TextRenderer<?> textRenderer, Mat2x3f current, float realWidth, float realHeight) {
+	public final void render(TextRenderer<?> textRenderer, Mat current, float realWidth, float realHeight) {
 		float scaleX = realWidth / this.getGuiScaleX();
 		float scaleY = realHeight / this.getGuiScaleY();
 		float max = Math.min(scaleX, scaleY);

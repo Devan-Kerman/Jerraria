@@ -15,6 +15,7 @@ import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShaderType;
 import net.devtech.jerraria.render.internal.shaders.WBTransResolveShader;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class SinglePassWeightedBlendedTranslucencyRendering {
@@ -31,7 +32,7 @@ public class SinglePassWeightedBlendedTranslucencyRendering {
 				rendering.singlePassWeighted.accum.tex(accum);
 				rendering.singlePassWeighted.reveal.tex(revealage);
 
-				Mat2x3f identity = new Mat2x3f();
+				Mat identity = Mat.create();
 
 				int[] colors = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF,
 				                0x0000FF, 0xFF00FF, 0xFFFFFF, 0xAAAAAA};

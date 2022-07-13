@@ -3,6 +3,7 @@ package rendering;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 
 public class BasicRendering {
@@ -13,7 +14,7 @@ public class BasicRendering {
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {
 			SolidColorShader shader = SolidColorShader.INSTANCE;
-			Mat2x3f mat = ClientMain.cartesianToAWTIndexGrid(1);
+			Mat mat = ClientMain.cartesianToAWTIndexGrid(1);
 			shader.rect(mat, 0, 0, 1, 1, 0xFFFFFFFF);
 
 			RenderThread.addRenderStage(() -> {

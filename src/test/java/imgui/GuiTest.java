@@ -10,6 +10,7 @@ import net.devtech.jerraria.gui.api.widgets.Button;
 import net.devtech.jerraria.gui.api.widgets.Menu;
 import net.devtech.jerraria.gui.impl.ImGuiController;
 import net.devtech.jerraria.client.render.text.TriangulatedText;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import org.jetbrains.annotations.Nullable;
 
@@ -95,7 +96,7 @@ public class GuiTest {
 		Bootstrap.startClient(args, () -> {
 			MyGui gui = new MyGui();
 			RenderThread.addRenderStage(() -> {
-				Mat2x3f cartToIndexMat = new Mat2x3f();
+				Mat cartToIndexMat = Mat.create();
 				cartToIndexMat.offset(-1, 1);
 				cartToIndexMat.scale(2, -2);
 				float x = JerrariaClient.windowHeight() / (JerrariaClient.windowWidth() * 1f);

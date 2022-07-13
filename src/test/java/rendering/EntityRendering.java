@@ -3,6 +3,7 @@ package rendering;
 import net.devtech.jerraria.client.render.world.OverworldWorldRenderer;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;
+import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.world.entity.Entity;
 import net.devtech.jerraria.world.internal.SynchronousWorld;
@@ -34,7 +35,7 @@ public class EntityRendering {
 			WorldRenderer renderer = new OverworldWorldRenderer(client);
 			RenderThread.addRenderStage(() -> {
 				player.updatePosition(client, Math.sin(System.currentTimeMillis()/100d)*100, 0);
-				Mat2x3f mat = new Mat2x3f();
+				Mat mat = Mat.create();
 				mat.offset(-1, 1);
 				mat.scale(2, -2);
 				mat.scale(JerrariaClient.windowHeight() / ((float) JerrariaClient.windowWidth()), 1);
