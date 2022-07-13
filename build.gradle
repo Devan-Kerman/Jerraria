@@ -13,22 +13,49 @@ subprojects {
 }
 
 allprojects {
-	group 'net.devtech'
+	group 'net.devtech.jerraria'
 	repositories {
 		mavenCentral()
-		maven {
-			url 'https://dist.wso2.org/maven2/'
+	}
+
+	java {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+		withSourcesJar()
+	}
+
+	tasks.withType(JavaCompile) {
+		options.encoding = "UTF-8"
+		options.release.set(17)
+	}
+
+	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+			}
 		}
-		/*maven {
-			url 'https://oss.sonatype.org/content/repositories/snapshots/'
-		}*/
+
+		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+		repositories {
+			maven {
+				def mavenUrl = project.hasProperty('maven_url') ? project.property('maven_url') : ""
+				url mavenUrl
+				if (mavenUrl.startsWith("http")) {
+					credentials {
+						username project.hasProperty('maven_username') ? project.property('maven_username') : ""
+						password project.hasProperty('maven_password') ? project.property('maven_password') : ""
+					}
+				}
+			}
+		}
 	}
 }
 
 version '1.0.0'
 
 ext.lwjglVersion = '3.3.1'
-ext.lwjglNatives = 'natives-windows'
+ext.lwjglNatives = ['natives-windows', 'natives-linux', 'natives-macos']
 
 dependencies {
 	api project(":jerraria-rendering")
@@ -42,19 +69,6 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'com.google.jimfs:jimfs:1.2'
-
-}
-
-allprojects {
-	java {
-		sourceCompatibility = JavaVersion.VERSION_18
-		targetCompatibility = JavaVersion.VERSION_18
-	}
-
-	tasks.withType(JavaCompile) {
-		options.encoding = "UTF-8"
-		options.release.set(18)
-	}
 }
 
 test {

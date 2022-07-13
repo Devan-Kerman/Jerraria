@@ -13,9 +13,11 @@ dependencies {
 	api "org.lwjgl:lwjgl-openal:$lwjglVersion"
 	api "org.lwjgl:lwjgl-opengl:$lwjglVersion"
 	api "org.lwjgl:lwjgl-stb:$lwjglVersion"
-	runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
-	runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"
-	runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$lwjglNatives"
-	runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives"
-	runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
+	lwjglNatives.each {
+		runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$it"
+		runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$it"
+		runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$it"
+		runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$it"
+		runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$it"
+	}
 }
