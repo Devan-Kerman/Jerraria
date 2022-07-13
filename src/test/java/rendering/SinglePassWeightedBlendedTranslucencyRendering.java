@@ -10,8 +10,6 @@ import static org.lwjgl.opengl.GL42.glGenTextures;
 import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL42.glTexStorage2D;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;

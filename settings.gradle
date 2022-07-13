@@ -1,6 +1,16 @@
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+		mavenCentral()
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+	}
+}
+
 rootProject.name = 'Jerraria'
 include 'jerraria-common'
 include 'jerraria-rendering'
 include 'jerraria-access'
 include 'jerraria-gui'
-

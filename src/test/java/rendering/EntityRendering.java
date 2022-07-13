@@ -1,9 +1,5 @@
 package rendering;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.client.WorldRenderer;
 import net.devtech.jerraria.client.render.world.OverworldWorldRenderer;
 import net.devtech.jerraria.jerraria.Tiles;
 import net.devtech.jerraria.jerraria.entity.PlayerEntity;

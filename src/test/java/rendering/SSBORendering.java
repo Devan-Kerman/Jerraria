@@ -3,8 +3,6 @@ package rendering;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.instanced.InstanceKey;
 import net.devtech.jerraria.render.api.instanced.KeyCopying;

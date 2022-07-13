@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL33.*;
 
 import java.nio.ByteBuffer;
 
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.internal.state.GLContextState;
 import net.devtech.jerraria.render.internal.shaders.BlurResolveShader;

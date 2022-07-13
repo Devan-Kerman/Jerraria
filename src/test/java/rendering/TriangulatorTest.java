@@ -1,14 +1,5 @@
 package rendering;
 
-import java.awt.Shape;
-import java.awt.geom.RoundRectangle2D;
-
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.RenderThread;
-import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
-import net.devtech.jerraria.render.api.DrawMethod;
-import net.devtech.jerraria.render.api.element.AutoStrat;
-
 public class TriangulatorTest {
 	public static void main(String[] args) {
 		Bootstrap.startClient(args, () -> {

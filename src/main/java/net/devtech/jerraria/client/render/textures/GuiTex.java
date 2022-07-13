@@ -1,6 +1,5 @@
 package net.devtech.jerraria.client.render.textures;
 
-import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.gui.api.icons.borders.NinePatch;
 import net.devtech.jerraria.gui.api.icons.borders.NinePatchBorder;
 import net.devtech.jerraria.render.api.textures.Texture;

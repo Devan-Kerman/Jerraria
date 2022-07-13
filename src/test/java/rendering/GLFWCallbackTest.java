@@ -1,7 +1,5 @@
 package rendering;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.JerrariaClient;
 import org.lwjgl.glfw.GLFW;
 
 public class GLFWCallbackTest {

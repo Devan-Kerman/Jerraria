@@ -1,10 +1,6 @@
 package imgui;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.JerrariaClient;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.client.render.textures.GuiTex;
-import net.devtech.jerraria.gui.JerrarianTextRenderer;
 import net.devtech.jerraria.gui.api.ImGui;
 import net.devtech.jerraria.gui.api.ImGuiRenderer;
 import net.devtech.jerraria.gui.api.icons.Icon;

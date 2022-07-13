@@ -3,9 +3,6 @@ package rendering;
 
 import static org.lwjgl.opengl.GL46.*;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.ClientMain;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.util.math.Mat2x3f;
 import org.lwjgl.system.MemoryUtil;

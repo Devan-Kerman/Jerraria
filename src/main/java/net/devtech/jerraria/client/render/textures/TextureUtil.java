@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
-import net.devtech.jerraria.client.JerrariaClient;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.resource.VirtualFile;
 

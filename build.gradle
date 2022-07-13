@@ -4,12 +4,16 @@ plugins {
 	id 'idea'
 	id 'maven-publish'
 	id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.3"
+	id 'fabric-loom' version "0.12.54"
 }
+
+version '1.0.0'
 
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'java-library'
 	apply plugin: 'maven-publish'
+	apply plugin: 'fabric-loom'
 }
 
 allprojects {
@@ -18,112 +22,83 @@ allprojects {
 		mavenCentral()
 	}
 
+	dependencies {
+		minecraft "com.mojang:minecraft:${project.minecraft_version}"
+		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+		modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+		modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	}
+
 	java {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 		withSourcesJar()
 	}
 
+	jar {
+		from("$rootDir/OSS_MODULE_LICENCE") {
+			rename { "${it}_${project.archivesBaseName}"}
+		}
+	}
+
 	tasks.withType(JavaCompile) {
 		options.encoding = "UTF-8"
 		options.release.set(17)
 	}
-
-	publishing {
-		publications {
-			mavenJava(MavenPublication) {
-				from components.java
-			}
-		}
-
-		// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-		repositories {
-			maven {
-				def mavenUrl = project.hasProperty('maven_url') ? project.property('maven_url') : ""
-				url mavenUrl
-				if (mavenUrl.startsWith("http")) {
-					credentials {
-						username project.hasProperty('maven_username') ? project.property('maven_username') : ""
-						password project.hasProperty('maven_password') ? project.property('maven_password') : ""
-					}
-				}
-			}
-		}
-	}
 }
 
-version '1.0.0'
-
-ext.lwjglVersion = '3.3.1'
-ext.lwjglNatives = ['natives-windows', 'natives-linux', 'natives-macos']
+//ext.lwjglVersion = '3.3.1'
+//ext.lwjglNatives = ['natives-windows', 'natives-linux', 'natives-macos']
 
 dependencies {
-	api project(":jerraria-rendering")
-	api project(":jerraria-access")
-	api project(":jerraria-gui")
-	implementation 'io.netty:netty-handler:4.1.77.Final'
-	implementation 'io.netty:netty-codec-http:4.1.77.Final'
-	implementation 'io.netty:netty-transport-native-epoll:4.1.77.Final'
-	implementation 'io.netty:netty-transport-native-kqueue:4.1.77.Final'
-	implementation 'com.beust:jcommander:1.82'
+	api include(project(":jerraria-rendering"))
+	api include(project(":jerraria-access"))
+	api include(project(":jerraria-gui"))
+	api include(project(":jerraria-common"))
+	//implementation 'io.netty:netty-handler:4.1.77.Final'
+	//implementation 'io.netty:netty-codec-http:4.1.77.Final'
+	//implementation 'io.netty:netty-transport-native-epoll:4.1.77.Final'
+	//implementation 'io.netty:netty-transport-native-kqueue:4.1.77.Final'
+	//implementation 'com.beust:jcommander:1.82'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'com.google.jimfs:jimfs:1.2'
+}
+
+afterEvaluate {
+
 }
 
 test {
 	useJUnitPlatform()
 }
 
-task startClient(type: JavaExec) {
-	group = 'run'
-	description = 'Starts a client'
-	classpath = sourceSets.main.runtimeClasspath
-	mainClass.set('net.devtech.jerraria.client.ClientMain')
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
 }
 
-task startServer(type: JavaExec) {
-	group = 'run'
-	description = 'Starts a dedicated server'
-	classpath = sourceSets.main.runtimeClasspath
-	mainClass.set('net.devtech.jerraria.server.dedicated.ServerMain')
-}
-
-ext.genOutputDir = file("$buildDir/generated-resources")
-def resources = file("$projectDir/src/main/resources")
-def renderingResources = file("${project(":jerraria-rendering").projectDir}/src/main/resources")
-def guiResources = file("${project(":jerraria-gui").projectDir}/src/main/resources")
-
-def allResources = [resources, renderingResources, guiResources]
-task generateFileIndex {
-	allResources.forEach {
-		inputs.dir(it)
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
 	}
 
-	def outputFile = file("$genOutputDir/index.txt")
-	outputs.file(outputFile)
-
-	doLast {
-		def files = [], dirs = []
-		allResources.each { dir ->
-			dir.traverse { file ->
-				def relative = dir.toPath().relativize(file.toPath()).toString().replace('\\', '/')
-				if (file.isDirectory()) {
-					dirs << relative
-				} else {
-					files << relative
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		maven {
+			def mavenUrl = project.hasProperty('maven_url') ? project.property('maven_url') : ""
+			url mavenUrl
+			if (mavenUrl.startsWith("http")) {
+				credentials {
+					username project.hasProperty('maven_username') ? project.property('maven_username') : ""
+					password project.hasProperty('maven_password') ? project.property('maven_password') : ""
 				}
 			}
 		}
-
-		outputFile.text = dirs.join("\n") + "\n%%end of dirs%%\n" + files.join("\n")
-	}
-}
-
-sourceSets.main.output.dir genOutputDir, builtBy: generateFileIndex
-
-idea.project.settings {
-	taskTriggers {
-		beforeBuild tasks.getByName("generateFileIndex")
 	}
 }

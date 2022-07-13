@@ -1,7 +1,5 @@
 package rendering;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.types.Vec3;

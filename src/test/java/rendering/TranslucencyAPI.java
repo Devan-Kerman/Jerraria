@@ -1,7 +1,5 @@
 package rendering;
 
-import net.devtech.jerraria.client.Bootstrap;
-import net.devtech.jerraria.client.RenderThread;
 import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.util.func.TRunnable;
 import net.devtech.jerraria.util.math.Mat2x3f;

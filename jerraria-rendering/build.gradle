@@ -7,17 +7,17 @@ dependencies {
 
 	// lwjgl
 	api 'org.joml:joml:1.10.4'
-	api platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
-	api "org.lwjgl:lwjgl:$lwjglVersion"
-	api "org.lwjgl:lwjgl-glfw:$lwjglVersion"
-	api "org.lwjgl:lwjgl-openal:$lwjglVersion"
-	api "org.lwjgl:lwjgl-opengl:$lwjglVersion"
-	api "org.lwjgl:lwjgl-stb:$lwjglVersion"
-	lwjglNatives.each {
-		runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$it"
-		runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$it"
-		runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$it"
-		runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$it"
-		runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$it"
-	}
+	//api platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+	//api "org.lwjgl:lwjgl:$lwjglVersion"
+	//api "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+	//api "org.lwjgl:lwjgl-openal:$lwjglVersion"
+	//api "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+	//api "org.lwjgl:lwjgl-stb:$lwjglVersion"
+	//lwjglNatives.each {
+	//	runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$it"
+	//	runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$it"
+	//	runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$it"
+	//	runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$it"
+	//	runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$it"
+	//}
 }

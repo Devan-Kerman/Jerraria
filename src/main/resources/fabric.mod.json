@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "jerraria",
+	"version": "${version}",
+	"license": "LGPLv3",
+	"authors": [
+		"ueaj"
+	],
+	"description": "jerraria open source modules for fabric",
+	"contact": {
+		"sources": "https://github.com/Devan-Kerman/Jerraria/tree/fabric-latest",
+		"issues": "https://github.com/Devan-Kerman/Jerraria/issues"
+	},
+	"depends": {
+		"fabricloader": ">=0.14.6",
+		"fabric": "*",
+		"minecraft": "~1.19",
+		"java": ">=17"
+	},
+	"recommends": {
+		"devtech_attachment": "*"
+	}
+}
