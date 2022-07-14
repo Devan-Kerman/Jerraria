@@ -10,7 +10,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vector4f;
 
 public final class Mat4f extends Mat {
-	final Matrix4f mat;
+	public final Matrix4f mat;
 
 	public Mat4f(Matrix4f mat) {
 		this.mat = mat;

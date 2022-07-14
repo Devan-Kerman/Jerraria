@@ -1,13 +1,15 @@
 package net.devtech.jerraria.render.api.textures;
 
+import java.util.function.IntSupplier;
+
 /**
  * A texture or fraction of a gl texture
  */
 public final class Texture {
-	final int glId;
+	final IntSupplier glId;
 	final float offX, offY, width, height;
 
-	public Texture(int id, float x, float y, float width, float height) {
+	public Texture(IntSupplier id, float x, float y, float width, float height) {
 		this.glId = id;
 		this.offX = x;
 		this.offY = y;
@@ -26,7 +28,7 @@ public final class Texture {
 	}
 
 	public int getGlId() {
-		return this.glId;
+		return this.glId.getAsInt();
 	}
 
 	/**

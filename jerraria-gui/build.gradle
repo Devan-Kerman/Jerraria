@@ -2,8 +2,8 @@ version '1.0.0'
 
 dependencies {
 	api project(":jerraria-rendering")
-	api include('org.orbisgis:poly2tri-core:0.1.2')
-	api include("io.github.juuxel:libninepatch:1.0.0")
+	rootProject.dependencies.include(api('org.orbisgis:poly2tri-core:0.1.2'))
+	rootProject.dependencies.include(api("io.github.juuxel:libninepatch:1.0.0"))
 }
 
 // todo minecraft text rendering

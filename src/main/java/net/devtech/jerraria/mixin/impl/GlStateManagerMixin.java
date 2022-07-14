@@ -25,32 +25,32 @@ public class GlStateManagerMixin {
 		GLContextState.DEPTH_MASK.setDefault(mask);
 	}
 
-	@Inject(method = "_enableDepthTest", at = @At("RETURN"))
+	@Inject(method = "_enableDepthTest", at = @At("RETURN"), remap = false)
 	static void depthTest0(CallbackInfo ci) {
 		GLContextState.DEPTH_TEST.setDefault(true);
 	}
 
-	@Inject(method = "_disableDepthTest", at = @At("RETURN"))
+	@Inject(method = "_disableDepthTest", at = @At("RETURN"), remap = false)
 	static void depthTest1(CallbackInfo ci) {
 		GLContextState.DEPTH_TEST.setDefault(false);
 	}
 
-	@Inject(method = "_enableBlend", at = @At("RETURN"))
+	@Inject(method = "_enableBlend", at = @At("RETURN"), remap = false)
 	static void blend0(CallbackInfo ci) {
 		GLContextState.BLEND.setDefault(true);
 	}
 
-	@Inject(method = "_disableBlend", at = @At("RETURN"))
+	@Inject(method = "_disableBlend", at = @At("RETURN"), remap = false)
 	static void blend1(CallbackInfo ci) {
 		GLContextState.BLEND.setDefault(false);
 	}
 
-	@Inject(method = "_enableCull", at = @At("RETURN"))
+	@Inject(method = "_enableCull", at = @At("RETURN"), remap = false)
 	static void cull0(CallbackInfo ci) {
 		GLContextState.FACE_CULLING.setDefault(true);
 	}
 
-	@Inject(method = "_disableCull", at = @At("RETURN"))
+	@Inject(method = "_disableCull", at = @At("RETURN"), remap = false)
 	static void cull1(CallbackInfo ci) {
 		GLContextState.FACE_CULLING.setDefault(false);
 	}

@@ -2,11 +2,11 @@ version '1.0.0'
 
 dependencies {
 	api project(":jerraria-common")
-	api include('org.l33tlabs.twl:pngdecoder:1.0')
-	api include('io.github.douira:glsl-transformer:0.23.2')
+	rootProject.dependencies.include(api('org.l33tlabs.twl:pngdecoder:1.0'))
+	rootProject.dependencies.include(api('io.github.douira:glsl-transformer:0.23.2'))
 
 	// lwjgl
-	api include('org.joml:joml:1.10.4')
+	rootProject.dependencies.include(api('org.joml:joml:1.10.4'))
 	//api platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 	//api "org.lwjgl:lwjgl:$lwjglVersion"
 	//api "org.lwjgl:lwjgl-glfw:$lwjglVersion"
