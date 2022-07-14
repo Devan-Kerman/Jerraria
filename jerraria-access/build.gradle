@@ -2,7 +2,7 @@ version '1.0.0'
 
 dependencies {
 	api project(":jerraria-common")
-	api 'org.ow2.asm:asm:9.3'
-	api 'org.ow2.asm:asm-commons:9.3'
-	api 'com.google.guava:guava:31.1-jre'
+	//api 'org.ow2.asm:asm:9.3'
+	//api 'org.ow2.asm:asm-commons:9.3'
+	//api 'com.google.guava:guava:31.1-jre'
 }
