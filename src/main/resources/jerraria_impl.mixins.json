@@ -1,0 +1,15 @@
+{
+	"package": "net.devtech.jerraria.mixin.impl",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"IdentifierMixin",
+		"ShaderAccessor"
+	],
+	"required": true,
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"client": [
+		"GlStateManagerMixin"
+	]
+}

@@ -19,5 +19,9 @@
 	},
 	"recommends": {
 		"devtech_attachment": "*"
-	}
+	},
+	"mixins": [
+		"jerraria_impl.mixins.json",
+		"jerraria_self.mixins.json"
+	]
 }

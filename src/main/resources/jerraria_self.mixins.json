@@ -1,0 +1,13 @@
+{
+	"package": "net.devtech.jerraria.mixin.self",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"GLContextStateMixin",
+		"GLContextStateMixin$BoolStateMixin",
+		"GLContextStateMixin$ToggleStateMixin"
+	],
+	"required": true,
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

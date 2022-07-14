@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL46.*;
 import java.util.Arrays;
 import java.util.function.IntConsumer;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.devtech.jerraria.render.api.OpenGLSupport;
 import net.devtech.jerraria.util.math.JMath;
@@ -16,13 +17,13 @@ public final class GLContextState {
 	public static final IndexedBufferTargetState UNIFORM_BUFFER = new IndexedBufferTargetState(GL_UNIFORM_BUFFER, GL_MAX_UNIFORM_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState ATOMIC_COUNTERS = new IndexedBufferTargetState(GL_ATOMIC_COUNTER_BUFFER, GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS);
 	public static final IndexedBufferTargetState SHADER_BUFFER = new IndexedBufferTargetState(GL_SHADER_STORAGE_BUFFER, GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS);
-	public static final IntState DEPTH_FUNC = new IntState(GL46::glDepthFunc, GL_LESS);
+	public static final IntState DEPTH_FUNC = new IntState(RenderSystem::depthFunc, GL_LESS);
 	public static final IntState CULL_FACE = new IntState(GL46::glCullFace, GL_BACK);
-	public static final BoolState DEPTH_MASK = new BoolState(GL46::glDepthMask, true);
-	public static final EnableState DEPTH_TEST = new EnableState(GL_DEPTH_TEST, false);
-	public static final EnableState BLEND = new EnableState(GL_BLEND, false);
-	public static final EnableState FACE_CULLING = new EnableState(GL_CULL_FACE, false);
-	public static final IntState BLEND_EQUATION = new IntState(GL46::glBlendEquation, GL_FUNC_ADD);
+	public static final BoolState DEPTH_MASK = new BoolState(RenderSystem::depthMask, true);
+	public static final ToggleState DEPTH_TEST = new ToggleState(false, RenderSystem::enableDepthTest, RenderSystem::disableDepthTest);
+	public static final ToggleState BLEND = new ToggleState(false, RenderSystem::enableBlend, RenderSystem::disableBlend);
+	public static final ToggleState FACE_CULLING = new ToggleState(false, RenderSystem::enableCull, RenderSystem::disableCull);
+	public static final IntState BLEND_EQUATION = new IntState(RenderSystem::blendEquation, GL_FUNC_ADD);
 	public static final BlendStateI[] BLEND_STATE_IS;
 	public static final BlendStateI BLEND_ALL_INTERNAL;
 	public static boolean defaultBlendAll;
@@ -260,9 +261,9 @@ public final class GLContextState {
 
 		public void set(int src, int dst) {
 			if(FORCE || this.src != src || this.dst != dst) {
-				glBlendFunci(this.index, src, dst);
-				this.src = src;
-				this.dst = dst;
+				throw new UnsupportedOperationException();
+				//this.src = src;
+				//this.dst = dst;
 			}
 		}
 
@@ -351,6 +352,50 @@ public final class GLContextState {
 			int[] len = new int[i];
 			Arrays.setAll(len, v -> v + GL_COLOR_ATTACHMENT0);
 			BUFFER_ARRAYS[i] = len;
+		}
+	}
+
+	public static final class ToggleState {
+		public final boolean initialState;
+		boolean state, default_;
+		final Runnable on, off;
+
+		public ToggleState(boolean initialState, Runnable on, Runnable off) {
+			this.default_ = this.initialState = this.state = initialState;
+			this.on = on;
+			this.off = off;
+		}
+
+		public boolean set(boolean enable) {
+			if(FORCE || this.state ^ enable) {
+				if(enable) {
+					on.run();
+				} else {
+					off.run();
+				}
+				this.state = enable;
+			}
+			return enable;
+		}
+
+		public void setDefault(boolean id) {
+			this.default_ = id;
+		}
+
+		public void setAndDefault(boolean id) {
+			this.set(this.default_ = id);
+		}
+
+		public boolean setToDefault() {
+			return this.set(this.default_);
+		}
+
+		public void defaultToInitial() {
+			this.default_ = this.initialState;
+		}
+
+		public boolean getDefault() {
+			return this.default_;
 		}
 	}
 }

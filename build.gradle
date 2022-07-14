@@ -8,6 +8,9 @@ plugins {
 }
 
 version '1.0.0'
+loom {
+	shareRemapCaches = true
+}
 
 subprojects {
 	apply plugin: 'java'
