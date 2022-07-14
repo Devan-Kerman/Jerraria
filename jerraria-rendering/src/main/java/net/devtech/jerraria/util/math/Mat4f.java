@@ -42,7 +42,7 @@ public final class Mat4f extends Mat {
 
 	@Override
 	public Mat load(MatView from) {
-		this.mat.load(((Mat4f)from).mat);
+		this.mat.load(((Mat4f) from).mat);
 		return this;
 	}
 
@@ -96,17 +96,11 @@ public final class Mat4f extends Mat {
 	}
 
 	@Override
-	public void upload(GlData.Buf buf, int m, int n) {
-		if(buf instanceof GlData.FlushableBuf f) {
-			FloatBuffer fb = f.fb();
-			this.mat.writeColumnMajor(fb);
-			f.flush0();
-		} else {
-			FloatBuffer temp = FloatBuffer.allocate(16);
-			this.mat.writeColumnMajor(temp);
-			for(int i = 0; i < temp.position(); i++) {
-				buf.f(temp.get(i));
-			}
+	public void upload4x4(GlData.Buf buf) {
+		FloatBuffer temp = FloatBuffer.allocate(16);
+		this.mat.writeColumnMajor(temp);
+		for(int i = 0; i < temp.position(); i++) {
+			buf.f(temp.get(i));
 		}
 	}
 
@@ -114,7 +108,7 @@ public final class Mat4f extends Mat {
 	public float getElement(int x, int y) { // extremely unperformant
 		FloatBuffer buffer = FloatBuffer.allocate(16);
 		this.mat.writeColumnMajor(buffer);
-		return buffer.get(x*4+y);
+		return buffer.get(x * 4 + y);
 	}
 
 	public static class Type extends MatType {
