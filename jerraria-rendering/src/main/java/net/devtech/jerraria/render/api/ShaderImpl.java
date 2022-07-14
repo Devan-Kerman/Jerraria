@@ -30,7 +30,7 @@ import net.devtech.jerraria.util.Id;
  * Implementation of the shader class moved into out to make the main class easier to read
  */
 public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
-	static final Vector<Shader<?>> SHADERS = new Vector<>();
+	public static final Vector<Shader<?>> SHADERS = new Vector<>();
 	final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();
 	final RenderHandler handler;
