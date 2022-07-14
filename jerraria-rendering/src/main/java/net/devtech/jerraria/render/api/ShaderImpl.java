@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.Pair;
@@ -29,6 +30,7 @@ import net.devtech.jerraria.util.Id;
  * Implementation of the shader class moved into out to make the main class easier to read
  */
 public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
+	static final Vector<Shader<?>> SHADERS = new Vector<>();
 	final Id id;
 	final Map<String, Object> compilationConfig = new HashMap<>();
 	final RenderHandler handler;
@@ -82,6 +84,7 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		if(shader instanceof TranslucentShader && handler == RenderHandler.INSTANCE) {
 			throw new UnsupportedOperationException("Use TranslucencyRenderer#create to create TranslucentShaders!");
 		}
+		SHADERS.add(shader);
 		return shader;
 	}
 
