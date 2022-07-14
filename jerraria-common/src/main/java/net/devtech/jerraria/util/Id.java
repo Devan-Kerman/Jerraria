@@ -20,10 +20,16 @@ public interface Id extends Comparable<Id> {
 		return create(string.substring(0, index), string.substring(index+1));
 	}
 
+	static Id from(Identifier id) {
+		return (Id) (Object) id;
+	}
+
 	String mod();
 
 	String path();
 
 	@Override
 	String toString();
+
+	Identifier to();
 }

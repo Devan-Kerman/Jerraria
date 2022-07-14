@@ -31,8 +31,14 @@ public abstract class IdentifierMixin {
 
 	@SoftOverride
 	@Intrinsic
-	public String path() {
+	public String soft$path() {
 		return this.getPath();
+	}
+
+	@SoftOverride
+	@Intrinsic
+	Identifier soft$to() {
+		return (Identifier) (Object) this;
 	}
 
 	@SoftOverride
