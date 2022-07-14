@@ -2,6 +2,7 @@ package net.devtech.jerraria.render.internal.renderhandler.translucent;
 
 import static org.lwjgl.opengl.GL42.*;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.devtech.jerraria.render.api.base.DataType;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.translucency.TranslucentShader;
@@ -39,8 +40,8 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer 
 
 		if(counter >= this.bufferSize) {
 			if(this.bufferTex != 0) {
-				glDeleteTextures(this.bufferTex);
-				glDeleteBuffers(this.buffer);
+				RenderSystem.deleteTexture(this.bufferTex);
+				RenderSystem.glDeleteBuffers(this.buffer);
 			}
 			this.bufferTex = glGenTextures();
 			this.buffer = glGenBuffers();
@@ -67,9 +68,9 @@ public class LinkedListTranslucentRenderer extends AbstractTranslucencyRenderer 
 	@Override
 	public void frameSize(int width, int height) {
 		if(this.bufferTex != 0) {
-			glDeleteTextures(this.bufferTex);
-			glDeleteBuffers(this.buffer);
-			glDeleteTextures(this.headTex);
+			RenderSystem.deleteTexture(this.bufferTex);
+			RenderSystem.glDeleteBuffers(this.buffer);
+			RenderSystem.deleteTexture(this.headTex);
 		}
 		this.bufferTex = glGenTextures();
 		this.buffer = glGenBuffers();

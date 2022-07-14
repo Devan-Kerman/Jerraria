@@ -4,7 +4,9 @@
 	"mixins": [
 		"GLContextStateMixin",
 		"GLContextStateMixin$BoolStateMixin",
-		"GLContextStateMixin$ToggleStateMixin"
+		"GLContextStateMixin$ToggleStateMixin",
+		"UniformMixin$MatrixMixin",
+		"UniformMixin$SamplerMixin"
 	],
 	"required": true,
 	"injectors": {

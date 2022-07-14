@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.devtech.jerraria.mixin.impl.ShaderAccessor;
 import net.devtech.jerraria.render.internal.state.GLContextState;
+import net.devtech.jerraria.render.internal.state.ToggleState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -64,7 +65,7 @@ public class GLContextStateMixin {
 		BLEND_ALL_INTERNAL.defaultDst = ddst;
 	}
 
-	@Mixin(GLContextState.BoolState.class)
+	@Mixin(value = GLContextState.BoolState.class, remap = false)
 	static class BoolStateMixin {
 		@Shadow @Final
 		BooleanConsumer binder;
@@ -78,7 +79,7 @@ public class GLContextStateMixin {
 		}
 	}
 
-	@Mixin(GLContextState.ToggleState.class)
+	@Mixin(value = ToggleState.class, remap = false)
 	static class ToggleStateMixin {
 		@Shadow @Final
 		Runnable on, off;
