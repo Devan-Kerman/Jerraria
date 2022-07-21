@@ -1,0 +1,9 @@
+{
+	"schemaVersion": 1,
+	"id": "jerraria-gui",
+	"version": "${version}",
+	"license": "LGPLv3",
+	"depends": {
+		"jerraria": "*"
+	}
+}

@@ -3,23 +3,18 @@ package net.devtech.jerraria.gui.api.shaders;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.VFBuilder;
 import net.devtech.jerraria.render.api.batch.BasicShaderKey;
-import net.devtech.jerraria.render.api.batch.ShaderKey;
 import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.textures.Texture;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
-import net.devtech.jerraria.render.api.types.Mat3;
 import net.devtech.jerraria.render.api.types.Tex;
 import net.devtech.jerraria.render.api.types.Vec2;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.util.math.MatView;
 
 public class ColorTextureShader extends Shader<Vec3.F<Vec2.F<Color.ARGB<End>>>> {

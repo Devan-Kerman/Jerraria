@@ -24,7 +24,7 @@ public class GLContextStateMixin {
 	@Shadow @Final static GLContextState.BlendStateI BLEND_ALL_INTERNAL;
 
 	@Inject(method = "<clinit>", at = @At("TAIL"))
-	public void setForce(CallbackInfo info) {
+	private static void setForce(CallbackInfo info) {
 		FORCE = true;
 	}
 
@@ -32,8 +32,8 @@ public class GLContextStateMixin {
 		"bindFrameBuffer(I)V",
 		"bindDrawFBO(I)V",
 		"bindReadFBO(I)V"
-	}, at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glBindFramebuffer(II)V"))
-	static void bindFrameBuffer(int target, int id) {
+	}, at = @At(value = "INVOKE", target = "glBindFramebuffer(II)V"))
+	private static void bindFrameBuffer(int target, int id) {
 		int default_ = defaultFBO;
 		GlStateManager._glBindFramebuffer(target, id);
 		defaultFBO = default_;
@@ -44,7 +44,7 @@ public class GLContextStateMixin {
 	 * @reason update minecraft's stuff
 	 */
 	@Overwrite
-	static void bindProgram(int glId) {
+	public static void bindProgram(int glId) {
 		if(ShaderAccessor.getActiveShaderId() != glId) {
 			GlProgramManager.useProgram(glId);
 			ShaderAccessor.setActiveShaderId(glId);
@@ -75,24 +75,6 @@ public class GLContextStateMixin {
 		public void set(boolean value) {
 			boolean default_ = this.default_;
 			this.binder.accept(value);
-			this.default_ = default_;
-		}
-	}
-
-	@Mixin(value = ToggleState.class, remap = false)
-	static class ToggleStateMixin {
-		@Shadow @Final
-		Runnable on, off;
-		@Shadow boolean default_;
-
-		@Overwrite
-		public void set(boolean value) {
-			boolean default_ = this.default_;
-			if(value) {
-				on.run();
-			} else {
-				off.run();
-			}
 			this.default_ = default_;
 		}
 	}

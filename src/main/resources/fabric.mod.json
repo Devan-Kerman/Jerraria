@@ -20,6 +20,9 @@
 	"recommends": {
 		"devtech_attachment": "*"
 	},
+	"entrypoints": {
+		"client": ["net.devtech.jerraria.impl.JerrariaClientInit"]
+	},
 	"mixins": [
 		"jerraria_impl.mixins.json",
 		"jerraria_self.mixins.json"

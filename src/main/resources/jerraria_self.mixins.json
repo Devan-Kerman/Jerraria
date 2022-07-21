@@ -1,15 +1,15 @@
 {
-	"package": "net.devtech.jerraria.mixin.self",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [
-		"GLContextStateMixin",
-		"GLContextStateMixin$BoolStateMixin",
-		"GLContextStateMixin$ToggleStateMixin",
-		"UniformMixin$MatrixMixin",
-		"UniformMixin$SamplerMixin"
-	],
-	"required": true,
-	"injectors": {
-		"defaultRequire": 1
+  "package": "net.devtech.jerraria.mixin.self",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "GLContextStateMixin",
+    "GLContextStateMixin$BoolStateMixin",
+    "ToggleStateMixin",
+    "UniformMixin$MatrixMixin",
+    "UniformMixin$SamplerMixin"
+  ],
+  "required": true,
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

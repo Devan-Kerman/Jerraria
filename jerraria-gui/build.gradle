@@ -1,7 +1,7 @@
 version '1.0.0'
 
 dependencies {
-	api project(":jerraria-rendering")
+	api project(path: ":jerraria-rendering", configuration: 'namedElements')
 	rootProject.dependencies.include(api('org.orbisgis:poly2tri-core:0.1.2'))
 	rootProject.dependencies.include(api("io.github.juuxel:libninepatch:1.0.0"))
 }

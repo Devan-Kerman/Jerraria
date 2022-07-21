@@ -2,17 +2,23 @@ package net.devtech.jerraria.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Vector;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderImpl;
+import net.devtech.jerraria.render.api.impl.RenderingEnvironmentInternal;
 import net.devtech.jerraria.render.internal.ShaderManager;
 import net.devtech.jerraria.util.Id;
 import net.devtech.jerraria.util.Validate;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -25,40 +31,66 @@ public class JerrariaClientInit implements ClientModInitializer {
 	static ResourceManager manager;
 
 	static String source(Id id, String ext) {
-		Identifier path = new Identifier(id.mod(), id.path() + ext);
 		ResourceManager manager = getManager();
-		return manager.getResource(path).map(resource -> {
-			try(BufferedReader reader = resource.getReader()) {
-				return reader.lines().collect(Collectors.joining("\n"));
+		Optional<String> reader = manager.getResource(new Identifier(id.mod(), "shaders/"+id.path() + ext)).map(r -> {
+			try {
+				return r.getReader();
 			} catch(IOException e) {
-				e.printStackTrace();
-				return null;
+				throw Validate.rethrow(e);
 			}
-		}).orElse(null);
+		}).map(reader1 ->  {
+			try(reader1) {
+				return reader1.lines().collect(Collectors.joining("\n"));
+			} catch(IOException e) {
+				throw Validate.rethrow(e);
+			}
+		});
+		return reader.orElse(null);
 	}
 
 	@Override
 	public void onInitializeClient() {
+		RenderingEnvironmentInternal.renderThread_ = Thread.currentThread();
+		System.out.println("aaaaaaaa");
 		ShaderManager.FRAG_SOURCES.add((current, path) -> Pair.of(current, source(path, ".frag"))); // fragment shaders
 		ShaderManager.VERT_SOURCES.add((current, path) -> Pair.of(current, source(path, ".vert"))); // vertex shaders
 		ShaderManager.LIB_SOURCES.add((current, path) -> Pair.of(current, source(path, ".glsl"))); // utility glsl code
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			final Identifier id = new Identifier("jerraria", "shaders");
-
-			@Override
-			public void reload(ResourceManager manager) {
-				JerrariaClientInit.manager = manager;
-				for(Shader<?> shader : ShaderImpl.SHADERS) {
-					shader.reload();
+		ShaderManager.SHADER_PROVIDERS.add(id -> new ShaderManager.ShaderPair(id, id));
+		ShaderManager.SHADER_PROVIDERS.add(0, id -> {
+			String source = source(id, ".properties");
+			if(source != null) {
+				try {
+					Properties properties = new Properties();
+					properties.load(new StringReader(source));
+					Object vert = properties.get("vert");
+					Object frag = properties.get("vert");
+					Id vertId = vert == null ? id : Id.parse(vert.toString());
+					Id fragId = vert == null ? id : Id.parse(frag.toString());
+					return new ShaderManager.ShaderPair(vertId, fragId);
+				} catch(IOException e) {
+					throw Validate.rethrow(e);
 				}
-				JerrariaClientInit.manager = null;
 			}
-
-			@Override
-			public Identifier getFabricId() {
-				return this.id;
-			}
+			return null;
 		});
+		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES)
+			.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+				final Identifier id = new Identifier("jerraria", "shaders");
+
+				@Override
+				public void reload(ResourceManager manager) {
+					JerrariaClientInit.manager = manager;
+					for(Shader<?> shader : ShaderImpl.SHADERS) {
+						shader.reload();
+					}
+					JerrariaClientInit.manager = null;
+				}
+
+				@Override
+				public Identifier getFabricId() {
+					return this.id;
+				}
+			});
 	}
 
 	public static ResourceManager getManager() {

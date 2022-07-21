@@ -48,16 +48,31 @@ allprojects {
 		options.encoding = "UTF-8"
 		options.release.set(17)
 	}
+
+	processResources {
+		inputs.property "version", project.version
+
+		filesMatching("fabric.mod.json") {
+			expand "version": project.version
+		}
+	}
 }
 
 //ext.lwjglVersion = '3.3.1'
 //ext.lwjglNatives = ['natives-windows', 'natives-linux', 'natives-macos']
 
+subprojects.each {
+	remapJar.dependsOn("${it.path}:remapJar")
+}
+
 dependencies {
-	api include(project(":jerraria-rendering"))
-	api include(project(":jerraria-access"))
-	api include(project(":jerraria-gui"))
-	api include(project(":jerraria-common"))
+	subprojects.each {
+		include(api(project(path: ":${it.name}", configuration: 'namedElements')))
+	}
+	//include(modImplementationMapped(project(":jerraria-rendering")))
+	//include(modImplementationMapped(project(":jerraria-access")))
+	//include(modImplementationMapped(project(":jerraria-gui")))
+	//include(modImplementationMapped(project(":jerraria-common")))
 	//implementation 'io.netty:netty-handler:4.1.77.Final'
 	//implementation 'io.netty:netty-codec-http:4.1.77.Final'
 	//implementation 'io.netty:netty-transport-native-epoll:4.1.77.Final'
@@ -68,20 +83,8 @@ dependencies {
 	testImplementation 'com.google.jimfs:jimfs:1.2'
 }
 
-afterEvaluate {
-
-}
-
 test {
 	useJUnitPlatform()
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
 }
 
 publishing {
@@ -104,6 +107,32 @@ publishing {
 			}
 		}
 	}
+}
+
+sourceSets {
+	testmod {
+		runtimeClasspath += main.runtimeClasspath
+		compileClasspath += main.compileClasspath
+	}
+}
+
+loom {
+	runs {
+		testmodClient {
+			client()
+			name = "Testmod Client"
+			source sourceSets.testmod
+		}
+		testmodServer {
+			server()
+			name = "Testmod Server"
+			source sourceSets.testmod
+		}
+	}
+}
+
+loom.mods.register(project.name + "-testmod") {
+	sourceSet project.sourceSets.testmod
 }
 
 task generateFileIndex() {}

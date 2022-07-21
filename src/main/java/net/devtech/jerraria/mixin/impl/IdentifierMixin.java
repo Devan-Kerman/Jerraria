@@ -23,25 +23,21 @@ public abstract class IdentifierMixin {
 	@Shadow
 	public abstract String getNamespace();
 
-	@SoftOverride
 	@Intrinsic
 	public String soft$mod() {
 		return this.getNamespace();
 	}
 
-	@SoftOverride
 	@Intrinsic
 	public String soft$path() {
 		return this.getPath();
 	}
 
-	@SoftOverride
 	@Intrinsic
-	Identifier soft$to() {
+	public Identifier soft$to() {
 		return (Identifier) (Object) this;
 	}
 
-	@SoftOverride
 	@Intrinsic
 	public int compareTo(@NotNull Id o) {
 		return this.compareTo((Object) o);

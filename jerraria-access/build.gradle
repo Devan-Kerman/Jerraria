@@ -1,7 +1,7 @@
 version '1.0.0'
 
 dependencies {
-	api project(":jerraria-common")
+	api project(path: ":jerraria-common", configuration: 'namedElements')
 	//api 'org.ow2.asm:asm:9.3'
 	//api 'org.ow2.asm:asm-commons:9.3'
 	//api 'com.google.guava:guava:31.1-jre'

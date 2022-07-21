@@ -9,11 +9,10 @@ import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.util.Id;
-import net.devtech.jerraria.util.math.Mat2x3f;
 import net.devtech.jerraria.util.math.MatView;
 
 public class SolidColorShader extends Shader<Vec3.F<Color.ARGB<End>>> {
-	public static final SolidColorShader INSTANCE = create(Id.create("jerraria", "solid_color"), SolidColorShader::new, SolidColorShader::new);
+	public static final SolidColorShader INSTANCE = create(Id.create("jerraria", "solid_color_gui"), SolidColorShader::new, SolidColorShader::new);
 	public static final StrategyKeys<SolidColorShader> KEYS = new StrategyKeys<>(INSTANCE);
 
 	//public final Out out = this.addOutput("oColor", DataType.IMAGE_2D);
