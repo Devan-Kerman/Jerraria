@@ -69,7 +69,7 @@ final class GlStateStackImpl extends GlStateStack {
 		}
 
 		if(current.isEnabled(FACE_CULLING_SET)) {
-			GLContextState.DEPTH_TEST.setAndDefault(current.getBoolean(FACE_CULLING));
+			GLContextState.FACE_CULLING.setAndDefault(current.getBoolean(FACE_CULLING));
 		}
 	}
 
