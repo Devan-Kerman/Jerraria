@@ -18,8 +18,8 @@ import org.lwjgl.opengl.GL13;
  */
 public abstract class Uniform implements GlData.BufAdapter {
 	public ProgramDefaultUniformState state;
-	final DataType type;
-	final int location;
+	protected final DataType type;
+	protected final int location;
 	public boolean reupload;
 
 	protected Uniform(DataType type, int location) {

@@ -63,9 +63,9 @@ public class JerrariaClientInit implements ClientModInitializer {
 					Properties properties = new Properties();
 					properties.load(new StringReader(source));
 					Object vert = properties.get("vert");
-					Object frag = properties.get("vert");
+					Object frag = properties.get("frag");
 					Id vertId = vert == null ? id : Id.parse(vert.toString());
-					Id fragId = vert == null ? id : Id.parse(frag.toString());
+					Id fragId = frag == null ? id : Id.parse(frag.toString());
 					return new ShaderManager.ShaderPair(vertId, fragId);
 				} catch(IOException e) {
 					throw Validate.rethrow(e);

@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -25,19 +26,24 @@ import net.devtech.jerraria.util.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.GlBlendState;
 import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.render.Shader;
 import net.minecraft.client.texture.AbstractTexture;
 
 public class JerrariaShader extends Shader implements ShaderExt {
-	boolean needsInit = true;
+	boolean inited;
 	final MinecraftShader<?> shader;
+	static final ThreadLocal<MinecraftShader<?>> SHADER_THREAD_LOCAL = new ThreadLocal<>();
 
 	public static Shader create(MinecraftShader<?> shader) {
 		try {
+			SHADER_THREAD_LOCAL.set(shader);
 			return new JerrariaShader(shader);
 		} catch(IOException e) {
 			throw Validate.rethrow(e);
+		} finally {
+			SHADER_THREAD_LOCAL.set(null);
 		}
 	}
 
@@ -47,9 +53,10 @@ public class JerrariaShader extends Shader implements ShaderExt {
 	}
 
 	public void init() { // allows early init
-		ImmutableList<String> attributeNames = this.shader.format.getAttributeNames();
+		ImmutableList<String> attributeNames = this.getFormat().getAttributeNames();
 		IntArrayList locationsBuilder = new IntArrayList(attributeNames.size());
-		BareShader bare = this.shader.getShader();
+		MinecraftShader<?> current = SHADER_THREAD_LOCAL.get();
+		BareShader bare = current.getShader();
 		for(String name : attributeNames) {
 			ElementImpl element = (ElementImpl) bare.vao.getElement(name);
 			locationsBuilder.add(element.location());
@@ -61,7 +68,7 @@ public class JerrariaShader extends Shader implements ShaderExt {
 		Map<String, GlUniform> loaded = new HashMap<>();
 		IntList uniformIds = new IntArrayList();
 		elements.forEach((name, element) -> {
-			if(element instanceof ElementImpl e) {
+			if(element instanceof UniformData.StandardUniform e) {
 				DataType type = e.type();
 				if(type == DataType.TEXTURE_2D) {
 					samplerIds.add(name);
@@ -72,6 +79,7 @@ public class JerrariaShader extends Shader implements ShaderExt {
 						uniforms.add(uniform);
 						loaded.put(name, uniform);
 						uniformIds.add(e.location());
+						uniform.setLocation(e.location());
 					}
 				}
 			}
@@ -84,7 +92,7 @@ public class JerrariaShader extends Shader implements ShaderExt {
 		access.setUniforms(uniforms);
 		access.setLoadedUniforms(loaded);
 		access.setLoadedUniformIds(uniformIds);
-		access.setBlendState(this.shader.defaultBlendState());
+		access.setBlendState(current.defaultBlendState());
 		access.setLoadedAttributeIds(attributeIds);
 		access.setAttributeNames(attributeNames);
 		access.setProgramId(bare.id.glId);
@@ -93,9 +101,9 @@ public class JerrariaShader extends Shader implements ShaderExt {
 	@Nullable
 	@Override
 	public GlUniform getUniform(String name) {
-		if(this.needsInit) {
+		if(!this.inited) {
 			this.init();
-			this.needsInit = false;
+			this.inited = true;
 		}
 		return super.getUniform(name);
 	}
@@ -110,7 +118,10 @@ public class JerrariaShader extends Shader implements ShaderExt {
 		RenderSystem.assertOnRenderThread();
 		ShaderAccess access = (ShaderAccess) this;
 		access.setDirty(false);
-		access.getBlendState().enable();
+		GlBlendState state = access.getBlendState();
+		if(state != null) {
+			state.enable();
+		}
 
 		List<String> names = access.getSamplerNames();
 		int active = GlStateManager._getActiveTexture();
@@ -133,11 +144,15 @@ public class JerrariaShader extends Shader implements ShaderExt {
 		GlStateManager._activeTexture(active);
 		bare.bindProgram();
 		bare.setupDraw(false);
+
+		for(GlUniform uniform : access.getUniforms()) {
+			uniform.upload();
+		}
 	}
 
 	@Override
 	public void markDirty(String uniformName) {
-		Uniform managed = (Uniform) this.shader.getShader().uniforms.elements.get(uniformName);
+		Uniform managed = (Uniform) Objects.requireNonNullElseGet(this.shader, SHADER_THREAD_LOCAL::get).getShader().uniforms.element(uniformName);
 		managed.reupload = false;
 		managed.state.updateUniform(null, true);
 	}

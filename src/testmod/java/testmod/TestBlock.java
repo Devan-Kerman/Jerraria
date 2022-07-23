@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -37,6 +38,11 @@ public class TestBlock extends Block implements BlockEntityProvider {
 		public Tile(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 			super(type, pos, state);
 		}
+	}
+
+	@Override
+	public BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.INVISIBLE;
 	}
 
 	record Renderer(BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<Tile> {

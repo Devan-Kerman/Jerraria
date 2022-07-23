@@ -53,7 +53,7 @@ public class ShaderManager {
 		ShaderPreprocessor preprocessor = new ShaderPreprocessor(ShaderManager.LIB_SRC);
 		preprocessor.getIncludeParameters().putAll(initialArgs);
 		int fragmentShader = BareShader.createProgram(FRAG_SRC, preprocessor, GL_FRAGMENT_SHADER, id);
-		int vertexShader = BareShader.createProgram(FRAG_SRC, preprocessor, GL_VERTEX_SHADER, id);
+		int vertexShader = BareShader.createProgram(VERT_SRC, preprocessor, GL_VERTEX_SHADER, id);
 		int oldId = shader.id.glId;
 		shader.id.glId = compileShader(fragmentShader, vertexShader);
 		glDeleteProgram(oldId);

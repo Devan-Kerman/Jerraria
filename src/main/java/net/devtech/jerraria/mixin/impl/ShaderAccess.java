@@ -68,4 +68,7 @@ public interface ShaderAccess {
 
 	@Accessor
 	Map<String, Object> getSamplers();
+
+	@Accessor
+	List<GlUniform> getUniforms();
 }

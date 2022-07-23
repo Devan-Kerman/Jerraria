@@ -43,16 +43,13 @@ public class CustomRenderLayers extends RenderLayer {
 	}
 
 	public static final RenderLayer RENDER_LAYER = of("custom_render_layer",
-		VertexFormats.POSITION_COLOR_LIGHT,
+		VertexFormats.POSITION,
 		VertexFormat.DrawMode.QUADS,
 		256,
 		false,
 		true,
 		RenderLayer.MultiPhaseParameters.builder()
 			.cull(RenderPhase.DISABLE_CULLING)
-			.lightmap(RenderPhase.ENABLE_LIGHTMAP)
-			.transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY)
-			.layering(RenderPhase.VIEW_OFFSET_Z_LAYERING)
 			.shader(new RenderPhase.Shader(TestShader.INSTANCE::getMinecraftShader))
 			.build(false)
 	);
