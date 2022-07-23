@@ -1,5 +1,8 @@
 package testmod;
 
+import net.devtech.jerraria.render.api.instanced.InstanceKey;
+import net.devtech.jerraria.render.api.instanced.Instancer;
+import net.devtech.jerraria.util.math.Mat4f;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
@@ -15,6 +18,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.world.World;
 
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -35,8 +39,28 @@ public class TestBlock extends Block implements BlockEntityProvider {
 	}
 
 	static final class Tile extends BlockEntity {
+		InstanceKey<TestShader> key;
+
 		public Tile(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 			super(type, pos, state);
+		}
+
+		@Override
+		public void cancelRemoval() {
+			super.cancelRemoval();
+			assert this.world != null;
+			if(this.world.isClient) {
+				this.key = Renderer.SHADER_INSTANCER.getOrAllocateId();
+			}
+		}
+
+		@Override
+		public void markRemoved() {
+			super.markRemoved();
+			if(this.key != null) {
+				this.key.invalidate();
+				this.key = null;
+			}
 		}
 	}
 
@@ -46,6 +70,15 @@ public class TestBlock extends Block implements BlockEntityProvider {
 	}
 
 	record Renderer(BlockEntityRendererFactory.Context context) implements BlockEntityRenderer<Tile> {
+		static final Instancer<TestShader> SHADER_INSTANCER = Instancer.simple(TestShader::copy, TestShader.INSTANCE, 1000);
+		static {
+			TestShader instance = TestShader.INSTANCE;
+			instance.vert().vec3f(0, 0, 0);
+			instance.vert().vec3f(1, 0, 0);
+			instance.vert().vec3f(1, 1, 0);
+			instance.vert().vec3f(0, 1, 0);
+		}
+
 		@Override
 		public void render(
 			Tile entity,
@@ -54,12 +87,11 @@ public class TestBlock extends Block implements BlockEntityProvider {
 			VertexConsumerProvider vertexConsumers,
 			int light,
 			int overlay) {
-			VertexConsumer buffer = vertexConsumers.getBuffer(CustomRenderLayers.RENDER_LAYER);
 			Matrix4f mat = matrices.peek().getPositionMatrix();
-			buffer.vertex(mat, 0, 0, 0).next();
-			buffer.vertex(mat, 1, 0, 0).next();
-			buffer.vertex(mat, 1, 1, 0).next();
-			buffer.vertex(mat, 0, 1, 0).next();
+			entity.key.ssbo(shader -> shader.blockEntityMats).matN(new Mat4f(mat));
+			for(Instancer.Block<TestShader> block : SHADER_INSTANCER.compactAndGetBlocks()) {
+				block.block().drawInstancedKeep(block.instances());
+			}
 		}
 	}
 }

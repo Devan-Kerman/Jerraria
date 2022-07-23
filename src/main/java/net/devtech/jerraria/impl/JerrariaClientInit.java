@@ -79,11 +79,21 @@ public class JerrariaClientInit implements ClientModInitializer {
 
 				@Override
 				public void reload(ResourceManager manager) {
-					JerrariaClientInit.manager = manager;
-					for(Shader<?> shader : ShaderImpl.SHADERS) {
-						RenderSystem.recordRenderCall(shader::reload);
+					try {
+						JerrariaClientInit.manager = manager;
+						for(Shader<?> shader : ShaderImpl.SHADERS) {
+							RenderSystem.recordRenderCall(() -> {
+								try {
+									shader.reload();
+								} catch(Exception e) {
+									e.printStackTrace();
+								}
+							});
+						}
+						JerrariaClientInit.manager = null;
+					} catch(Exception e) {
+						e.printStackTrace();
 					}
-					JerrariaClientInit.manager = null;
 				}
 
 				@Override
