@@ -161,7 +161,7 @@ public class UniformData extends GlData {
 						}
 						stride = arrayStride2;
 						off = Math.min(offset, off);
-						structArrayFields.add(new StructArrayField(arrayIndexTemplate(varName), offset, type));
+						structArrayFields.add(new StructArrayField(varName, offset, type));
 					}
 				}
 
