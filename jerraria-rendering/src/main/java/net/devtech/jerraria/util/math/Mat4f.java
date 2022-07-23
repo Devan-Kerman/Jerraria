@@ -5,12 +5,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.devtech.jerraria.render.api.base.GlData;
 
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vector4f;
 
 public final class Mat4f extends Mat {
 	public final Matrix4f mat;
+
+	public static Mat4f from(MatrixStack stack) {
+		return new Mat4f(stack.peek().getPositionMatrix());
+	}
 
 	public Mat4f(Matrix4f mat) {
 		this.mat = mat;
@@ -69,7 +74,7 @@ public final class Mat4f extends Mat {
 		return new Mat4f(copy);
 	}
 
-	public Vector4f transform(float x, float y, float z, float w) {
+	public Vector4f transform(float x, float y, float z, float w) { // todo improve perf
 		Vector4f vector = new Vector4f(x, y, z, w);
 		vector.transform(this.mat);
 		return vector;

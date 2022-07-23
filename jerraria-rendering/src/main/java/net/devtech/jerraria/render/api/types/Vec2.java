@@ -69,9 +69,13 @@ public abstract class Vec2<N extends GlValue<?>> extends AbstractGlValue<N>
 			super(data, next, name);
 		}
 
-		public N vec3i(int a, int b) {
+		public N vec2i(int a, int b) {
 			this.data.element(this.element).i(a).i(b);
 			return this.getNext();
+		}
+
+		public N overlay(int uv) {
+			return this.vec2i(uv & 0xffff, (uv >> 16) & 0xffff);
 		}
 	}
 }

@@ -2,9 +2,8 @@ package net.devtech.jerraria.mixin.self;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.devtech.jerraria.mixin.impl.ShaderAccessor;
+import net.devtech.jerraria.mixin.impl.ShaderAccess;
 import net.devtech.jerraria.render.internal.state.GLContextState;
-import net.devtech.jerraria.render.internal.state.ToggleState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -45,10 +44,10 @@ public class GLContextStateMixin {
 	 */
 	@Overwrite
 	public static void bindProgram(int glId) {
-		if(ShaderAccessor.getActiveShaderId() != glId) {
+		if(ShaderAccess.getActiveShaderId() != glId) {
 			GlProgramManager.useProgram(glId);
-			ShaderAccessor.setActiveShaderId(glId);
-			ShaderAccessor.setActiveShader(null);
+			ShaderAccess.setActiveShaderId(glId);
+			ShaderAccess.setActiveShader(null);
 		}
 	}
 

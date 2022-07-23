@@ -1,0 +1,14 @@
+{
+	"package": "net.devtech.jerraria.mixin.dummy",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+	],
+	"required": true,
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"client": [
+		"DummyShaderMixin"
+	],
+	"plugin": "net.devtech.jerraria.impl.ShaderUniforms"
+}

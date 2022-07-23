@@ -65,10 +65,18 @@ subprojects.each {
 	remapJar.dependsOn("${it.path}:remapJar")
 }
 
+sourceSets {
+	testmod {
+		runtimeClasspath += main.runtimeClasspath
+		compileClasspath += main.compileClasspath
+	}
+}
+
 dependencies {
 	subprojects.each {
 		include(api(project(path: ":${it.name}", configuration: 'namedElements')))
 	}
+	testmodImplementation sourceSets.main.output
 	//include(modImplementationMapped(project(":jerraria-rendering")))
 	//include(modImplementationMapped(project(":jerraria-access")))
 	//include(modImplementationMapped(project(":jerraria-gui")))
@@ -106,13 +114,6 @@ publishing {
 				}
 			}
 		}
-	}
-}
-
-sourceSets {
-	testmod {
-		runtimeClasspath += main.runtimeClasspath
-		compileClasspath += main.compileClasspath
 	}
 }
 

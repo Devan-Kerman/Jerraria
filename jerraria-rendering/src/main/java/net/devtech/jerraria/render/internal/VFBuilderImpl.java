@@ -1,8 +1,8 @@
 package net.devtech.jerraria.render.internal;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.VFBuilder;
@@ -14,15 +14,16 @@ public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
 	public static VFBuilderImpl<End> create() {
 		return new VFBuilderImpl<>();
 	}
+
 	public VFBuilderImpl() {
-		this.attributes = new ArrayList<>();
+		this.attributes = List.of();
 	}
 
 	public VFBuilderImpl(VFBuilderImpl<?> prev, GlValue.Type<T> value) {
-		List<GlValue.Type<?>> values = new ArrayList<>(prev.attributes.size() + 1);
-		values.addAll(prev.attributes);
-		values.add(value);
-		this.attributes = values;
+		this.attributes = ImmutableList.<GlValue.Type<?>>builder()
+			.addAll(prev.attributes)
+			.add(value)
+			.build();
 	}
 
 	@Override
@@ -38,5 +39,10 @@ public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
 			start = type.create(shader.vao, start);
 		}
 		return Pair.of((T) start, end);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return this.attributes.isEmpty();
 	}
 }

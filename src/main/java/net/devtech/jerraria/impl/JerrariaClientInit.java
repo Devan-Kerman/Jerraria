@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderImpl;
@@ -51,7 +52,6 @@ public class JerrariaClientInit implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		RenderingEnvironmentInternal.renderThread_ = Thread.currentThread();
-		System.out.println("aaaaaaaa");
 		ShaderManager.FRAG_SOURCES.add((current, path) -> Pair.of(current, source(path, ".frag"))); // fragment shaders
 		ShaderManager.VERT_SOURCES.add((current, path) -> Pair.of(current, source(path, ".vert"))); // vertex shaders
 		ShaderManager.LIB_SOURCES.add((current, path) -> Pair.of(current, source(path, ".glsl"))); // utility glsl code
@@ -81,7 +81,7 @@ public class JerrariaClientInit implements ClientModInitializer {
 				public void reload(ResourceManager manager) {
 					JerrariaClientInit.manager = manager;
 					for(Shader<?> shader : ShaderImpl.SHADERS) {
-						shader.reload();
+						RenderSystem.recordRenderCall(shader::reload);
 					}
 					JerrariaClientInit.manager = null;
 				}
