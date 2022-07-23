@@ -193,7 +193,7 @@ public class UniformData extends GlData {
 			.map(BareShader.Field::name)
 			.toList();
 		Set<String> unreferencedUniforms = new LinkedHashSet<>(uniformMap.keySet());
-		fields.values().forEach(unreferencedUniforms::remove);
+		fields.keySet().forEach(unreferencedUniforms::remove);
 		Set<String> unresolvedUniforms = new LinkedHashSet<>(mandatoryNames);
 		unresolvedUniforms.removeAll(uniformMap.keySet());
 		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
