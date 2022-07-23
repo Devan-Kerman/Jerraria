@@ -141,7 +141,7 @@ public class UniformData extends GlData {
 					int offset = answer.get(0), arrayStride = answer.get(1), arraySize = answer.get(2);
 					int type = answer.get(3), arrayStride2 = answer.get(4), arraySize2 = answer.get(5);
 					String varName = glGetProgramResourceName(program, GL_BUFFER_VARIABLE, varResource, maxVarLen);
-					if(arraySize2 != 0) {
+					if(arraySize2 != 0 && arraySize != 0) {
 						if(arraySize == 1) {
 							uniformMap.put(varName, new ActiveUniform(varName, -1, ssbo, offset, type, -2));
 							fixed.add(offset);
