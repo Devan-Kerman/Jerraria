@@ -186,15 +186,15 @@ public class UniformData extends GlData {
 		}
 		this.ssbos = ssbos;
 
-		List<String> unoptionalNames = fields
+		List<String> mandatoryNames = fields
 			.values()
 			.stream()
 			.filter(BareShader.Field::isMandatory)
 			.map(BareShader.Field::name)
 			.toList();
 		Set<String> unreferencedUniforms = new LinkedHashSet<>(uniformMap.keySet());
-		unoptionalNames.forEach(unreferencedUniforms::remove);
-		Set<String> unresolvedUniforms = new LinkedHashSet<>(unoptionalNames);
+		fields.values().forEach(unreferencedUniforms::remove);
+		Set<String> unresolvedUniforms = new LinkedHashSet<>(mandatoryNames);
 		unresolvedUniforms.removeAll(uniformMap.keySet());
 		if(!unresolvedUniforms.isEmpty() || !unreferencedUniforms.isEmpty()) {
 			throw new IllegalStateException("Uniform(s) with name(s) " + unreferencedUniforms + " were not " +
