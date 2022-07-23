@@ -155,7 +155,7 @@ public abstract class AbstractBOBuilder extends ByteBufferGlDataBuf implements B
 					// update immediately because CAS
 					ByteBuffer new_ = this.buffer = BufferUtil.allocateBuffer(JMath.nearestPowerOf2(updateTo + 64));
 					if(updateFrom != 0 && buffer != null) {
-						new_.put(0, buffer, 0, updateFrom);
+						new_.put(0, buffer, 0, Math.min(updateFrom, buffer.limit()));
 					}
 				}
 			}

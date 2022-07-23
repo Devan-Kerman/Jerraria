@@ -155,6 +155,13 @@ public class UniformData extends GlData {
 								fixed.add(byteOffset);
 							}
 						}
+					} else if(arraySize == 0) {
+						if(stride != -1 && stride != arrayStride) {
+							throw new UnsupportedOperationException("Impossible/Unsupported SSBO layout");
+						}
+						stride = arrayStride;
+						off = Math.min(offset, off);
+						structArrayFields.add(new StructArrayField(varName, offset, type));
 					} else {
 						if(stride != -1 && stride != arrayStride2) {
 							throw new UnsupportedOperationException("Impossible/Unsupported SSBO layout");
