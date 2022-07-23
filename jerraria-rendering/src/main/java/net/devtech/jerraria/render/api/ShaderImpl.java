@@ -170,7 +170,15 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 				throw new IllegalStateException("Uniforms must be defined before vertex attributes!");
 			}
 		}
-		return type.create(this.uniformData, null);
+		if(type.isOptional && this.isCopy) {
+			try {
+				return type.create(this.uniformData, null);
+			} catch(NullPointerException e) {
+				return null;
+			}
+		} else {
+			return type.create(this.uniformData, null);
+		}
 	}
 
 	<U extends GlValue<?> & GlValue.Uniform> ShaderBuffer<U> buffer(String name, Shader.BufferFunction<U> type) {
