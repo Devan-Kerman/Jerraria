@@ -1,5 +1,7 @@
 package testmod;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.instanced.InstanceKey;
 import net.devtech.jerraria.render.api.instanced.Instancer;
 import net.devtech.jerraria.util.math.Mat4f;
@@ -21,6 +23,7 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.world.World;
 
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 
 public class TestBlock extends Block implements BlockEntityProvider {
@@ -73,6 +76,7 @@ public class TestBlock extends Block implements BlockEntityProvider {
 		static final Instancer<TestShader> SHADER_INSTANCER = Instancer.simple(TestShader::copy, TestShader.INSTANCE, 1000);
 		static {
 			TestShader instance = TestShader.INSTANCE;
+			instance.strategy(AutoStrat.QUADS);
 			instance.vert().vec3f(0, 0, 0);
 			instance.vert().vec3f(1, 0, 0);
 			instance.vert().vec3f(1, 1, 0);
@@ -90,6 +94,8 @@ public class TestBlock extends Block implements BlockEntityProvider {
 			Matrix4f mat = matrices.peek().getPositionMatrix();
 			entity.key.ssbo(shader -> shader.blockEntityMats).matN(new Mat4f(mat));
 			for(Instancer.Block<TestShader> block : SHADER_INSTANCER.compactAndGetBlocks()) {
+				block.block().projectionMatrix.matN(new Mat4f(RenderSystem.getProjectionMatrix()));
+				block.block().modelViewMatrix.matN(new Mat4f(RenderSystem.getModelViewMatrix()));
 				block.block().drawInstancedKeep(block.instances());
 			}
 		}

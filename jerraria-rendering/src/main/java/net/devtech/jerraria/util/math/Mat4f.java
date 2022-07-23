@@ -104,7 +104,7 @@ public final class Mat4f extends Mat {
 	public void upload4x4(GlData.Buf buf) {
 		FloatBuffer temp = FloatBuffer.allocate(16);
 		this.mat.writeColumnMajor(temp);
-		for(int i = 0; i < temp.position(); i++) {
+		for(int i = 0; i < temp.limit(); i++) {
 			buf.f(temp.get(i));
 		}
 	}
