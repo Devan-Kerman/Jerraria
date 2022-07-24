@@ -1,11 +1,16 @@
 package net.devtech.jerraria.render;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableList;
 import net.devtech.jerraria.impl.MinecraftShaderBuilderImpl;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.Shader;
 import net.devtech.jerraria.render.api.ShaderImpl;
 import net.devtech.jerraria.render.api.VFBuilder;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.types.Color;
 import net.devtech.jerraria.render.api.types.End;
 import net.devtech.jerraria.render.api.types.Mat3;
@@ -22,6 +27,8 @@ import net.devtech.jerraria.util.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gl.GlBlendState;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
 import net.minecraft.client.render.VertexFormats;
@@ -49,11 +56,21 @@ public abstract class MinecraftShader<T extends GlValue<?> & GlValue.Attribute> 
 	public final V.F<?> fogStart = this.uni(V.<End>f("FogStart").optional());
 	public final V.F<?> fogEnd = this.uni(V.<End>f("FogEnd").optional());
 	public final Vec4.F<?> fogColor = this.uni(Vec4.<End>f("FogColor").optional());
+	public final Map<String, ElementImpl> elements;
+	public final VFBuilder<T> builder;
 
 	protected MinecraftShader(Builder<T> builder, Object context) {
 		super(builder.toVertexAttributeBuilder(), context);
+		this.builder = builder.toVertexAttributeBuilder();
 		this.format = builder.getOrCreateVertexFormat();
 		this.reloadCounter = new int[] {0};
+		Map<String, ElementImpl> elements = new HashMap<>();
+		ImmutableList<VertexFormatElement> formatElements = format.getElements();
+		for(int i = 0; i < formatElements.size(); i++) {
+			VertexFormatElement element = formatElements.get(i);
+			elements.put(format.getAttributeNames().get(i), new ElementImpl(element, i));
+		}
+		this.elements = Map.copyOf(elements);
 	}
 
 	public MinecraftShader(Shader<T> shader, SCopy method) {
@@ -61,6 +78,8 @@ public abstract class MinecraftShader<T extends GlValue<?> & GlValue.Attribute> 
 		MinecraftShader<T> mcShader = (MinecraftShader<T>) shader;
 		this.format = mcShader.format;
 		this.reloadCounter = mcShader.reloadCounter;
+		this.elements = mcShader.elements;
+		this.builder = mcShader.builder;
 	}
 
 	public static <N extends GlValue<?>> Type<Vec3.F<N>> pos(String name) {
@@ -90,9 +109,16 @@ public abstract class MinecraftShader<T extends GlValue<?> & GlValue.Attribute> 
 	public net.minecraft.client.render.Shader getMinecraftShader() {
 		if(this.reloadCounter[0] != this.reload) {
 			this.reload = this.reloadCounter[0];
-			this.minecraftShader = JerrariaShader.create(this);
+			this.minecraftShader = MinecraftShaderLoader.createShader(this);
 		}
 		return this.minecraftShader;
+	}
+
+	/**
+	 * @see RenderLayers#renderLayer(MinecraftShader, String, VertexFormat, VertexFormat.DrawMode, int, boolean, boolean, RenderLayer.MultiPhaseParameters.Builder, boolean)
+	 */
+	public VertexConsumerImpl<T> provider(VertexConsumer consumer) {
+		return new VertexConsumerImpl<>(this, consumer);
 	}
 
 	public interface Builder<T extends GlValue<?>> {
@@ -108,6 +134,9 @@ public abstract class MinecraftShader<T extends GlValue<?> & GlValue.Attribute> 
 	}
 
 	public record Type<N extends GlValue<?>>(GlValue.Type<N> type, VertexFormatElement element, String name) {
+	}
+
+	record ElementImpl(VertexFormatElement element, int index) implements GlData.Element {
 	}
 
 	@Nullable

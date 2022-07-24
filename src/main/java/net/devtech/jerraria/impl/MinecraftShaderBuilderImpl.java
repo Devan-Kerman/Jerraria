@@ -10,6 +10,10 @@ import com.google.common.collect.ImmutableMap;
 import net.devtech.jerraria.render.MinecraftShader;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.VFBuilder;
+import net.devtech.jerraria.render.api.types.Color;
+import net.devtech.jerraria.render.api.types.Overlay;
+import net.devtech.jerraria.render.api.types.Vec2;
+import net.devtech.jerraria.render.api.types.Vec3;
 import net.devtech.jerraria.render.internal.VFBuilderImpl;
 
 import net.minecraft.client.render.VertexFormat;
@@ -49,8 +53,8 @@ public class MinecraftShaderBuilderImpl<T extends GlValue<?>> implements Minecra
 	@Override
 	public <N extends GlValue<T> & GlValue.Attribute> MinecraftShader.Builder<N> add(MinecraftShader.Type<N> type) {
 		return new MinecraftShaderBuilderImpl<>(ImmutableMap.<String, VertexFormatElement>builder()
+			.put(type.name(), type.element()) // reverse order
 			.putAll(this.elements)
-			.put(type.name(), type.element())
 			.build(), this.builder.add(type.type()));
 	}
 

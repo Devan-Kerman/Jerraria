@@ -53,7 +53,7 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 		this.uniformData = bare.uniforms;
 		this.outData = bare.outputs;
 		this.uniforms = copy.uniforms;
-		Pair<T, End> build = copy.builder.build(bare);
+		Pair<T, End> build = copy.builder.build(bare.vao);
 		this.compiled = build.first();
 		this.end = build.second();
 		this.shader = bare;
@@ -218,7 +218,7 @@ public class ShaderImpl<T extends GlValue<?> & GlValue.Attribute> {
 			this.compilationConfig
 		);
 		this.shader = bare;
-		Pair<T, End> build = this.builder.build(bare);
+		Pair<T, End> build = this.builder.build(bare.vao);
 		this.compiled = build.first();
 		this.end = build.second();
 	}

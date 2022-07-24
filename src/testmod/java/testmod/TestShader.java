@@ -3,6 +3,7 @@ package testmod;
 import net.devtech.jerraria.render.MinecraftShader;
 import net.devtech.jerraria.render.api.SCopy;
 import net.devtech.jerraria.render.api.ShaderBuffer;
+import net.devtech.jerraria.render.api.element.AutoStrat;
 import net.devtech.jerraria.render.api.instanced.InstanceKey;
 import net.devtech.jerraria.render.api.instanced.InstanceManager;
 import net.devtech.jerraria.render.api.instanced.KeyCopying;
@@ -16,8 +17,10 @@ public class TestShader extends MinecraftShader<Vec3.F<End>> {
 		TestShader::new,
 		TestShader::new
 	);
+	static {
+		INSTANCE.strategy(AutoStrat.QUADS);
+	}
 
-	public final InstanceManager manager = new InstanceManager(1000);
 	public final ShaderBuffer<Mat4.x4<End>> blockEntityMats = this.buffer("Mats.blockEntityMat[%d]", Mat4::mat4);
 
 	protected TestShader(Builder<End> builder, Object context) {
@@ -27,9 +30,4 @@ public class TestShader extends MinecraftShader<Vec3.F<End>> {
 	public TestShader(TestShader shader, SCopy method) {
 		super(shader, method);
 	}
-
-	public static void copy(InstanceKey<TestShader> from, InstanceKey<TestShader> to) {
-		KeyCopying.ssbo(from, to, shader -> shader.blockEntityMats);
-	}
-
 }

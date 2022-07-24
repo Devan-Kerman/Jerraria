@@ -1,6 +1,6 @@
 package net.devtech.jerraria.mixin.impl;
 
-import net.devtech.jerraria.render.ShaderExt;
+import net.devtech.jerraria.impl.render.ShaderExt;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,7 +20,7 @@ public class GlUniformMixin {
 	@Inject(method = "markStateDirty", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/GlShader;markUniformsDirty()V"))
 	public void enhancedContext(CallbackInfo ci) {
 		if(this.program instanceof ShaderExt a) {
-			a.markDirty(this.name);
+			a.markDirty((GlUniform) (Object) this);
 		}
 	}
 }

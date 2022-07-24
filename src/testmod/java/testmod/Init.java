@@ -6,6 +6,7 @@ import net.devtech.jerraria.gui.api.shaders.SolidColorShader;
 import net.devtech.jerraria.render.api.BuiltGlState;
 import net.devtech.jerraria.render.api.GLStateBuilder;
 import net.devtech.jerraria.render.api.types.Mat4;
+import net.devtech.jerraria.render.internal.shaders.BlurResolveShader;
 import net.devtech.jerraria.util.math.Mat;
 import net.devtech.jerraria.util.math.Mat4f;
 
@@ -35,7 +36,8 @@ public class Init implements ClientModInitializer {
 		Registry.register(Registry.BLOCK, id, BLOCK);
 		Registry.register(Registry.BLOCK_ENTITY_TYPE, id, BLOCK.type);
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-			Objects.requireNonNull(CustomRenderLayers.HANDLE);
+			Objects.requireNonNull(CustomRenderLayers.RENDER_LAYER);
+			Objects.requireNonNull(BlurResolveShader.INSTANCE);
 		});
 
 	}

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Pair;
 import net.devtech.jerraria.render.api.GlValue;
 import net.devtech.jerraria.render.api.VFBuilder;
+import net.devtech.jerraria.render.api.base.GlData;
 import net.devtech.jerraria.render.api.types.End;
 
 public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
@@ -32,11 +33,11 @@ public class VFBuilderImpl<T extends GlValue<?>> implements VFBuilder<T> {
 		return new VFBuilderImpl<>(this, type);
 	}
 
-	public Pair<T, End> build(BareShader shader) {
+	public Pair<T, End> build(GlData data) {
 		End end = new End();
 		GlValue<?> start = end;
 		for(GlValue.Type<?> type : this.attributes) {
-			start = type.create(shader.vao, start);
+			start = type.create(data, start);
 		}
 		return Pair.of((T) start, end);
 	}

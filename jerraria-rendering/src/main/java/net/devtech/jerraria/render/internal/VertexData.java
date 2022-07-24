@@ -23,7 +23,7 @@ import net.devtech.jerraria.util.Validate;
 
 public class VertexData extends GlData {
 	final LazyVAOReference reference;
-	final Map<String, ElementImpl> elements;
+	public final Map<String, ElementImpl> elements;
 	final List<VertexBufferObject> groups;
 	final VertexBufferObject last;
 

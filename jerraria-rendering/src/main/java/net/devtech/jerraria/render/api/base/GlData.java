@@ -1,6 +1,5 @@
 package net.devtech.jerraria.render.api.base;
 
-import it.unimi.dsi.fastutil.floats.FloatConsumer;
 
 public abstract class GlData implements AutoCloseable {
 	boolean isInvalid;

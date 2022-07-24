@@ -13,12 +13,11 @@ float normpdf(in float x, in float sigma) {
 }
 
 void mainImage(vec3 resolution) {
-	vec3 c = texture(image, gl_FragCoord.xy / resolution.xy).rgb;
 	//declare stuff
 	const int mSize = 11;
 	const int kSize = (mSize-1)/2;
 	float kernel[mSize];
-	vec3 final_colour = vec3(0.0);
+	vec4 final_colour = vec4(0.0);
 
 	//create the 1-D kernel
 	float sigma = 7.0;
@@ -35,11 +34,15 @@ void mainImage(vec3 resolution) {
 	//read out the texels
 	for (int i=-kSize; i <= kSize; ++i) {
 		for (int j=-kSize; j <= kSize; ++j) {
-			final_colour += kernel[kSize+j]*kernel[kSize+i]*texture(image, (gl_FragCoord.xy+vec2(float(i), float(j))) / resolution.xy).rgb;
+			final_colour += kernel[kSize+j]*kernel[kSize+i]*texture(image, (gl_FragCoord.xy+vec2(float(i), float(j))) / resolution.xy).rgba;
 		}
 	}
 
-	fragColor = vec4(final_colour/(Z*Z), 1.0);
+	if(final_colour.a < .05) {
+		discard;
+	} else {
+		fragColor = (final_colour/(Z*Z)).rgba;
+	}
 }
 
 // resolution
